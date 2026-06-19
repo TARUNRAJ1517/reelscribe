@@ -200,15 +200,19 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
 
     const user = await User.findOne({ email });
 
-    if (!user) {
-      if (req.file?.path) fs.unlinkSync(req.file.path);
-      return res.status(404).json({ success: false, error: "User not found. Pehle login karein." });
-    }
+    let isGuest = false;
 
-    if (user.credits <= 0) {
-      if (req.file?.path) fs.unlinkSync(req.file.path);
-      return res.status(400).json({ success: false, error: "Credits khatam ho gaye! Admin se contact karein." });
-    }
+if (!user) {
+  isGuest = true;
+}
+
+    if (!isGuest && user.credits <= 0) {
+  if (req.file?.path) fs.unlinkSync(req.file.path);
+  return res.status(400).json({
+    success: false,
+    error: "Credits khatam ho gaye! Admin se contact karein."
+  });
+}
 
     const filePath = req.file.path;
 
@@ -217,9 +221,10 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
       model: "whisper-large-v3-turbo"
     });
 
-    user.credits -= 1;
-    await user.save();
-
+    if (!isGuest) {
+  user.credits -= 1;
+  await user.save();
+}
     await Reel.create({
       userEmail: email,
       reelUrl: req.file.originalname,
@@ -231,7 +236,7 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
     res.json({
       success: true,
       transcript: transcription.text,
-      creditsLeft: user.credits
+      creditsLeft: user ? user.credits : 0
     });
 
   } catch (error) {
