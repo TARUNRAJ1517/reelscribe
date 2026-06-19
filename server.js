@@ -1,6 +1,9 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
+const session = require("express-session");
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
@@ -17,7 +20,28 @@ apiKey: process.env.GROQ_API_KEY
 });
 
 app.use(express.json());
-app.use(express.static("public")); // frontend serve karega
+app.use(express.static("public")); 
+app.use(session({
+  secret: "reelscribe_secret",
+  resave: false,
+  saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
+
+
+
+
+// frontend serve karega
 
 // Multer Storage
 const storage = multer.diskStorage({
