@@ -1,218 +1,30 @@
-<!DOCTYPE html><html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ReelScribe</title><style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
-
-body{
-background:#0f172a;
-color:white;
-padding:20px;
-}
-
-.container{
-max-width:500px;
-margin:auto;
-}
-
-.card{
-background:#1e293b;
-padding:20px;
-border-radius:16px;
-margin-bottom:20px;
-box-shadow:0 0 20px rgba(0,0,0,.2);
-}
-
-h1{
-text-align:center;
-margin-bottom:10px;
-}
-
-.subtitle{
-text-align:center;
-color:#94a3b8;
-margin-bottom:20px;
-}
-
-input{
-width:100%;
-padding:12px;
-border:none;
-outline:none;
-border-radius:10px;
-margin-top:10px;
-background:#334155;
-color:white;
-}
-
-input::placeholder{
-color:#cbd5e1;
-}
-
-button{
-width:100%;
-padding:12px;
-margin-top:12px;
-border:none;
-border-radius:10px;
-background:#3b82f6;
-color:white;
-font-weight:bold;
-cursor:pointer;
-}
-
-button:hover{
-opacity:.9;
-}
-
-.result{
-background:#0f172a;
-padding:15px;
-border-radius:10px;
-margin-top:15px;
-white-space:pre-wrap;
-word-wrap:break-word;
-}
-
-.links{
-display:flex;
-gap:10px;
-}
-
-.links a{
-flex:1;
-text-decoration:none;
-}
-
-.links button{
-margin-top:0;
-}
-
-</style></head><body><div class="container"><div class="card"><h1>🚀 ReelScribe</h1><p class="subtitle">
-AI Video & Reel Transcription Tool
-</p><input
-type="email"
-id="email"
-placeholder="Enter Email"
-/>
-
-</div><div class="card"><h2>📤 Upload Video</h2><input
+<body><div class="container">  <h1>🚀 ReelScribe</h1>  <p>
+    Upload any video and get an accurate transcript instantly.
+  </p><input
 type="file"
 id="videoFile"
 accept="video/*"
-/>
 
-<button onclick="transcribeVideo()">
-Generate Transcript
-</button></div><div class="card"><h2>📱 Instagram Reel URL</h2><input
-type="text"
-id="reelUrl"
-placeholder="Paste Reel URL"
-/>
+«»
 
-<button onclick="transcribeReel()">
-Test Reel URL
-</button></div><div class="card"><h2>📝 Result</h2><div
-id="result"
-class="result"
+  <button onclick="transcribeVideo()">
+    Get Transcript
+  </button>  <div id="previewBox" style="display:none;"><h3>Transcript Preview</h3>
+
+<div id="previewText"></div>
+
+<hr>
+
+<h3>Unlock Full Transcript</h3>
+
+<input
+  type="email"
+  id="unlockEmail"
+  placeholder="Enter Email"
 >
-Transcript will appear here...
-</div><button onclick="copyResult()">
-📋 Copy Transcript
-</button></div><div class="links"><a href="/history.html">
-<button>
-📄 History
+
+<button onclick="unlockTranscript()">
+  Continue
 </button>
-</a><a href="/admin.html">
-<button>
-⚙️ Admin
-</button>
-</a></div></div><script>
 
-async function transcribeVideo(){
-
-const email =
-document.getElementById("email").value;
-
-const fileInput =
-document.getElementById("videoFile");
-
-if(!email){
-alert("Enter email");
-return;
-}
-
-if(!fileInput.files[0]){
-alert("Select a video");
-return;
-}
-
-const formData = new FormData();
-
-formData.append("email",email);
-formData.append("video",fileInput.files[0]);
-
-document.getElementById("result").innerText =
-"⏳ Generating transcript...";
-
-const response =
-await fetch("/transcribe",{
-method:"POST",
-body:formData
-});
-
-const data =
-await response.json();
-
-document.getElementById("result").innerText =
-JSON.stringify(data,null,2);
-
-}
-
-async function transcribeReel(){
-
-const email =
-document.getElementById("email").value;
-
-const reelUrl =
-document.getElementById("reelUrl").value;
-
-const response =
-await fetch("/reel-transcribe",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-email,
-reelUrl
-})
-});
-
-const data =
-await response.json();
-
-document.getElementById("result").innerText =
-JSON.stringify(data,null,2);
-
-}
-
-function copyResult(){
-
-const text =
-document.getElementById("result").innerText;
-
-navigator.clipboard.writeText(text);
-
-alert("Copied!");
-}
-
-</script></body>
-</html>
+  </div></div></body>
