@@ -204,6 +204,8 @@ document.getElementById(
 
 async function sendOtp(){
 
+try{
+
 const email =
 document.getElementById("email").value;
 
@@ -219,20 +221,33 @@ method:"POST",
 headers:{
 "Content-Type":"application/json"
 },
-body:JSON.stringify({
-email
-})
+body:JSON.stringify({ email })
 }
 );
 
-const data = await response.json();
+const text = await response.text();
 
-alert(
-data.message || "OTP Sent"
-);
+console.log("OTP RESPONSE:", text);
+
+let data;
+
+try{
+data = JSON.parse(text);
+}catch{
+alert("Server returned invalid response");
+return;
+}
+
+alert(data.message || data.error || "OTP Sent");
+
+}catch(error){
+
+console.error(error);
+alert("OTP Error: " + error.message);
 
 }
 
+}
 async function verifyOtp(){
 
 const email =
