@@ -1,253 +1,219 @@
-<!DOCTYPE html><html><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ReelScribe</title><style>
+<title>ReelScribe</title>
 
+<style>
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
 }
 
 body{
-background:#f5f7fb;
-padding:20px;
+    background:#f5f7fb;
+    padding:20px;
 }
 
 .container{
-max-width:500px;
-margin:auto;
-background:white;
-padding:25px;
-border-radius:20px;
-box-shadow:0 10px 30px rgba(0,0,0,.08);
-margin-top:40px;
+    max-width:500px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+    margin-top:40px;
 }
 
 h1{
-text-align:center;
-margin-bottom:10px;
+    text-align:center;
+    margin-bottom:10px;
 }
 
 p{
-text-align:center;
-color:#666;
-margin-bottom:20px;
+    text-align:center;
+    color:#666;
+    margin-bottom:20px;
 }
 
 input[type="file"]{
-width:100%;
-margin-bottom:15px;
+    width:100%;
+    margin-bottom:15px;
 }
 
 button{
-width:100%;
-padding:15px;
-border:none;
-border-radius:12px;
-background:linear-gradient(90deg,#6d5dfc,#00d4c6);
-color:white;
-font-size:18px;
-font-weight:bold;
-cursor:pointer;
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(90deg,#6d5dfc,#00d4c6);
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
 }
 
 #previewBox{
-display:none;
-margin-top:20px;
-padding:15px;
-background:#fafafa;
-border-radius:12px;
+    display:none;
+    margin-top:20px;
+    padding:15px;
+    background:#fafafa;
+    border-radius:12px;
 }
 
 #previewText{
-white-space:pre-wrap;
-line-height:1.6;
+    white-space:pre-wrap;
+    line-height:1.6;
 }
 
 hr{
-margin:15px 0;
+    margin:15px 0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🚀 ReelScribe</h1>
+
+    <p>
+        Upload any video and get an accurate transcript instantly.
+    </p>
+
+    <input
+        type="file"
+        id="videoFile"
+        accept="video/*"
+    >
+
+    <button onclick="transcribeVideo()">
+        Get Transcript
+    </button>
+
+    <div id="previewBox">
+        <h3>Transcript Preview</h3>
+
+        <div id="previewText"></div>
+
+        <hr>
+
+        <p>
+            🔒 Login with Google to unlock full transcript
+        </p>
+
+        <button onclick="googleLogin()">
+            🔵 Continue with Google
+        </button>
+    </div>
+
+</div>
+
+<script>
+let fullTranscript = "";
+
+function googleLogin() {
+    window.location.href = "/auth/google";
 }
 
-</style></head><body><div class="container"><h1>🚀 ReelScribe</h1><p>
-Upload any video and get an accurate transcript instantly.
-</p><input
-type="file"
-id="videoFile"
-accept="video/*"
-/>
-<button onclick="transcribeVideo()">
-Get Transcript
-</button><div id="previewBox"><h3>Transcript Preview</h3><div id="previewText"></div><hr><p>
-🔒 Login with Google to unlock full transcript
-</p><button onclick="googleLogin()">
-🔵 Continue with Google
-</button></div></div><script>
-  let fullTranscript = "";
+const params = new URLSearchParams(window.location.search);
 
-function googleLogin(){
-window.location.href="/auth/google";
+const googleEmail = params.get("email");
+
+if (googleEmail) {
+    localStorage.setItem("userEmail", googleEmail);
 }
 
-const params =
-new URLSearchParams(window.location.search);
+async function transcribeVideo() {
 
-const googleEmail =
-params.get("email");
+    const fileInput = document.getElementById("videoFile");
 
-if(googleEmail){
+    if (!fileInput.files.length) {
+        alert("Select a video");
+        return;
+    }
 
-localStorage.setItem(
-"userEmail",
-googleEmail
-);
+    const previewBox = document.getElementById("previewBox");
+    const previewText = document.getElementById("previewText");
 
+    previewBox.style.display = "block";
+    previewText.innerText = "⏳ Generating transcript...";
+
+    const userEmail = localStorage.getItem("userEmail");
+
+    if (!userEmail) {
+        previewText.innerHTML = `
+            <p style="margin-top:15px;">
+                🔒 Login with Google to unlock full transcript
+            </p>
+            <button onclick="googleLogin()">
+                🔵 Continue with Google
+            </button>
+        `;
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("email", userEmail);
+    formData.append("video", fileInput.files[0]);
+
+    try {
+
+        const response = await fetch("/transcribe", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+
+            fullTranscript = data.transcript;
+
+            localStorage.setItem(
+                "latestTranscript",
+                data.transcript
+            );
+
+            previewText.innerText =
+                data.transcript.substring(0, 300) + "...";
+
+        } else {
+
+            previewText.innerText =
+                data.error || "Something went wrong";
+
+        }
+
+    } catch (error) {
+
+        previewText.innerText = "Server Error";
+        console.error(error);
+
+    }
 }
 
-async function transcribeVideo(){
+window.addEventListener("load", () => {
 
-const fileInput =
-document.getElementById("videoFile");
+    const savedTranscript =
+        localStorage.getItem("latestTranscript");
 
-if(!fileInput.files[0]){
+    if (savedTranscript) {
 
-alert("Select a video");
-return;
+        document.getElementById("previewBox")
+            .style.display = "block";
 
-}
+        document.getElementById("previewText")
+            .innerText =
+            savedTranscript.substring(0, 300) + "...";
+    }
 
-document.getElementById(
-"previewBox"
-).style.display = "block";
+});
+</script>
 
-document.getElementById(
-"previewText"
-).innerText =
-"⏳ Generating transcript...";
-
-  const formData = new FormData();
-
-formData.append(
-"email",
-"guest@example.com"
-);
-
-formData.append(
-"video",
-fileInput.files[0]
-);
-
-const userEmail =
-localStorage.getItem("userEmail");
-
-if(!userEmail){
-
-document.getElementById(
-"previewText"
-).innerHTML = `
-<p style="margin-top:15px;">
-🔒 Login with Google to unlock full transcript
-</p>
-
-<button onclick="googleLogin()">
-🔵 Continue with Google
-</button>
-`;
-
-return;
-
-}
-  const formData = new FormData();
-
-formData.append(
-"email",
-"guest@example.com"
-);
-
-formData.append(
-"video",
-fileInput.files[0]
-);
-
-try{
-
-const response = await fetch(
-"/transcribe",
-{
-method:"POST",
-body:formData
-}
-);
-
-const data = await response.json();
-
-if(data.success){
-
-fullTranscript =
-data.transcript;
-
-localStorage.setItem(
-"latestTranscript",
-data.transcript
-);
-
-document.getElementById(
-"previewText"
-).innerText =
-data.transcript.substring(0,300)
-
-+ "...";
-
-}else{
-
-document.getElementById(
-"previewText"
-).innerText =
-data.error ||
-"Something went wrong";
-
-}
-
-}catch(error){
-
-document.getElementById(
-"previewText"
-).innerText =
-"Server Error";
-
-}
-
-}
-  window.addEventListener(
-"load",
-()=>{
-
-const savedEmail =
-localStorage.getItem(
-"userEmail"
-);
-
-const savedTranscript =
-localStorage.getItem(
-"latestTranscript"
-);
-
-if(savedTranscript){
-
-document.getElementById(
-"previewBox"
-).style.display =
-"block";
-
-document.getElementById(
-"previewText"
-).innerText =
-savedTranscript;
-
-}
-
-}
-);
-  </script></body></html>
-  
+</body>
+</html>
