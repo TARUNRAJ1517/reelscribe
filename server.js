@@ -129,6 +129,14 @@ if (user.credits <= 0) {
 user.credits -= 1;
 await user.save();
 
+await Reel.create({
+  userEmail: email,
+  reelUrl: req.file.originalname,
+  transcript: transcription.text
+});
+
+fs.unlinkSync(filePath);
+
 res.json({
   success: true,
   credits: user.credits
@@ -254,6 +262,31 @@ stack: error.stack
 });
 }
 });
+
+// User History
+app.get("/history/:email", async (req, res) => {
+  try {
+
+    const reels = await Reel.find({
+      userEmail: req.params.email
+    }).sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      total: reels.length,
+      data: reels
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+
+  }
+});
+
 // Get All Reels
 app.get("/reels", async (req, res) => {
 try {
