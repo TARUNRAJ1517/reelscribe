@@ -61,6 +61,16 @@ mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("✅ MongoDB Connected"))
 .catch(err => console.log("❌ MongoDB Error:", err));
 
+const otpStore = {};
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
 passport.use(
   new GoogleStrategy(
     {
@@ -418,6 +428,52 @@ res.status(500).json({
 });
 
 const PORT = process.env.PORT || 3000;
+
+app.post("/send-otp", async (req, res) => {
+
+  try {
+
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email required"
+      });
+    }
+
+    const otp =
+      Math.floor(100000 + Math.random() * 900000)
+      .toString();
+
+    otpStore[email] = otp;
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "ReelScribe OTP Verification",
+      html: `
+        <h2>Your OTP Code</h2>
+        <h1>${otp}</h1>
+        <p>This OTP expires soon.</p>
+      `
+    });
+
+    res.json({
+      success: true,
+      message: "OTP Sent"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+
+  }
+
+});
 
 app.listen(PORT, () => {
 console.log("Server running on ${PORT}");
