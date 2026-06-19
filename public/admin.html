@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+</head>
+<body>
+
+<h2>Admin Credit Panel 🚀</h2>
+
+<input
+  type="email"
+  id="email"
+  placeholder="User Email"
+/>
+
+<br><br>
+
+<input
+  type="number"
+  id="credits"
+  placeholder="Credits"
+/>
+
+<br><br>
+
+<button onclick="addCredits()">
+  Add Credits
+</button>
+
+<br><br>
+
+<pre id="result"></pre>
+
+<script>
+
+async function addCredits() {
+
+  const email =
+    document.getElementById("email").value;
+
+  const credits =
+    document.getElementById("credits").value;
+
+  const response = await fetch(
+    "/admin/add-credit",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email,
+        credits
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  document.getElementById("result").innerText =
+    JSON.stringify(data, null, 2);
+}
+
+</script>
+
+</body>
+</html>
