@@ -129,16 +129,6 @@ const googleEmail = params.get("email");
 if (googleEmail) {
     localStorage.setItem("userEmail", googleEmail);
 }
-const existingUser =
-localStorage.getItem("userEmail");
-
-if(existingUser){
-
-document.getElementById(
-"loginSection"
-).style.display = "none";
-
-}
     
 async function transcribeVideo() {
 
@@ -200,22 +190,6 @@ localStorage.getItem("userEmail") ||
     }
 }
 
-window.addEventListener("load", () => {
-
-    const savedTranscript =
-        localStorage.getItem("latestTranscript");
-
-    if (savedTranscript) {
-
-        document.getElementById("previewBox")
-            .style.display = "block";
-
-        document.getElementById("previewText")
-            .innerText =
-            savedTranscript.substring(0, 300) + "...";
-    }
-
-});
 </script>
 
 </body>
