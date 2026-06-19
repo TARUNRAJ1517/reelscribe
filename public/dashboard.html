@@ -89,6 +89,21 @@ Loading...
 </p><button>
 Buy Credits
 </button>
+  <div class="card">
+
+<h3>
+🎥 New Transcript
+</h3>
+
+<p>
+Upload a new video and generate transcript
+</p>
+
+<button onclick="newTranscript()">
+Create New Transcript
+</button>
+
+</div>
 </div><div class="card">
 <h3>📄 Full Transcript</h3><div
 class="transcript"
@@ -184,6 +199,11 @@ console.log(error);
 }
 
 loadCredits();
+  function newTranscript(){
+
+window.location.href="/";
+
+}
 
 function logout(){
 
