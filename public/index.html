@@ -143,19 +143,9 @@ async function transcribeVideo() {
     previewBox.style.display = "block";
     previewText.innerText = "⏳ Generating transcript...";
 
-    const userEmail = localStorage.getItem("userEmail");
-
-    if (!userEmail) {
-        previewText.innerHTML = `
-            <p style="margin-top:15px;">
-                🔒 Login with Google to unlock full transcript
-            </p>
-            <button onclick="googleLogin()">
-                🔵 Continue with Google
-            </button>
-        `;
-        return;
-    }
+    const userEmail =
+localStorage.getItem("userEmail") ||
+"guest@example.com";
 
     const formData = new FormData();
     formData.append("email", userEmail);
