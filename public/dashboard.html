@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>ReelScribe Dashboard</title>
-
-<style>
-
+<title>ReelScribe Dashboard</title><style>
 *{
 margin:0;
 padding:0;
@@ -62,7 +57,7 @@ margin-bottom:15px;
 }
 
 .card h3{
-margin-bottom:8px;
+margin-bottom:10px;
 }
 
 button{
@@ -84,85 +79,49 @@ line-height:1.6;
 max-height:300px;
 overflow:auto;
 }
-
-</style>
-
-</head>
-<body>
-
-<div class="container">
-
-<div class="profile">
-
-<div class="avatar">
-👤
-</div>
-
-<h2 id="userName">
-User
-</h2>
-
-<p class="email" id="userEmail">
+</style></head><body><div class="container"><div class="profile">
+<div class="avatar">👤</div><h2 id="userName">User</h2><p class="email" id="userEmail">
 Loading...
 </p>
-
-</div>
-
-<div class="card">
-
-<h3>
-💰 Credits
-</h3>
-
-<p id="credits">
-10 Credits
-</p>
-
-<button>
+</div><div class="card">
+<h3>💰 Credits</h3><p id="credits">
+Loading...
+</p><button>
 Buy Credits
 </button>
-
-</div>
-
-<div class="card">
-
-<h3>
-📄 Full Transcript
-</h3>
-
-<div
+</div><div class="card">
+<h3>📄 Full Transcript</h3><div
 class="transcript"
 id="fullTranscript">
 No Transcript
 </div>
-
-</div>
-
-<div class="card">
-
-<h3>
-📜 History
-</h3>
-
-<button>
+</div><div class="card">
+<h3>📜 History</h3><button>
 View History
 </button>
-
-</div>
-
-<button onclick="logout()">
+</div><button onclick="logout()">
 🚪 Logout
-</button>
+</button></div><script>
 
-</div>
+const params =
+new URLSearchParams(window.location.search);
 
-<script>
+const googleEmail =
+params.get("email");
+
+if(googleEmail){
+
+localStorage.setItem(
+"userEmail",
+googleEmail
+);
+
+}
 
 const email =
-localStorage.getItem("userEmail");
-
-const transcript =
-localStorage.getItem("latestTranscript");
+localStorage.getItem(
+"userEmail"
+);
 
 if(!email){
 
@@ -172,12 +131,18 @@ window.location.href="/";
 
 document.getElementById(
 "userEmail"
-).innerText = email;
+).innerText =
+email;
 
 document.getElementById(
 "userName"
 ).innerText =
 email.split("@")[0];
+
+const transcript =
+localStorage.getItem(
+"latestTranscript"
+);
 
 if(transcript){
 
@@ -188,15 +153,51 @@ transcript;
 
 }
 
+async function loadCredits(){
+
+try{
+
+const response =
+await fetch(
+"/credits/" +
+encodeURIComponent(email)
+);
+
+const data =
+await response.json();
+
+if(data.success){
+
+document.getElementById(
+"credits"
+).innerText =
+data.credits + " Credits";
+
+}
+
+}catch(error){
+
+console.log(error);
+
+}
+
+}
+
+loadCredits();
+
 function logout(){
 
-localStorage.clear();
+localStorage.removeItem(
+"userEmail"
+);
+
+localStorage.removeItem(
+"latestTranscript"
+);
 
 window.location.href="/";
 
 }
 
-</script>
-
-</body>
+</script></body>
 </html>
