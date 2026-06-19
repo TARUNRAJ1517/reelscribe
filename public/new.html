@@ -1,17 +1,30 @@
-<body><div style="max-width:500px;margin:auto;padding:20px;"><h1>🎥 New Transcript</h1><p>
+<body>
+
+<div style="max-width:500px;margin:auto;padding:20px;">
+
+<h1>🎥 New Transcript</h1>
+
+<p>
 Upload a video and generate a full transcript
-</p><input
+</p>
+
+<input
 type="file"
 id="videoFile"
 accept="video/*"
-
-«»
+>
 
 <br><br>
 
 <button onclick="transcribeVideo()">
 Generate Transcript
-</button><div id="status"></div></div><script>
+</button>
+
+<div id="status"></div>
+
+</div>
+
+<script>
 
 const email =
 localStorage.getItem("userEmail");
@@ -22,4 +35,82 @@ window.location.href="/";
 
 }
 
-</script></body>
+async function transcribeVideo(){
+
+const file =
+document.getElementById("videoFile").files[0];
+
+if(!file){
+
+alert("Select a video");
+return;
+
+}
+
+document.getElementById(
+"status"
+).innerText =
+"⏳ Generating Transcript...";
+
+const formData =
+new FormData();
+
+formData.append(
+"email",
+email
+);
+
+formData.append(
+"video",
+file
+);
+
+try{
+
+const response =
+await fetch(
+"/transcribe",
+{
+method:"POST",
+body:formData
+}
+);
+
+const data =
+await response.json();
+
+if(data.success){
+
+localStorage.setItem(
+"latestTranscript",
+data.transcript
+);
+
+window.location.href =
+"/dashboard.html";
+
+}else{
+
+document.getElementById(
+"status"
+).innerText =
+data.error;
+
+}
+
+}catch(err){
+
+document.getElementById(
+"status"
+).innerText =
+"Server Error";
+
+console.log(err);
+
+}
+
+}
+
+</script>
+
+</body>
