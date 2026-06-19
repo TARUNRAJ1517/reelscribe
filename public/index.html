@@ -174,15 +174,15 @@ localStorage.getItem("userEmail") ||
 
         if (data.success) {
 
-            fullTranscript = data.transcript;
+    localStorage.setItem(
+        "latestTranscript",
+        data.transcript
+    );
 
-            localStorage.setItem(
-                "latestTranscript",
-                data.transcript
-            );
+    window.location.href =
+    "/dashboard.html";
 
-            previewText.innerText =
-                data.transcript.substring(0, 300) + "...";
+}
 
         } else {
 
