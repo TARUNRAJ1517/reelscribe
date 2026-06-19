@@ -271,7 +271,39 @@ res.status(500).json({
 
 }
 });
+// Admin Add Credits
+app.post("/admin/add-credit", async (req, res) => {
+  try {
 
+    const { email, credits } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    user.credits += Number(credits);
+    await user.save();
+
+    res.json({
+      success: true,
+      email: user.email,
+      credits: user.credits
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+
+  }
+});
 // Get All Reels
 app.get("/reels", async (req, res) => {
 try {
