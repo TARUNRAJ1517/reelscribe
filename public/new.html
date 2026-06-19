@@ -1,9 +1,17 @@
-<!DOCTYPE html><html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>New Transcript</title>
-</head><body><h1>🎥 New Transcript</h1><script>
+<body><div style="max-width:500px;margin:auto;padding:20px;"><h1>🎥 New Transcript</h1><p>
+Upload a video and generate a full transcript
+</p><input
+type="file"
+id="videoFile"
+accept="video/*"
+
+«»
+
+<br><br>
+
+<button onclick="transcribeVideo()">
+Generate Transcript
+</button><div id="status"></div></div><script>
 
 const email =
 localStorage.getItem("userEmail");
@@ -15,4 +23,3 @@ window.location.href="/";
 }
 
 </script></body>
-</html>
