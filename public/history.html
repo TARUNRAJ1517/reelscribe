@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Transcript History</title>
+</head>
+<body>
+
+<h2>📄 Transcript History</h2>
+
+<input
+  type="email"
+  id="email"
+  placeholder="Enter Email"
+/>
+
+<button onclick="loadHistory()">
+  Load History
+</button>
+
+<hr>
+
+<div id="history"></div>
+
+<script>
+
+async function loadHistory() {
+
+  const email =
+    document.getElementById("email").value;
+
+  const response = await fetch(
+    `/history/${email}`
+  );
+
+  const data = await response.json();
+
+  const container =
+    document.getElementById("history");
+
+  if (!data.success) {
+
+    container.innerHTML =
+      "<p>Error loading history</p>";
+
+    return;
+  }
+
+  let html = "";
+
+  data.data.forEach(item => {
+
+    html += `
+      <div style="
+        border:1px solid #ccc;
+        padding:10px;
+        margin:10px 0;
+      ">
+
+      <b>Video:</b>
+      ${item.reelUrl}
+
+      <br><br>
+
+      <b>Date:</b>
+      ${new Date(item.createdAt)
+        .toLocaleString()}
+
+      <br><br>
+
+      <b>Transcript:</b>
+
+      <p>${item.transcript}</p>
+
+      </div>
+    `;
+
+  });
+
+  container.innerHTML = html;
+
+}
+
+</script>
+
+</body>
+</html>
