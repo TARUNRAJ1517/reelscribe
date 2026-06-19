@@ -15,6 +15,29 @@ app.get("/", (req, res) => {
   res.send("ReelScribe Backend Running 🚀");
 });
 
+// Create User
+app.post("/user", async (req, res) => {
+  try {
+    const { email, name } = req.body;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        email,
+        name
+      });
+    }
+
+    res.json(user);
+
+  } catch (error) {
+    res.status(500).json({
+      error: error.message
+    });
+  }
+});
+
 // Save Reel
 app.post("/save", async (req, res) => {
   try {
