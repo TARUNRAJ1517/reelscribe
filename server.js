@@ -17,300 +17,226 @@ app.use(express.json());
 app.use(express.static("public"));
 
 const groq = new Groq({
-apiKey: process.env.GROQ_API_KEY
+  apiKey: process.env.GROQ_API_KEY
 });
 
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("✅ MongoDB Connected"))
-.catch(err => console.log("❌ MongoDB Error:", err));
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => console.log("❌ MongoDB Error:", err));
 
 const otpStore = {};
 
 const transporter = nodemailer.createTransport({
-service: "gmail",
-auth: {
-user: process.env.EMAIL_USER,
-pass: process.env.EMAIL_PASS
-}
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
 });
 
 const storage = multer.diskStorage({
-destination: (req, file, cb) => {
-cb(null, "uploads/");
-},
-
-filename: (req, file, cb) => {
-cb(
-null,
-Date.now() +
-path.extname(file.originalname)
-);
-}
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
 });
 
 const upload = multer({ storage });
 
 app.post("/send-otp", async (req, res) => {
+  try {
+    const { email } = req.body;
 
-try {
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email required"
+      });
+    }
 
-const { email } = req.body;
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    otpStore[email] = otp;
 
-if (!email) {
-  return res.status(400).json({
-    success: false,
-    message: "Email required"
-  });
-}
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "ReelScribe OTP Verification",
+      html: `
+        <h2>ReelScribe Login</h2>
+        <p>Your OTP is:</p>
+        <h1>${otp}</h1>
+      `
+    });
 
-const otp = Math.floor(
-  100000 + Math.random() * 900000
-).toString();
+    console.log("MAIL SENT:", info.response);
 
-otpStore[email] = otp;
+    res.json({
+      success: true,
+      message: "OTP Sent"
+    });
 
-const info = await transporter.sendMail({
-  from: process.env.EMAIL_USER,
-  to: email,
-  subject: "ReelScribe OTP Verification",
-  html: `
-    <h2>ReelScribe Login</h2>
-    <p>Your OTP is:</p>
-    <h1>${otp}</h1>
-  `
+  } catch (error) {
+    console.error("MAIL ERROR:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
 });
 
-console.log("MAIL SENT:", info.response);
-
-res.json({
-  success: true,
-  message: "OTP Sent"
-});
-
-catch (error) {
-
-  console.error("MAIL ERROR:", error);
-
-  res.status(500).json({
-    success: false,
-    error: error.message
-  });
-
-}
-
-});
 app.post("/verify-otp", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
 
-try {
+    if (otpStore[email] !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP"
+      });
+    }
 
-const { email, otp } = req.body;
+    let user = await User.findOne({ email });
 
-if (otpStore[email] !== otp) {
-  return res.status(400).json({
-    success: false,
-    message: "Invalid OTP"
-  });
-}
+    if (!user) {
+      user = await User.create({
+        name: email.split("@")[0],
+        email: email
+      });
+    }
 
-let user = await User.findOne({ email });
+    delete otpStore[email];
 
-if (!user) {
+    res.json({
+      success: true,
+      user
+    });
 
-  user = await User.create({
-    name: email.split("@")[0],
-    email: email
-  });
-
-}
-
-delete otpStore[email];
-
-res.json({
-  success: true,
-  user
-});
-
-} catch (error) {
-
-res.status(500).json({
-  success: false,
-  error: error.message
-});
-
-}
-
-});
-
-app.post(
-"/transcribe",
-upload.single("video"),
-async (req, res) => {
-
-try {
-
-  const { email } = req.body;
-
-  const user =
-    await User.findOne({ email });
-
-  if (!user) {
-    return res.status(404).json({
+  } catch (error) {
+    res.status(500).json({
       success: false,
-      error: "User not found"
+      error: error.message
     });
   }
+});
 
-  if (user.credits <= 0) {
-    return res.status(400).json({
+app.post("/transcribe", upload.single("video"), async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found"
+      });
+    }
+
+    if (user.credits <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: "No credits left"
+      });
+    }
+
+    const filePath = req.file.path;
+
+    const transcription = await groq.audio.transcriptions.create({
+      file: fs.createReadStream(filePath),
+      model: "whisper-large-v3-turbo"
+    });
+
+    user.credits -= 1;
+    await user.save();
+
+    await Reel.create({
+      userEmail: email,
+      reelUrl: req.file.originalname,
+      transcript: transcription.text
+    });
+
+    fs.unlinkSync(filePath);
+
+    res.json({
+      success: true,
+      transcript: transcription.text,
+      creditsLeft: user.credits
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    if (req.file?.path && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    res.status(500).json({
       success: false,
-      error: "No credits left"
+      error: error.message
     });
   }
+});
 
-  const filePath = req.file.path;
+app.get("/credits/:email", async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.params.email });
 
-  const transcription =
-    await groq.audio.transcriptions.create({
-      file: fs.createReadStream(
-        filePath
-      ),
-      model:
-        "whisper-large-v3-turbo"
+    if (!user) {
+      return res.status(404).json({ success: false });
+    }
+
+    res.json({
+      success: true,
+      credits: user.credits
     });
 
-  user.credits -= 1;
-  await user.save();
-
-  await Reel.create({
-    userEmail: email,
-    reelUrl:
-      req.file.originalname,
-    transcript:
-      transcription.text
-  });
-
-  fs.unlinkSync(filePath);
-
-  res.json({
-    success: true,
-    transcript:
-      transcription.text,
-    creditsLeft:
-      user.credits
-  });
-
-} catch (error) {
-
-  console.error(error);
-
-  res.status(500).json({
-    success: false,
-    error: error.message
-  });
-
-}
-
-}
-);
-
-app.get(
-"/credits/:email",
-async (req, res) => {
-
-try {
-
-  const user =
-    await User.findOne({
-      email:
-      req.params.email
-    });
-
-  if (!user) {
-    return res.status(404).json({
-      success:false
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
+});
 
-  res.json({
-    success:true,
-    credits:user.credits
-  });
+app.get("/history/:email", async (req, res) => {
+  try {
+    const reels = await Reel.find({ userEmail: req.params.email })
+      .sort({ createdAt: -1 });
 
-} catch (error) {
-
-  res.status(500).json({
-    success:false,
-    error:error.message
-  });
-
-}
-
-}
-);
-
-app.get(
-"/history/:email",
-async (req, res) => {
-
-try {
-
-  const reels =
-    await Reel.find({
-      userEmail:
-      req.params.email
-    })
-    .sort({
-      createdAt:-1
+    res.json({
+      success: true,
+      data: reels
     });
 
-  res.json({
-    success:true,
-    data:reels
-  });
-
-} catch (error) {
-
-  res.status(500).json({
-    success:false,
-    error:error.message
-  });
-
-}
-
-}
-);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 
 app.get("/users", async (req, res) => {
+  try {
+    const users = await User.find().sort({ createdAt: -1 });
+    res.json(users);
 
-try {
-
-const users =
-  await User.find()
-  .sort({ createdAt: -1 });
-
-res.json(users);
-
-} catch (error) {
-
-res.status(500).json({
-  success: false,
-  error: error.message
-});
-
-}
-
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
 });
 
 app.get("/", (req, res) => {
-res.send("🚀 ReelScribe Backend Running");
+  res.send("🚀 ReelScribe Backend Running");
 });
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-
-console.log(
-"🚀 Server running on ${PORT}"
-);
-
+  console.log(`🚀 Server running on ${PORT}`);
 });
