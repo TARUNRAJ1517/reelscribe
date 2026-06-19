@@ -98,6 +98,7 @@ catch (error) {
 
 }
 
+});
 app.post("/verify-otp", async (req, res) => {
 
 try {
