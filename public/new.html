@@ -1,6 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>New Transcript</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f7fb;
+padding:20px;
+}
+
+.container{
+max-width:500px;
+margin:auto;
+background:white;
+padding:25px;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,.08);
+margin-top:40px;
+}
+
+h1{
+text-align:center;
+margin-bottom:10px;
+}
+
+p{
+text-align:center;
+color:#666;
+margin-bottom:20px;
+}
+
+input[type="file"]{
+width:100%;
+margin-bottom:15px;
+}
+
+button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+background:linear-gradient(90deg,#6d5dfc,#00d4c6);
+color:white;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
+}
+
+#status{
+margin-top:15px;
+padding:15px;
+background:#fafafa;
+border-radius:12px;
+white-space:pre-wrap;
+line-height:1.6;
+display:none;
+}
+
+</style>
+
+</head>
+
 <body>
 
-<div style="max-width:500px;margin:auto;padding:20px;">
+<div class="container">
 
 <h1>🎥 New Transcript</h1>
 
@@ -13,8 +87,6 @@ type="file"
 id="videoFile"
 accept="video/*"
 >
-
-<br><br>
 
 <button onclick="transcribeVideo()">
 Generate Transcript
@@ -31,14 +103,17 @@ localStorage.getItem("userEmail");
 
 if(!email){
 
-window.location.href="/";
+window.location.href =
+"/";
 
 }
 
 async function transcribeVideo(){
 
 const file =
-document.getElementById("videoFile").files[0];
+document.getElementById(
+"videoFile"
+).files[0];
 
 if(!file){
 
@@ -47,9 +122,15 @@ return;
 
 }
 
+const status =
 document.getElementById(
 "status"
-).innerText =
+);
+
+status.style.display =
+"block";
+
+status.innerText =
 "⏳ Generating Transcript...";
 
 const formData =
@@ -91,18 +172,15 @@ window.location.href =
 
 }else{
 
-document.getElementById(
-"status"
-).innerText =
-data.error;
+status.innerText =
+data.error ||
+"Something went wrong";
 
 }
 
 }catch(err){
 
-document.getElementById(
-"status"
-).innerText =
+status.innerText =
 "Server Error";
 
 console.log(err);
@@ -114,3 +192,4 @@ console.log(err);
 </script>
 
 </body>
+</html>
