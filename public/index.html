@@ -1,113 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>ReelScribe</title>
-
-<style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
-
-body{
-background:#f5f7fb;
-padding:20px;
-}
-
-.container{
-max-width:500px;
-margin:auto;
-background:white;
-padding:25px;
-border-radius:20px;
-box-shadow:0 10px 30px rgba(0,0,0,.08);
-margin-top:40px;
-}
-
-h1{
-text-align:center;
-font-size:42px;
-margin-bottom:10px;
-}
-
-p{
-text-align:center;
-color:#666;
-margin-bottom:25px;
-line-height:1.5;
-}
-
-input[type="file"]{
-width:100%;
-margin-bottom:15px;
-}
-
-input[type="email"]{
-width:100%;
-padding:12px;
-border:1px solid #ddd;
-border-radius:10px;
-margin-top:10px;
-margin-bottom:10px;
-}
-
-button{
-width:100%;
-padding:15px;
-border:none;
-border-radius:12px;
-background:linear-gradient(90deg,#6d5dfc,#00d4c6);
-color:white;
-font-size:18px;
-font-weight:bold;
-cursor:pointer;
-}
-
-#previewBox{
-display:none;
-margin-top:25px;
-padding:15px;
-background:#fafafa;
-border-radius:12px;
-}
-
-#previewText{
-margin-top:10px;
-line-height:1.6;
-color:#333;
-white-space:pre-wrap;
-}
-
-h3{
-margin-bottom:10px;
-}
-
-hr{
-margin:15px 0;
-border:none;
-border-top:1px solid #ddd;
-}
-
-</style>
-
-</head>
-<body>
-
-<div class="container">
-
-<h1>🚀 ReelScribe</h1>
-
-<p>
+<body><div class="container"><h1>🚀 ReelScribe</h1><p>
 Upload any video and get an accurate transcript instantly.
-</p>
-
-<input
+</p><input
 type="file"
 id="videoFile"
 accept="video/*"
@@ -115,32 +8,9 @@ accept="video/*"
 
 <button onclick="transcribeVideo()">
 Get Transcript
-</button>
-
-<div id="previewBox">
-
-<h3>Transcript Preview</h3>
-
-<div id="previewText"></div>
-
-<hr>
-
-<h3>Unlock Full Transcript</h3>
-
-<input
-type="email"
-id="unlockEmail"
-placeholder="Enter Email"
-/>
-
-<button onclick="unlockTranscript()">
-Continue
-</button>
-
-</div>
-
-</div>
-
+</button><div id="previewBox"><h3>Transcript Preview</h3><div id="previewText"></div><hr><button disabled>
+🔒 Login Required (Coming Soon)
+</button></div></div>
 <script>
 
 let fullTranscript = "";
@@ -155,6 +25,15 @@ alert("Select a video");
 return;
 }
 
+document.getElementById(
+"previewBox"
+).style.display = "block";
+
+document.getElementById(
+"previewText"
+).innerText =
+"⏳ Generating transcript...";
+
 const formData = new FormData();
 
 formData.append(
@@ -166,6 +45,8 @@ formData.append(
 "video",
 fileInput.files[0]
 );
+
+try{
 
 const response = await fetch(
 "/transcribe",
@@ -179,51 +60,37 @@ const data = await response.json();
 
 if(data.success){
 
-fullTranscript = data.transcript;
+fullTranscript =
+data.transcript;
 
 const preview =
 data.transcript.substring(0,300);
 
 document.getElementById(
 "previewText"
-).innerText = preview + "...";
-
-document.getElementById(
-"previewBox"
-).style.display = "block";
+).innerText =
+preview + "...";
 
 }else{
 
-alert(data.error || "Something went wrong");
-
-}
-
-}
-
-function unlockTranscript(){
-
-const email =
 document.getElementById(
-"unlockEmail"
-).value;
-
-if(!email){
-
-alert("Enter Email");
-
-return;
+"previewText"
+).innerText =
+data.error ||
+"Something went wrong";
 
 }
+
+}catch(error){
 
 document.getElementById(
 "previewText"
-).innerText = fullTranscript;
-
-alert("Transcript Unlocked");
+).innerText =
+"Server Error";
 
 }
 
-</script>
+}
 
-</body>
+</script></body>
 </html>
