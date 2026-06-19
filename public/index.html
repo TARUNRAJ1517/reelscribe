@@ -1,7 +1,7 @@
-<!DOCTYPE html><html>
-<head>
+<!DOCTYPE html><html><head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ReelScribe</title><style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReelScribe</title><style>
 
 *{
 margin:0;
@@ -77,63 +77,16 @@ type="file"
 id="videoFile"
 accept="video/*"
 />
-
 <button onclick="transcribeVideo()">
 Get Transcript
-</button>
-
-<div id="previewBox">
-<h3>Transcript Preview</h3>
-
-<div id="previewText"></div>
-
-<hr>
-
-<button onclick="showLogin()">
-🔓 Unlock Full Transcript
-</button>
-
-<button onclick="googleLogin()">
+</button><div id="previewBox"><h3>Transcript Preview</h3><div id="previewText"></div><hr><p>
+🔒 Login with Google to unlock full transcript
+</p><button onclick="googleLogin()">
 🔵 Continue with Google
-</button>
+</button></div></div><script>
+  let fullTranscript = "";
 
-<div id="loginBox"
-style="display:none;margin-top:15px;">
-
-  <input
-type="email"
-id="email"
-placeholder="Enter Email"
-style="
-width:100%;
-padding:12px;
-margin-bottom:10px;
-border:1px solid #ddd;
-border-radius:10px;
-">
-
-<button onclick="sendOtp()">
-Send OTP
-</button><input
-type="text"
-id="otp"
-placeholder="Enter OTP"
-style="
-width:100%;
-padding:12px;
-margin-top:10px;
-margin-bottom:10px;
-border:1px solid #ddd;
-border-radius:10px;
-">
-
-<button onclick="verifyOtp()">
-Verify OTP
-</button></div></div></div><script>
-
-let fullTranscript = "";
-
-  function googleLogin(){
+function googleLogin(){
 window.location.href="/auth/google";
 }
 
@@ -144,20 +97,24 @@ const googleEmail =
 params.get("email");
 
 if(googleEmail){
+
 localStorage.setItem(
 "userEmail",
 googleEmail
 );
+
 }
 
-  async function transcribeVideo(){
+async function transcribeVideo(){
 
 const fileInput =
 document.getElementById("videoFile");
 
 if(!fileInput.files[0]){
+
 alert("Select a video");
 return;
+
 }
 
 document.getElementById(
@@ -169,11 +126,43 @@ document.getElementById(
 ).innerText =
 "⏳ Generating transcript...";
 
-const formData = new FormData();
+  const formData = new FormData();
 
 formData.append(
 "email",
-"test@gmail.com"
+"guest@example.com"
+);
+
+formData.append(
+"video",
+fileInput.files[0]
+);
+
+const userEmail =
+localStorage.getItem("userEmail");
+
+if(!userEmail){
+
+document.getElementById(
+"previewText"
+).innerHTML = `
+<p style="margin-top:15px;">
+🔒 Login with Google to unlock full transcript
+</p>
+
+<button onclick="googleLogin()">
+🔵 Continue with Google
+</button>
+`;
+
+return;
+
+}
+  const formData = new FormData();
+
+formData.append(
+"email",
+"guest@example.com"
 );
 
 formData.append(
@@ -197,6 +186,11 @@ if(data.success){
 
 fullTranscript =
 data.transcript;
+
+localStorage.setItem(
+"latestTranscript",
+data.transcript
+);
 
 document.getElementById(
 "previewText"
@@ -224,112 +218,36 @@ document.getElementById(
 
 }
 
-  }
+}
+  window.addEventListener(
+"load",
+()=>{
 
-  function showLogin(){
+const savedEmail =
+localStorage.getItem(
+"userEmail"
+);
+
+const savedTranscript =
+localStorage.getItem(
+"latestTranscript"
+);
+
+if(savedTranscript){
 
 document.getElementById(
-"loginBox"
-).style.display = "block";
-
-}
-
-async function sendOtp(){
-
-try{
-
-const email =
-document.getElementById("email").value;
-
-if(!email){
-alert("Enter Email");
-return;
-}
-
-const response = await fetch(
-"/send-otp",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({ email })
-}
-);
-
-const text = await response.text();
-
-console.log("OTP RESPONSE:", text);
-
-let data;
-
-try{
-data = JSON.parse(text);
-}catch{
-alert("Server returned invalid response");
-return;
-}
-
-alert(data.message || data.error || "OTP Sent");
-
-}catch(error){
-
-console.error(error);
-alert("OTP Error: " + error.message);
-
-}
-
-}
-async function verifyOtp(){
-
-const email =
-document.getElementById("email").value;
-
-const otp =
-document.getElementById("otp").value;
-
-const response = await fetch(
-"/verify-otp",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-email,
-otp
-})
-}
-);
-
-const data = await response.json();
-
-if(data.success){
-
-localStorage.setItem(
-"userEmail",
-email
-);
+"previewBox"
+).style.display =
+"block";
 
 document.getElementById(
 "previewText"
 ).innerText =
-fullTranscript;
-
-alert(
-"Login Successful"
-);
-
-}else{
-
-alert(
-data.message || "Invalid OTP"
-);
+savedTranscript;
 
 }
 
 }
-
-</script></body>
-</html>
+);
+  </script></body></html>
   
