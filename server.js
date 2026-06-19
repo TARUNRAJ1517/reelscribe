@@ -1,12 +1,18 @@
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+const Groq = require("groq-sdk");
 
 const Reel = require("./models/Reel");
 const User = require("./models/User");
 
 const app = express();
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY
+});
 
 app.use(express.json());
 app.use(express.static("public")); // frontend serve karega
@@ -190,5 +196,5 @@ res.status(500).json({ error: error.message });
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-console.log("Server running on ${PORT}");
+  console.log(`Server running on ${PORT}`);
 });
