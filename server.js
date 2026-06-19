@@ -6,7 +6,7 @@ const path = require("path");
 const fs = require("fs");
 const Groq = require("groq-sdk");
 const axios = require("axios");
-const instagramGetUrl = require("instagram-url-direct");
+const instagramGetUrl = require("instagram-url-direct").default;
 
 const Reel = require("./models/Reel");
 const User = require("./models/User");
