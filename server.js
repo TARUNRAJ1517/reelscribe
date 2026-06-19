@@ -13,7 +13,7 @@ const User = require("./models/User");
 
 const app = express();
 const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
+apiKey: process.env.GROQ_API_KEY
 });
 
 app.use(express.json());
@@ -44,22 +44,22 @@ const { name, email } = req.body;
 let user = await User.findOne({ email });
 
 if (user) {
-  return res.json({
-    success: true,
-    message: "User already exists",
-    user
-  });
+return res.json({
+success: true,
+message: "User already exists",
+user
+});
 }
 
 user = await User.create({
-  name,
-  email
+name,
+email
 });
 
 res.json({
-  success: true,
-  message: "User registered successfully",
-  user
+success: true,
+message: "User registered successfully",
+user
 });
 
 } catch (error) {
@@ -69,7 +69,6 @@ error: error.message
 });
 }
 });
-
 // Get All Users
 app.get("/users", async (req, res) => {
 try {
@@ -129,14 +128,6 @@ if (user.credits <= 0) {
 user.credits -= 1;
 await user.save();
 
-await Reel.create({
-  userEmail: email,
-  reelUrl: req.file.originalname,
-  transcript: transcription.text
-});
-
-fs.unlinkSync(filePath);
-
 res.json({
   success: true,
   credits: user.credits
@@ -185,6 +176,7 @@ success: true,
 file: req.file.filename,
 path: req.file.path
 });
+
 } catch (error) {
 res.status(500).json({
 success: false,
@@ -195,110 +187,111 @@ error: error.message
 
 // Transcribe Video
 app.post("/transcribe", upload.single("video"), async (req, res) => {
-  try {
-    const { email } = req.body;
+try {
+const { email } = req.body;
 
-    const user = await User.findOne({ email });
+const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
+if (!user) {
+  return res.status(404).json({
+    success: false,
+    message: "User not found"
+  });
+}
 
-    if (user.credits <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "No credits left"
-      });
-    }
+if (user.credits <= 0) {
+  return res.status(400).json({
+    success: false,
+    message: "No credits left"
+  });
+}
 
-    const filePath = req.file.path;
+const filePath = req.file.path;
 
-    const transcription = await groq.audio.transcriptions.create({
-      file: fs.createReadStream(filePath),
-      model: "whisper-large-v3-turbo"
-    });
-
-    user.credits -= 1;
-    await user.save();
-
-    fs.unlinkSync(filePath);
-
-    res.json({
-      success: true,
-      transcript: transcription.text,
-      creditsLeft: user.credits
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
+const transcription = await groq.audio.transcriptions.create({
+  file: fs.createReadStream(filePath),
+  model: "whisper-large-v3-turbo"
 });
 
-// Reel Transcribe
-app.post("/reel-transcribe", async (req, res) => {
-try {
+user.credits -= 1;
+await user.save();
 
-const instaPackage = require("instagram-url-direct");
+await Reel.create({
+  userEmail: email,
+  reelUrl: req.file.originalname,
+  transcript: transcription.text
+});
+
+fs.unlinkSync(filePath);
 
 res.json({
   success: true,
-  packageType: typeof instaPackage,
-  packageData: instaPackage
+  transcript: transcription.text,
+  creditsLeft: user.credits
 });
 
 } catch (error) {
+console.error(error);
+
+res.status(500).json({
+  success: false,
+  error: error.message
+});
+
+}
+});
+// Reel Transcribe (Coming Soon)
+app.post("/reel-transcribe", async (req, res) => {
 res.json({
 success: false,
-error: error.message,
-stack: error.stack
+message: "Reel URL feature coming soon"
 });
-}
 });
 
 // User History
 app.get("/history/:email", async (req, res) => {
-  try {
+try {
 
-    const reels = await Reel.find({
-      userEmail: req.params.email
-    }).sort({ createdAt: -1 });
+const reels = await Reel.find({
+  userEmail: req.params.email
+}).sort({ createdAt: -1 });
 
-    res.json({
-      success: true,
-      total: reels.length,
-      data: reels
-    });
+res.json({
+  success: true,
+  total: reels.length,
+  data: reels
+});
 
-  } catch (error) {
+} catch (error) {
 
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
+res.status(500).json({
+  success: false,
+  error: error.message
+});
 
-  }
+}
 });
 
 // Get All Reels
 app.get("/reels", async (req, res) => {
 try {
-const reels = await Reel.find().sort({ createdAt: -1 });
+
+const reels = await Reel.find()
+  .sort({ createdAt: -1 });
+
 res.json(reels);
+
 } catch (error) {
-res.status(500).json({ error: error.message });
+
+res.status(500).json({
+  error: error.message
+});
+
 }
 });
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
+console.log("Server running on ${PORT}");
 });
