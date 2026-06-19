@@ -120,6 +120,10 @@ function adminAuth(req, res, next) {
   next();
 }
 
+app.get("/test", (req, res) => {
+  res.send("TEST ROUTE WORKING");
+});
+
 app.get(
   "/auth/google",
   passport.authenticate("google", {
