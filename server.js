@@ -60,6 +60,41 @@ mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("✅ MongoDB Connected"))
 .catch(err => console.log("❌ MongoDB Error:", err));
 
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "/auth/google/callback"
+    },
+    async (accessToken, refreshToken, profile, done) => {
+
+      try {
+
+        let user = await User.findOne({
+          email: profile.emails[0].value
+        });
+
+        if (!user) {
+
+          user = await User.create({
+            name: profile.displayName,
+            email: profile.emails[0].value
+          });
+
+        }
+
+        return done(null, user);
+
+      } catch (error) {
+
+        return done(error, null);
+
+      }
+    }
+  )
+);
+
 // Register User
 app.post("/register", async (req, res) => {
 try {
@@ -328,6 +363,41 @@ app.post("/admin/add-credit", async (req, res) => {
 
   }
 });
+
+app.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"]
+  })
+);
+
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/"
+  }),
+  (req, res) => {
+    res.redirect("/");
+  }
+);
+
+app.get("/me", (req, res) => {
+
+  if (!req.user) {
+
+    return res.json({
+      loggedIn: false
+    });
+
+  }
+
+  res.json({
+    loggedIn: true,
+    user: req.user
+  });
+
+});
+
 // Get All Reels
 app.get("/reels", async (req, res) => {
 try {
@@ -349,5 +419,5 @@ res.status(500).json({
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-console.log("Server running on ${PORT}");
+console.log(`Server running on ${PORT}`);
 });
