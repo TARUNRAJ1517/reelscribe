@@ -102,15 +102,17 @@ hr{
 
         <hr>
 
-        <p>
-            🔒 Login with Google to unlock full transcript
-        </p>
+        <div id="loginSection">
 
-        <button onclick="googleLogin()">
-            🔵 Continue with Google
-        </button>
-    </div>
+<p>
+🔒 Login with Google to unlock full transcript
+</p>
 
+<button onclick="googleLogin()">
+🔵 Continue with Google
+</button>
+
+</div>
 </div>
 
 <script>
@@ -127,7 +129,17 @@ const googleEmail = params.get("email");
 if (googleEmail) {
     localStorage.setItem("userEmail", googleEmail);
 }
+const existingUser =
+localStorage.getItem("userEmail");
 
+if(existingUser){
+
+document.getElementById(
+"loginSection"
+).style.display = "none";
+
+}
+    
 async function transcribeVideo() {
 
     const fileInput = document.getElementById("videoFile");
