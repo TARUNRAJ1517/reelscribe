@@ -5,6 +5,8 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const Groq = require("groq-sdk");
+const axios = require("axios");
+const instagramGetUrl = require("instagram-url-direct");
 
 const Reel = require("./models/Reel");
 const User = require("./models/User");
@@ -225,6 +227,42 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
   } catch (error) {
     console.error(error);
 
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Reel Transcribe
+app.post("/reel-transcribe", async (req, res) => {
+  try {
+    const { email, reelUrl } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    if (user.credits <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No credits left"
+      });
+    }
+
+    const result = await instagramGetUrl(reelUrl);
+
+    res.json({
+      success: true,
+      reelData: result
+    });
+
+  } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message
