@@ -80,9 +80,24 @@ accept="video/*"
 
 <button onclick="transcribeVideo()">
 Get Transcript
-</button><div id="previewBox"><h3>Transcript Preview</h3><div id="previewText"></div><hr><button onclick="showLogin()">
+</button>
+
+<div id="previewBox">
+<h3>Transcript Preview</h3>
+
+<div id="previewText"></div>
+
+<hr>
+
+<button onclick="showLogin()">
 🔓 Unlock Full Transcript
-</button><div id="loginBox"
+</button>
+
+<button onclick="googleLogin()">
+🔵 Continue with Google
+</button>
+
+<div id="loginBox"
 style="display:none;margin-top:15px;">
 
   <input
@@ -117,6 +132,23 @@ Verify OTP
 </button></div></div></div><script>
 
 let fullTranscript = "";
+
+  function googleLogin(){
+window.location.href="/auth/google";
+}
+
+const params =
+new URLSearchParams(window.location.search);
+
+const googleEmail =
+params.get("email");
+
+if(googleEmail){
+localStorage.setItem(
+"userEmail",
+googleEmail
+);
+}
 
   async function transcribeVideo(){
 
