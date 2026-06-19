@@ -14,22 +14,6 @@ app.get("/", (req, res) => {
   res.send("ReelScribe Backend Running 🚀");
 });
 
-// TEST SAVE
-app.get("/test-save", async (req, res) => {
-  try {
-    const reel = new Reel({
-      reelUrl: "https://instagram.com/test",
-      transcript: "Hello World"
-    });
-
-    await reel.save();
-
-    res.send("Saved!");
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-});
-
 // Save Reel
 app.post("/save", async (req, res) => {
   try {
