@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ReelScribe Dashboard</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f7fb;
+padding:20px;
+}
+
+.container{
+max-width:600px;
+margin:auto;
+background:white;
+padding:25px;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,.08);
+margin-top:30px;
+}
+
+.profile{
+text-align:center;
+margin-bottom:25px;
+}
+
+.avatar{
+width:80px;
+height:80px;
+border-radius:50%;
+background:linear-gradient(90deg,#6d5dfc,#00d4c6);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:32px;
+color:white;
+margin:auto;
+margin-bottom:10px;
+}
+
+.email{
+color:#666;
+font-size:14px;
+}
+
+.card{
+background:#fafafa;
+padding:15px;
+border-radius:15px;
+margin-bottom:15px;
+}
+
+.card h3{
+margin-bottom:8px;
+}
+
+button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+background:linear-gradient(90deg,#6d5dfc,#00d4c6);
+color:white;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+margin-top:10px;
+}
+
+.transcript{
+white-space:pre-wrap;
+line-height:1.6;
+max-height:300px;
+overflow:auto;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<div class="profile">
+
+<div class="avatar">
+👤
+</div>
+
+<h2 id="userName">
+User
+</h2>
+
+<p class="email" id="userEmail">
+Loading...
+</p>
+
+</div>
+
+<div class="card">
+
+<h3>
+💰 Credits
+</h3>
+
+<p id="credits">
+10 Credits
+</p>
+
+<button>
+Buy Credits
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>
+📄 Full Transcript
+</h3>
+
+<div
+class="transcript"
+id="fullTranscript">
+No Transcript
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>
+📜 History
+</h3>
+
+<button>
+View History
+</button>
+
+</div>
+
+<button onclick="logout()">
+🚪 Logout
+</button>
+
+</div>
+
+<script>
+
+const email =
+localStorage.getItem("userEmail");
+
+const transcript =
+localStorage.getItem("latestTranscript");
+
+if(!email){
+
+window.location.href="/";
+
+}
+
+document.getElementById(
+"userEmail"
+).innerText = email;
+
+document.getElementById(
+"userName"
+).innerText =
+email.split("@")[0];
+
+if(transcript){
+
+document.getElementById(
+"fullTranscript"
+).innerText =
+transcript;
+
+}
+
+function logout(){
+
+localStorage.clear();
+
+window.location.href="/";
+
+}
+
+</script>
+
+</body>
+</html>
