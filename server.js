@@ -37,6 +37,14 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+transporter.verify(function(error, success) {
+  if (error) {
+    console.log("SMTP ERROR:", error);
+  } else {
+    console.log("SMTP READY");
+  }
+});
+
 // File upload — 25MB limit
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
