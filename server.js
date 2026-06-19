@@ -11,6 +11,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.log("❌ MongoDB Error:", err));
 
+// Home
 app.get("/", (req, res) => {
   res.send("ReelScribe Backend Running 🚀");
 });
@@ -21,9 +22,7 @@ app.get("/users", async (req, res) => {
     const users = await User.find().sort({ createdAt: -1 });
     res.json(users);
   } catch (error) {
-    res.status(500).json({
-      error: error.message
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -38,6 +37,27 @@ app.post("/user", async (req, res) => {
       user = await User.create({
         email,
         name
+      });
+    }
+
+    res.json(user);
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Test User
+app.get("/test-user", async (req, res) => {
+  try {
+    let user = await User.findOne({
+      email: "test@gmail.com"
+    });
+
+    if (!user) {
+      user = await User.create({
+        name: "Tarun",
+        email: "test@gmail.com"
       });
     }
 
@@ -81,7 +101,9 @@ app.get("/reels", async (req, res) => {
     const reels = await Reel.find().sort({ createdAt: -1 });
     res.json(reels);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: error.message
+    });
   }
 });
 
