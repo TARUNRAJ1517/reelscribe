@@ -2,7 +2,7 @@
 <head>
   <title>ReelScribe</title>
 </head>
-<body>  <h2>ReelScribe 🚀</h2><input
+<body><h2>ReelScribe 🚀</h2><input
 type="email"
 id="email"
 placeholder="Enter Email"
@@ -10,61 +10,87 @@ placeholder="Enter Email"
 
 <br><br>
 
-<input
+<h3>Upload Video</h3><input
 type="file"
 id="videoFile"
 accept="video/*"
 />
 
-<br><br>
+<button onclick="transcribeVideo()">
+  Generate Transcript
+</button><br><br>
 
-  <button onclick="transcribeVideo()">
-    Generate Transcript
-  </button><br><br>
+<h3>Instagram Reel URL</h3><input
+type="text"
+id="reelUrl"
+placeholder="Paste Reel URL"
+style="width:300px;"
+/>
 
-  <pre id="result"></pre>  <script>
-    async function transcribeVideo() {
+<button onclick="transcribeReel()">
+  Test Reel URL
+</button><br><br>
 
-      const email =
-        document.getElementById("email").value;
+<pre id="result"></pre><script>
 
-      const fileInput =
-        document.getElementById("videoFile");
+async function transcribeVideo() {
 
-      if (!email) {
-        alert("Enter email");
-        return;
-      }
+  const email =
+    document.getElementById("email").value;
 
-      if (!fileInput.files[0]) {
-        alert("Select a video");
-        return;
-      }
+  const fileInput =
+    document.getElementById("videoFile");
 
-      const formData = new FormData();
+  if (!email) {
+    alert("Enter email");
+    return;
+  }
 
-      formData.append(
-        "email",
-        email
-      );
+  if (!fileInput.files[0]) {
+    alert("Select a video");
+    return;
+  }
 
-      formData.append(
-        "video",
-        fileInput.files[0]
-      );
+  const formData = new FormData();
 
-      const response = await fetch(
-        "/transcribe",
-        {
-          method: "POST",
-          body: formData
-        }
-      );
+  formData.append("email", email);
+  formData.append("video", fileInput.files[0]);
 
-      const data = await response.json();
+  const response = await fetch("/transcribe", {
+    method: "POST",
+    body: formData
+  });
 
-      document.getElementById("result").innerText =
-        JSON.stringify(data, null, 2);
-    }
-  </script></body>
+  const data = await response.json();
+
+  document.getElementById("result").innerText =
+    JSON.stringify(data, null, 2);
+}
+
+async function transcribeReel() {
+
+  const email =
+    document.getElementById("email").value;
+
+  const reelUrl =
+    document.getElementById("reelUrl").value;
+
+  const response = await fetch("/reel-transcribe", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      email,
+      reelUrl
+    })
+  });
+
+  const data = await response.json();
+
+  document.getElementById("result").innerText =
+    JSON.stringify(data, null, 2);
+}
+
+</script></body>
 </html>
