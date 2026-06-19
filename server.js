@@ -8,107 +8,163 @@ const app = express();
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch(err => console.log("❌ MongoDB Error:", err));
+.then(() => console.log("✅ MongoDB Connected"))
+.catch(err => console.log("❌ MongoDB Error:", err));
 
 // Home
 app.get("/", (req, res) => {
-  res.send("ReelScribe Backend Running 🚀");
+res.send("ReelScribe Backend Running 🚀");
+});
+
+// Register User
+app.post("/register", async (req, res) => {
+try {
+const { name, email } = req.body;
+
+let user = await User.findOne({ email });
+
+if (user) {
+  return res.json({
+    success: true,
+    message: "User already exists",
+    user
+  });
+}
+
+user = await User.create({
+  name,
+  email
+});
+
+res.json({
+  success: true,
+  message: "User registered successfully",
+  user
+});
+
+} catch (error) {
+res.status(500).json({
+success: false,
+error: error.message
+});
+}
 });
 
 // Get All Users
 app.get("/users", async (req, res) => {
-  try {
-    const users = await User.find().sort({ createdAt: -1 });
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+try {
+const users = await User.find().sort({ createdAt: -1 });
+res.json(users);
+} catch (error) {
+res.status(500).json({
+error: error.message
+});
+}
 });
 
-// Create User
-app.post("/user", async (req, res) => {
-  try {
-    const { email, name } = req.body;
-
-    let user = await User.findOne({ email });
-
-    if (!user) {
-      user = await User.create({
-        email,
-        name
-      });
-    }
-
-    res.json(user);
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+// Check Credits
+app.get("/credits/:email", async (req, res) => {
+try {
+const user = await User.findOne({
+email: req.params.email
 });
 
-// Test User
-app.get("/test-user", async (req, res) => {
-  try {
-    let user = await User.findOne({
-      email: "test@gmail.com"
-    });
+if (!user) {
+  return res.status(404).json({
+    success: false,
+    message: "User not found"
+  });
+}
 
-    if (!user) {
-      user = await User.create({
-        name: "Tarun",
-        email: "test@gmail.com"
-      });
-    }
+res.json({
+  success: true,
+  credits: user.credits
+});
 
-    res.json(user);
+} catch (error) {
+res.status(500).json({
+success: false,
+error: error.message
+});
+}
+});
 
-  } catch (error) {
-    res.status(500).json({
-      error: error.message
-    });
-  }
+// Deduct 1 Credit
+app.post("/use-credit", async (req, res) => {
+try {
+const { email } = req.body;
+
+const user = await User.findOne({ email });
+
+if (!user) {
+  return res.status(404).json({
+    success: false,
+    message: "User not found"
+  });
+}
+
+if (user.credits <= 0) {
+  return res.status(400).json({
+    success: false,
+    message: "No credits left"
+  });
+}
+
+user.credits -= 1;
+await user.save();
+
+res.json({
+  success: true,
+  credits: user.credits
+});
+
+} catch (error) {
+res.status(500).json({
+success: false,
+error: error.message
+});
+}
 });
 
 // Save Reel
 app.post("/save", async (req, res) => {
-  try {
-    const { reelUrl, transcript } = req.body;
+try {
+const { reelUrl, transcript } = req.body;
 
-    const reel = new Reel({
-      reelUrl,
-      transcript
-    });
+const reel = await Reel.create({
+  reelUrl,
+  transcript
+});
 
-    await reel.save();
+res.json({
+  success: true,
+  reel
+});
 
-    res.json({
-      success: true,
-      message: "Reel Saved Successfully"
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
+} catch (error) {
+res.status(500).json({
+success: false,
+error: error.message
+});
+}
 });
 
 // Get All Reels
 app.get("/reels", async (req, res) => {
-  try {
-    const reels = await Reel.find().sort({ createdAt: -1 });
-    res.json(reels);
-  } catch (error) {
-    res.status(500).json({
-      error: error.message
-    });
-  }
+try {
+const reels = await Reel.find().sort({ createdAt: -1 });
+res.json(reels);
+} catch (error) {
+res.status(500).json({
+error: error.message
+});
+}
 });
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
+console.log("Server running on ${PORT}");
+});app.listen(PORT, () => {
   console.log(`Server running on ${PORT}`);
 });
