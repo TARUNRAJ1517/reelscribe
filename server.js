@@ -129,9 +129,10 @@ error: error.message
 // Save Reel
 app.post("/save", async (req, res) => {
 try {
-const { reelUrl, transcript } = req.body;
+const { userEmail, reelUrl, transcript } = req.body;
 
 const reel = new Reel({
+  userEmail,
   reelUrl,
   transcript
 });
@@ -140,7 +141,8 @@ await reel.save();
 
 res.json({
   success: true,
-  message: "Reel Saved Successfully"
+  message: "Reel Saved Successfully",
+  reel
 });
 
 } catch (error) {
