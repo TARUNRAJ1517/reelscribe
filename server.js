@@ -1,34 +1,34 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const Reel = require("./models/Reel");
 
 const app = express();
 
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("✅ MongoDB Connected"))
-.catch(err => console.log("❌ MongoDB Error:", err));
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => console.log("❌ MongoDB Error:", err));
 
 app.get("/", (req, res) => {
   res.send("ReelScribe Backend Running 🚀");
 });
 
-// Test API
-app.post("/transcript", async (req, res) => {
+// Save Reel
+app.post("/save", async (req, res) => {
   try {
-    const { reelUrl } = req.body;
+    const { reelUrl, transcript } = req.body;
 
-    if (!reelUrl) {
-      return res.status(400).json({
-        success: false,
-        message: "Reel URL required"
-      });
-    }
-
-    return res.json({
-      success: true,
+    const reel = new Reel({
       reelUrl,
-      transcript: "Demo transcript generated successfully 🎉"
+      transcript
+    });
+
+    await reel.save();
+
+    res.json({
+      success: true,
+      message: "Reel Saved Successfully"
     });
 
   } catch (error) {
@@ -36,6 +36,16 @@ app.post("/transcript", async (req, res) => {
       success: false,
       error: error.message
     });
+  }
+});
+
+// Get All Reels
+app.get("/reels", async (req, res) => {
+  try {
+    const reels = await Reel.find().sort({ createdAt: -1 });
+    res.json(reels);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
