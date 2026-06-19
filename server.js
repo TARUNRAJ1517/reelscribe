@@ -89,56 +89,21 @@ error: error.message
 }
 });
 
-// Deduct 1 Credit
-app.post("/use-credit", async (req, res) => {
-try {
-const { email } = req.body;
-
-const user = await User.findOne({ email });
-
-if (!user) {
-  return res.status(404).json({
-    success: false,
-    message: "User not found"
-  });
-}
-
-if (user.credits <= 0) {
-  return res.status(400).json({
-    success: false,
-    message: "No credits left"
-  });
-}
-
-user.credits -= 1;
-await user.save();
-
-res.json({
-  success: true,
-  credits: user.credits
-});
-
-} catch (error) {
-res.status(500).json({
-success: false,
-error: error.message
-});
-}
-});
-
 // Save Reel
 app.post("/save", async (req, res) => {
 try {
 const { reelUrl, transcript } = req.body;
 
-const reel = await Reel.create({
+const reel = new Reel({
   reelUrl,
   transcript
 });
 
+await reel.save();
+
 res.json({
   success: true,
-  reel
+  message: "Reel Saved Successfully"
 });
 
 } catch (error) {
@@ -165,6 +130,4 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
 console.log("Server running on ${PORT}");
-});app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
 });
