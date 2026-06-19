@@ -69,7 +69,7 @@ const otp = Math.floor(
 
 otpStore[email] = otp;
 
-await transporter.sendMail({
+const info = await transporter.sendMail({
   from: process.env.EMAIL_USER,
   to: email,
   subject: "ReelScribe OTP Verification",
@@ -80,21 +80,23 @@ await transporter.sendMail({
   `
 });
 
+console.log("MAIL SENT:", info.response);
+
 res.json({
   success: true,
   message: "OTP Sent"
 });
 
-} catch (error) {
+catch (error) {
 
-res.status(500).json({
-  success: false,
-  error: error.message
-});
+  console.error("MAIL ERROR:", error);
+
+  res.status(500).json({
+    success: false,
+    error: error.message
+  });
 
 }
-
-});
 
 app.post("/verify-otp", async (req, res) => {
 
