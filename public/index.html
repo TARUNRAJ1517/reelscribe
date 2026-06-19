@@ -84,9 +84,46 @@ accept="video/*"
 
 <button onclick="transcribeVideo()">
 Get Transcript
-</button><div id="previewBox"><h3>Transcript Preview</h3><div id="previewText"></div><hr><button disabled>
-🔒 Login Required (Coming Soon)
-</button></div></div><script>
+<button onclick="showLogin()">
+🔓 Unlock Full Transcript
+</button>
+
+<div id="loginBox" style="display:none;margin-top:15px;">
+
+<input
+type="email"
+id="email"
+placeholder="Enter Email"
+style="
+width:100%;
+padding:12px;
+margin-bottom:10px;
+border:1px solid #ddd;
+border-radius:10px;
+">
+
+<button onclick="sendOtp()">
+Send OTP
+</button>
+
+<input
+type="text"
+id="otp"
+placeholder="Enter OTP"
+style="
+width:100%;
+padding:12px;
+margin-top:10px;
+margin-bottom:10px;
+border:1px solid #ddd;
+border-radius:10px;
+">
+
+<button onclick="verifyOtp()">
+Verify OTP
+</button>
+
+</div>
 
 let fullTranscript = "";
 
@@ -141,6 +178,84 @@ document.getElementById("previewText").innerText =
 }
 
 }
+function showLogin(){
 
+document.getElementById(
+"loginBox"
+).style.display = "block";
+
+}
+
+async function sendOtp(){
+
+const email =
+document.getElementById("email").value;
+
+if(!email){
+alert("Enter Email");
+return;
+}
+
+const response = await fetch(
+"/send-otp",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({email})
+}
+);
+
+const data = await response.json();
+
+alert(data.message);
+
+}
+
+async function verifyOtp(){
+
+const email =
+document.getElementById("email").value;
+
+const otp =
+document.getElementById("otp").value;
+
+const response = await fetch(
+"/verify-otp",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email,
+otp
+})
+}
+);
+
+const data = await response.json();
+
+if(data.success){
+
+localStorage.setItem(
+"userEmail",
+email
+);
+
+document.getElementById(
+"previewText"
+).innerText = fullTranscript;
+
+alert("Login Successful");
+
+}else{
+
+alert(data.message);
+
+}
+
+}
 </script></body>
 </html>
