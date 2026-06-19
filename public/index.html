@@ -179,8 +179,10 @@ localStorage.getItem("userEmail") ||
         data.transcript
     );
 
-    window.location.href =
-    "/dashboard.html";
+    alert("Transcript Generated");
+
+    previewText.innerText =
+        data.transcript.substring(0,300) + "...";
 
 }
 
