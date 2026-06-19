@@ -1,4 +1,80 @@
-<body><div class="container"><h1>🚀 ReelScribe</h1><p>
+<!DOCTYPE html><html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ReelScribe</title><style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f5f7fb;
+padding:20px;
+}
+
+.container{
+max-width:500px;
+margin:auto;
+background:white;
+padding:25px;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,.08);
+margin-top:40px;
+}
+
+h1{
+text-align:center;
+margin-bottom:10px;
+}
+
+p{
+text-align:center;
+color:#666;
+margin-bottom:20px;
+}
+
+input[type="file"]{
+width:100%;
+margin-bottom:15px;
+}
+
+button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+background:linear-gradient(90deg,#6d5dfc,#00d4c6);
+color:white;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:disabled{
+background:#94a3b8;
+}
+
+#previewBox{
+display:none;
+margin-top:20px;
+padding:15px;
+background:#fafafa;
+border-radius:12px;
+}
+
+#previewText{
+white-space:pre-wrap;
+line-height:1.6;
+}
+
+hr{
+margin:15px 0;
+}
+
+</style></head><body><div class="container"><h1>🚀 ReelScribe</h1><p>
 Upload any video and get an accurate transcript instantly.
 </p><input
 type="file"
@@ -10,8 +86,7 @@ accept="video/*"
 Get Transcript
 </button><div id="previewBox"><h3>Transcript Preview</h3><div id="previewText"></div><hr><button disabled>
 🔒 Login Required (Coming Soon)
-</button></div></div>
-<script>
+</button></div></div><script>
 
 let fullTranscript = "";
 
@@ -25,67 +100,42 @@ alert("Select a video");
 return;
 }
 
-document.getElementById(
-"previewBox"
-).style.display = "block";
+document.getElementById("previewBox").style.display = "block";
 
-document.getElementById(
-"previewText"
-).innerText =
+document.getElementById("previewText").innerText =
 "⏳ Generating transcript...";
 
 const formData = new FormData();
 
-formData.append(
-"email",
-"test@gmail.com"
-);
-
-formData.append(
-"video",
-fileInput.files[0]
-);
+formData.append("email","test@gmail.com");
+formData.append("video",fileInput.files[0]);
 
 try{
 
-const response = await fetch(
-"/transcribe",
-{
+const response = await fetch("/transcribe",{
 method:"POST",
 body:formData
-}
-);
+});
 
 const data = await response.json();
 
 if(data.success){
 
-fullTranscript =
-data.transcript;
+fullTranscript = data.transcript;
 
-const preview =
-data.transcript.substring(0,300);
-
-document.getElementById(
-"previewText"
-).innerText =
-preview + "...";
+document.getElementById("previewText").innerText =
+data.transcript.substring(0,300) + "...";
 
 }else{
 
-document.getElementById(
-"previewText"
-).innerText =
-data.error ||
-"Something went wrong";
+document.getElementById("previewText").innerText =
+data.error || "Something went wrong";
 
 }
 
 }catch(error){
 
-document.getElementById(
-"previewText"
-).innerText =
+document.getElementById("previewText").innerText =
 "Server Error";
 
 }
