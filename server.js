@@ -137,7 +137,7 @@ app.get(
     failureRedirect: "/"
   }),
   (req, res) => {
-    res.redirect("/?email=" + encodeURIComponent(req.user.email));
+    res.redirect("/dashboard.html?email=" + encodeURIComponent(req.user.email));
   }
 );
 
