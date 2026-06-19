@@ -9,6 +9,9 @@ const fs = require("fs");
 const cors = require("cors");
 const Groq = require("groq-sdk");
 const nodemailer = require("nodemailer");
+const session = require("express-session");
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 const Reel = require("./models/Reel");
 const User = require("./models/User");
@@ -18,6 +21,17 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
+app.use(
+  session({
+    secret: "reelscribe-secret",
+    resave: false,
+    saveUninitialized: false
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 mongoose.connect(process.env.MONGO_URI)
@@ -26,6 +40,48 @@ mongoose.connect(process.env.MONGO_URI)
 
 // OTP store with expiry
 const otpStore = {};
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
+});
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails[0].value;
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+          user = await User.create({
+            name: profile.displayName,
+            email,
+            credits: 10
+          });
+        }
+
+        return done(null, user);
+      } catch (err) {
+        return done(err, null);
+      }
+    }
+  )
+);
 
 const transporter = nodemailer.createTransport({
   host: "smtp-relay.brevo.com",
@@ -63,6 +119,23 @@ function adminAuth(req, res, next) {
   }
   next();
 }
+
+app.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"]
+  })
+);
+
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/"
+  }),
+  (req, res) => {
+    res.redirect("/?email=" + encodeURIComponent(req.user.email));
+  }
+);
 
 // ── SEND OTP ──
 app.post("/send-otp", async (req, res) => {
