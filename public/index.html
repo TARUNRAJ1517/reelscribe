@@ -1,25 +1,60 @@
 <!DOCTYPE html><html>
 <head>
-  <title>ReelScribe Upload Test</title>
+  <title>ReelScribe</title>
 </head>
-<body>  <h2>ReelScribe Upload Test 🚀</h2>  <input type="file" id="videoFile" accept="video/*">
-  <br><br><button onclick="uploadVideo()">Upload Video</button>
+<body>  <h2>ReelScribe 🚀</h2><input
+type="email"
+id="email"
+placeholder="Enter Email"
+/>
+
+<br><br>
+
+<input
+type="file"
+id="videoFile"
+accept="video/*"
+/>
+
+<br><br>
+
+  <button onclick="transcribeVideo()">
+    Generate Transcript
+  </button><br><br>
 
   <pre id="result"></pre>  <script>
-    async function uploadVideo() {
+    async function transcribeVideo() {
 
-      const fileInput = document.getElementById("videoFile");
+      const email =
+        document.getElementById("email").value;
+
+      const fileInput =
+        document.getElementById("videoFile");
+
+      if (!email) {
+        alert("Enter email");
+        return;
+      }
 
       if (!fileInput.files[0]) {
-        alert("Select a video first");
+        alert("Select a video");
         return;
       }
 
       const formData = new FormData();
-      formData.append("video", fileInput.files[0]);
+
+      formData.append(
+        "email",
+        email
+      );
+
+      formData.append(
+        "video",
+        fileInput.files[0]
+      );
 
       const response = await fetch(
-        "https://reelscribe-8ds5.onrender.com/upload",
+        "/transcribe",
         {
           method: "POST",
           body: formData
