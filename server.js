@@ -236,40 +236,24 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
 
 // Reel Transcribe
 app.post("/reel-transcribe", async (req, res) => {
-  try {
-    const { email, reelUrl } = req.body;
+try {
 
-    const user = await User.findOne({ email });
+const instaPackage = require("instagram-url-direct");
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
-
-    if (user.credits <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "No credits left"
-      });
-    }
-
-    const result = await instagramGetUrl(reelUrl);
-
-    res.json({
-      success: true,
-      reelData: result
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
+res.json({
+  success: true,
+  packageType: typeof instaPackage,
+  packageData: instaPackage
 });
 
+} catch (error) {
+res.json({
+success: false,
+error: error.message,
+stack: error.stack
+});
+}
+});
 // Get All Reels
 app.get("/reels", async (req, res) => {
 try {
