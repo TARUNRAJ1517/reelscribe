@@ -183,6 +183,55 @@ error: error.message
 }
 });
 
+// Transcribe Video
+app.post("/transcribe", upload.single("video"), async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    if (user.credits <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No credits left"
+      });
+    }
+
+    const filePath = req.file.path;
+
+    const transcription = await groq.audio.transcriptions.create({
+      file: fs.createReadStream(filePath),
+      model: "whisper-large-v3-turbo"
+    });
+
+    user.credits -= 1;
+    await user.save();
+
+    fs.unlinkSync(filePath);
+
+    res.json({
+      success: true,
+      transcript: transcription.text,
+      creditsLeft: user.credits
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Get All Reels
 app.get("/reels", async (req, res) => {
 try {
