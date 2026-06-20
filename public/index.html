@@ -36,6 +36,39 @@ h1{
     margin-bottom:20px;
 }
 
+.platforms{
+    margin-top:30px;
+    text-align:center;
+}
+
+.platforms h2{
+    font-size:24px;
+    margin-bottom:20px;
+    color:white;
+}
+
+.iconRow{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.platformIcon{
+    width:70px;
+    height:70px;
+    background:#f3f4f6;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.platformIcon img{
+    width:32px;
+    height:32px;
+}
+    
 .container{
     background:#121026;
     border:1px solid #2b224a;
@@ -368,6 +401,44 @@ h1{
 
     <button id="transcribeBtn" onclick="transcribeVideo()">✨ Transcript Nikalo</button>
 
+<section class="platforms">
+
+<h2>Supported Platforms</h2>
+
+<div class="iconRow">
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg">
+</div>
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg">
+</div>
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg">
+</div>
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg">
+</div>
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/pinterest.svg">
+</div>
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg">
+</div>
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/googledrive.svg">
+</div>
+
+</div>
+
+</section>
+    
     <div id="previewBox">
         <h3>Transcript Preview</h3>
         <div id="previewText"></div>
