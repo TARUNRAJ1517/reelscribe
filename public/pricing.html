@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Buy Credits – ReelScribe</title>
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#0b0718;
+    padding:20px;
+    color:white;
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+}
+
+/* ── Topbar ── */
+.topbar{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    margin-bottom:25px;
+}
+
+.backBtn{
+    position:absolute;
+    left:0;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:#121026;
+    border:1px solid #2b224a;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-size:20px;
+    color:white;
+}
+
+.logo{
+    font-size:22px;
+    font-weight:bold;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+/* ── Header ── */
+.pageHeader{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.pageHeader h2{
+    font-size:24px;
+    margin-bottom:8px;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.pageHeader p{
+    color:#8d8aa5;
+    font-size:14px;
+}
+
+/* ── Credits Info ── */
+.creditsInfo{
+    background:#1a1730;
+    border:1px solid #2b224a;
+    border-radius:16px;
+    padding:14px 18px;
+    margin-bottom:20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.creditsInfo span{
+    color:#8d8aa5;
+    font-size:13px;
+}
+
+.creditsInfo strong{
+    color:#8b5cf6;
+    font-size:16px;
+}
+
+/* ── Plans ── */
+.plansGrid{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    margin-bottom:20px;
+}
+
+.planCard{
+    background:#121026;
+    border:1.5px solid #2b224a;
+    border-radius:20px;
+    padding:20px;
+    position:relative;
+    transition:.2s;
+    cursor:pointer;
+}
+
+.planCard:hover{
+    border-color:#8b5cf6;
+    transform:scale(1.01);
+}
+
+.planCard.popular{
+    border-color:#8b5cf6;
+    background:#150d2e;
+}
+
+.popularBadge{
+    position:absolute;
+    top:-12px;
+    left:50%;
+    transform:translateX(-50%);
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    color:white;
+    font-size:11px;
+    font-weight:bold;
+    padding:4px 14px;
+    border-radius:20px;
+    white-space:nowrap;
+}
+
+.planTop{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:12px;
+}
+
+.planEmoji{
+    font-size:32px;
+}
+
+.planPrice{
+    text-align:right;
+}
+
+.planPrice .amount{
+    font-size:28px;
+    font-weight:bold;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.planPrice .per{
+    font-size:12px;
+    color:#8d8aa5;
+}
+
+.planName{
+    font-size:18px;
+    font-weight:bold;
+    margin-bottom:4px;
+}
+
+.planCredits{
+    font-size:13px;
+    color:#8d8aa5;
+    margin-bottom:12px;
+}
+
+.planFeatures{
+    list-style:none;
+    margin-bottom:16px;
+}
+
+.planFeatures li{
+    font-size:13px;
+    color:#ccc;
+    padding:4px 0;
+}
+
+.planFeatures li::before{
+    content:"✅ ";
+}
+
+.buyBtn{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:14px;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    color:white;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.buyBtn:hover{
+    opacity:.9;
+}
+
+.planCard.popular .buyBtn{
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    box-shadow:0 4px 15px rgba(139,92,246,.4);
+}
+
+/* ── Note ── */
+.note{
+    background:#1a1730;
+    border:1px solid #2b224a;
+    border-radius:14px;
+    padding:14px;
+    font-size:13px;
+    color:#8d8aa5;
+    text-align:center;
+    line-height:1.7;
+}
+
+.note span{
+    color:#8b5cf6;
+    font-weight:bold;
+}
+
+/* ── Contact ── */
+.contactBtn{
+    width:100%;
+    padding:14px;
+    border:1.5px solid #2b224a;
+    border-radius:14px;
+    background:transparent;
+    color:#8d8aa5;
+    font-size:14px;
+    cursor:pointer;
+    margin-top:12px;
+    transition:.2s;
+}
+
+.contactBtn:hover{
+    border-color:#8b5cf6;
+    color:white;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+    <div class="backBtn" onclick="window.location.href='/dashboard.html'">←</div>
+    <div class="logo">🚀 ReelScribe</div>
+</div>
+
+<!-- Header -->
+<div class="pageHeader">
+    <h2>💰 Credits Kharido</h2>
+    <p>Har transcript = 2 credits • Ek baar kharido, kabhi expire nahi</p>
+</div>
+
+<!-- Current Credits -->
+<div class="creditsInfo">
+    <span>Aapke paas abhi:</span>
+    <strong>💰 <span id="currentCredits">...</span> Credits</strong>
+</div>
+
+<!-- Plans -->
+<div class="plansGrid">
+
+    <!-- Small Pack -->
+    <div class="planCard" onclick="buyPlan('small')">
+        <div class="planTop">
+            <div class="planEmoji">🥉</div>
+            <div class="planPrice">
+                <div class="amount">₹29</div>
+                <div class="per">one-time</div>
+            </div>
+        </div>
+        <div class="planName">Starter Pack</div>
+        <div class="planCredits">10 Credits = 5 Transcripts</div>
+        <ul class="planFeatures">
+            <li>5 videos transcript kar sakte ho</li>
+            <li>File upload + Instagram URL</li>
+            <li>Sabhi languages support</li>
+        </ul>
+        <button class="buyBtn">Buy for ₹29 →</button>
+    </div>
+
+    <!-- Medium Pack -->
+    <div class="planCard popular" onclick="buyPlan('medium')">
+        <div class="popularBadge">⭐ MOST POPULAR</div>
+        <div class="planTop">
+            <div class="planEmoji">🥈</div>
+            <div class="planPrice">
+                <div class="amount">₹99</div>
+                <div class="per">one-time</div>
+            </div>
+        </div>
+        <div class="planName">Pro Pack</div>
+        <div class="planCredits">50 Credits = 25 Transcripts</div>
+        <ul class="planFeatures">
+            <li>25 videos transcript kar sakte ho</li>
+            <li>File upload + Instagram URL</li>
+            <li>Sabhi languages support</li>
+            <li>₹2 per transcript sirf!</li>
+        </ul>
+        <button class="buyBtn">Buy for ₹99 →</button>
+    </div>
+
+    <!-- Large Pack -->
+    <div class="planCard" onclick="buyPlan('large')">
+        <div class="planTop">
+            <div class="planEmoji">🥇</div>
+            <div class="planPrice">
+                <div class="amount">₹179</div>
+                <div class="per">one-time</div>
+            </div>
+        </div>
+        <div class="planName">Power Pack</div>
+        <div class="planCredits">100 Credits = 50 Transcripts</div>
+        <ul class="planFeatures">
+            <li>50 videos transcript kar sakte ho</li>
+            <li>File upload + Instagram URL</li>
+            <li>Sabhi languages support</li>
+            <li>Sabse sasta — ₹1.79 per transcript!</li>
+        </ul>
+        <button class="buyBtn">Buy for ₹179 →</button>
+    </div>
+
+</div>
+
+<!-- Note -->
+<div class="note">
+    <p>⚠️ Abhi <span>payment gateway</span> available nahi hai.</p>
+    <p>Payment ke liye <span>Instagram par DM</span> karein ya neeche contact karein.</p>
+    <p style="margin-top:6px;">Credits manually add kiye jayenge. ⚡</p>
+</div>
+
+<button class="contactBtn" onclick="contactAdmin()">
+    📩 Admin se Contact Karein
+</button>
+
+<script>
+
+const email = localStorage.getItem("userEmail");
+if(!email){
+    window.location.href = "/";
+}
+
+// Load current credits
+async function loadCredits(){
+    try{
+        const res = await fetch("/credits/" + encodeURIComponent(email));
+        const data = await res.json();
+        if(data.success){
+            document.getElementById("currentCredits").innerText = data.credits;
+        }
+    } catch(e){
+        document.getElementById("currentCredits").innerText = "?";
+    }
+}
+loadCredits();
+
+// Buy plan — Instagram DM pe bhejo
+function buyPlan(plan){
+    const plans = {
+        small:  { name:"Starter Pack", credits:10,  price:29  },
+        medium: { name:"Pro Pack",     credits:50,  price:99  },
+        large:  { name:"Power Pack",   credits:100, price:179 }
+    };
+
+    const selected = plans[plan];
+    const msg = `Hi! Main ReelScribe ka ${selected.name} (${selected.credits} Credits - ₹${selected.price}) kharidna chahta hoon. Mera email: ${email}`;
+
+    // Instagram DM open karo
+    window.open(
+        `https://www.instagram.com/tarunraj1517/`,
+        "_blank"
+    );
+
+    // Message copy karo
+    navigator.clipboard.writeText(msg).then(()=>{
+        alert(`✅ Message copy ho gaya!\n\nInstagram pe DM karein aur yeh message paste karein:\n\n"${msg}"`);
+    }).catch(()=>{
+        alert(`Instagram pe DM karein:\n@tarunraj1517\n\nYeh message bhejein:\n"${msg}"`);
+    });
+}
+
+function contactAdmin(){
+    buyPlan("medium");
+}
+
+</script>
+</body>
+</html>
