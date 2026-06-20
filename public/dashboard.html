@@ -32,16 +32,18 @@ body{
 }
 .overlay.active{ display:block; }
 
-/* ── Drawer ── */
+/* ── Drawer — RIGHT SE OPEN ── */
 .drawer{
     position:fixed;
     top:0;
-    left:-320px;
+    right:-320px;
+    left:auto;
     width:75%;
     max-width:280px;
     height:100%;
     background:#121026;
-    border-right:1px solid #2b224a;
+    border-left:1px solid #2b224a;
+    border-right:none;
     padding:30px 20px 20px;
     transition:.3s ease;
     z-index:999;
@@ -50,7 +52,9 @@ body{
     gap:10px;
     overflow-y:auto;
 }
-.drawer.active{ left:0; }
+.drawer.active{
+    right:0;
+}
 
 .drawerAvatar{
     width:55px;
@@ -133,9 +137,7 @@ body{
 }
 
 /* ── Main ── */
-.main{
-    padding:15px;
-}
+.main{ padding:15px; }
 
 /* ── Container ── */
 .container{
@@ -153,15 +155,35 @@ body{
     margin-bottom:12px;
 }
 
-.card h3{
+.cardHeader{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
     margin-bottom:10px;
-    font-size:16px;
 }
+
+.card h3{ font-size:16px; }
 
 .card p{
     color:#8d8aa5;
     font-size:13px;
     margin-bottom:5px;
+}
+
+/* ── History Toggle ── */
+.toggleBtn{
+    background:none;
+    border:1px solid #2b224a;
+    border-radius:8px;
+    color:#8d8aa5;
+    font-size:12px;
+    padding:4px 10px;
+    cursor:pointer;
+}
+
+.toggleBtn:hover{
+    border-color:#8b5cf6;
+    color:white;
 }
 
 .transcript{
@@ -208,6 +230,8 @@ body{
 }
 
 /* ── History ── */
+#historyContent{ display:none; }
+
 .historyItem{
     background:#0d0a1d;
     border:1px solid #2b224a;
@@ -257,6 +281,14 @@ body{
     padding:15px 0;
 }
 
+/* ── Footer ── */
+footer{
+    margin-top:40px;
+    padding:30px 20px;
+    border-top:1px solid #1a1730;
+    text-align:center;
+}
+
 </style>
 </head>
 <body>
@@ -264,7 +296,7 @@ body{
 <!-- Overlay -->
 <div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
 
-<!-- Drawer -->
+<!-- Drawer — RIGHT SE ── -->
 <div id="drawer" class="drawer">
     <div class="drawerAvatar">👤</div>
     <div class="drawerName" id="drawerName">User</div>
@@ -285,6 +317,7 @@ body{
 <div class="main">
 <div class="container">
 
+    <!-- Latest Transcript -->
     <div class="card">
         <h3>📄 Latest Transcript</h3>
         <div class="transcript" id="fullTranscript">
@@ -293,21 +326,38 @@ body{
         <button class="copyBtn" id="copyBtn" onclick="copyTranscript()">📋 Copy Transcript</button>
     </div>
 
+    <!-- New Transcript -->
     <div class="card">
         <h3>🎥 New Transcript</h3>
         <p>Upload a new video or paste Instagram URL</p>
         <button class="mainBtn" onclick="newTranscript()">✨ Create New Transcript</button>
     </div>
 
+    <!-- History — Collapsible ── -->
     <div class="card">
-        <h3>📜 History</h3>
-        <div id="historyList">
-            <div class="loading">⏳ Loading...</div>
+        <div class="cardHeader">
+            <h3>📜 History</h3>
+            <button class="toggleBtn" id="historyToggle" onclick="toggleHistory()">Show ▼</button>
+        </div>
+        <div id="historyContent">
+            <div id="historyList">
+                <div class="loading">⏳ Loading...</div>
+            </div>
         </div>
     </div>
 
 </div>
 </div>
+
+<!-- Footer -->
+<footer>
+    <p style="color:#3d3a52; font-size:13px; margin-bottom:10px;">
+        © 2026 ReelScribe. All rights reserved.
+    </p>
+    <p style="color:#3d3a52; font-size:13px;">
+        Transcribe · Repurpose · Scale
+    </p>
+</footer>
 
 <script>
 
@@ -318,12 +368,32 @@ if(googleEmail){
 }
 
 const email = localStorage.getItem("userEmail");
-if(!email){
-    window.location.href = "/";
-}
+if(!email){ window.location.href = "/"; }
 
 document.getElementById("drawerEmail").innerText = email;
 document.getElementById("drawerName").innerText = email.split("@")[0];
+
+// ── History Toggle ──
+let historyLoaded = false;
+let historyOpen = false;
+
+function toggleHistory(){
+    historyOpen = !historyOpen;
+    const content = document.getElementById("historyContent");
+    const btn = document.getElementById("historyToggle");
+
+    if(historyOpen){
+        content.style.display = "block";
+        btn.innerText = "Hide ▲";
+        if(!historyLoaded){
+            loadHistory();
+            historyLoaded = true;
+        }
+    } else {
+        content.style.display = "none";
+        btn.innerText = "Show ▼";
+    }
+}
 
 async function loadCredits(){
     try{
@@ -423,22 +493,7 @@ function logout(){
 
 loadCredits();
 loadLatestTranscript();
-loadHistory();
 
 </script>
-    <!-- Footer -->
-<footer style="
-    margin-top:40px;
-    padding:30px 20px;
-    border-top:1px solid #1a1730;
-    text-align:center;
-">
-    <p style="color:#3d3a52; font-size:13px; margin-bottom:10px;">
-        © 2026 ReelScribe. All rights reserved.
-    </p>
-    <p style="color:#3d3a52; font-size:13px;">
-        Transcribe · Repurpose · Scale
-    </p>
-</footer>
 </body>
 </html>
