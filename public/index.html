@@ -19,104 +19,126 @@ body{
     color:white;
 }
 
-.langSection{
-margin-top:20px;
-}
-
-.langTitle{
-text-align:left;
-font-size:12px;
-letter-spacing:2px;
-color:#8d8aa5;
-margin-bottom:10px;
-}
-
-#language{
-width:100%;
-padding:15px;
-border-radius:16px;
-border:1px solid #2b224a;
-background:#1a1730;
-color:white;
-font-size:16px;
-outline:none;
-}
-    
-.uploadBox{
-border:3px dashed #3b2b6d;
-border-radius:24px;
-padding:60px 20px;
-min-height:300px;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-background:#0d0a1d;
-cursor:pointer;
-transition:.3s;
-}
-
-.uploadBox:hover{
-border-color:#8b5cf6;
-transform:scale(1.01);
-}
-
-.uploadIcon{
-font-size:80px;
-margin-bottom:20px;
-filter:drop-shadow(
-0 0 15px rgba(139,92,246,.5)
-);
-}
-
-.uploadBox h2{
-font-size:28px;
-margin-bottom:10px;
-text-align:center;
-}
-
-.uploadBox p{
-color:#8d8aa5;
-text-align:center;
-}
-
-.uploadBox p{
-color:#8d8aa5;
-}
-
-    
-.container{
-border-radius:30px;
-overflow:hidden;
-}
-    
-.container{
-max-width:600px;
-margin:auto;
-background:#121026;
-border:1px solid #2b224a;
-border-radius:28px;
-padding:25px;
-margin-top:10px;
-box-shadow:0 0 30px rgba(139,92,246,.08);
-}
-
 h1{
     text-align:center;
     margin-bottom:10px;
+    font-size:28px;
     background:linear-gradient(90deg,#8b5cf6,#ec4899);
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
 }
-p{
+
+.subtitle{
     text-align:center;
-    color:#666;
+    color:#8d8aa5;
+    font-size:16px;
+    margin-bottom:25px;
+}
+
+.container{
+    max-width:600px;
+    margin:auto;
+    background:#121026;
+    border:1px solid #2b224a;
+    border-radius:28px;
+    padding:25px;
+    margin-top:10px;
+    box-shadow:0 0 30px rgba(139,92,246,.08);
+}
+
+.sectionTitle{
+    font-size:12px;
+    letter-spacing:2px;
+    color:#8d8aa5;
+    margin-bottom:10px;
+}
+
+.tabs{
     margin-bottom:20px;
 }
 
-input[type="file"]{
+.tab{
+    display:inline-block;
+    padding:8px 18px;
+    border-radius:10px;
+    background:#1a1730;
+    border:1px solid #2b224a;
+    color:white;
+    font-size:14px;
+    cursor:pointer;
+}
+
+.tab.active{
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    border:none;
+}
+
+.uploadBox{
+    border:3px dashed #3b2b6d;
+    border-radius:24px;
+    padding:60px 20px;
+    min-height:300px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    background:#0d0a1d;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.uploadBox:hover{
+    border-color:#8b5cf6;
+    transform:scale(1.01);
+}
+
+.uploadIcon{
+    font-size:80px;
+    margin-bottom:20px;
+    filter:drop-shadow(0 0 15px rgba(139,92,246,.5));
+}
+
+.uploadBox h2{
+    font-size:22px;
+    margin-bottom:10px;
+    text-align:center;
+    color:white;
+}
+
+.uploadBox .uploadHint{
+    color:#8d8aa5;
+    text-align:center;
+    font-size:14px;
+}
+
+#fileName{
+    text-align:center;
+    color:#b8b8c5;
+    margin:15px 0;
+    font-size:14px;
+}
+
+.langSection{
+    margin-top:20px;
+}
+
+.langTitle{
+    text-align:left;
+    font-size:12px;
+    letter-spacing:2px;
+    color:#8d8aa5;
+    margin-bottom:10px;
+}
+
+#language{
     width:100%;
-    margin-bottom:15px;
+    padding:15px;
+    border-radius:16px;
+    border:1px solid #2b224a;
+    background:#1a1730;
+    color:white;
+    font-size:16px;
+    outline:none;
 }
 
 button{
@@ -129,112 +151,104 @@ button{
     font-size:18px;
     font-weight:bold;
     cursor:pointer;
+    margin-top:20px;
 }
 
-#fileName{
-text-align:center;
-color:#b8b8c5;
-margin:15px 0;
-font-size:14px;
-}
-
-button{
-margin-top:20px;
-}
-    
 #previewBox{
-display:none;
-margin-top:25px;
-padding:20px;
-background:#1a1730;
-border:1px solid #2b224a;
-border-radius:20px;
+    display:none;
+    margin-top:25px;
+    padding:20px;
+    background:#1a1730;
+    border:1px solid #2b224a;
+    border-radius:20px;
+}
+
+#previewBox h3{
+    margin-bottom:10px;
+    color:white;
+    font-size:16px;
 }
 
 #previewText{
     white-space:pre-wrap;
     line-height:1.6;
+    color:#ccc;
+    font-size:14px;
 }
 
-hr{
+#previewBox hr{
     margin:15px 0;
+    border-color:#2b224a;
+}
+
+#loginSection .lockText{
+    text-align:center;
+    color:#8d8aa5;
+    font-size:14px;
+    margin-bottom:5px;
 }
 </style>
 </head>
 
-<body><h1>🚀 ReelScribe</>
+<body>
 
-<p>
+<h1>🚀 ReelScribe</h1>
+
+<p class="subtitle">
 Upload any video and get an accurate transcript instantly.
-</p><div class="container">
+</p>
 
-    <h3 class="sectionTitle">
-INPUT METHOD
-</h3><div class="tabs"><div class="tab active">
-📁 File Upload
-</div></div>
-    
+<div class="container">
+
+    <h3 class="sectionTitle">INPUT METHOD</h3>
+
+    <div class="tabs">
+        <div class="tab active">📁 File Upload</div>
+    </div>
+
     <div class="uploadBox">
 
-<div class="uploadIcon">
-🎬
-</div>
+        <div class="uploadIcon">🎬</div>
 
-<h2>
-Video ya Audio Upload Karein
-</h2>
+        <h2>Video ya Audio Upload Karein</h2>
 
-<p>
-MP4 • MOV • WebM • MP3 • M4A
-</p>
+        <p class="uploadHint">MP4 • MOV • WebM • MP3 • M4A</p>
 
-<input
-type="file"
-id="videoFile"
-accept="video/*,audio/*"
-hidden
->
+        <input type="file" id="videoFile" accept="video/*,audio/*" hidden>
 
-</div>
+    </div>
 
-<p id="fileName">
-No file selected
-</p>
-<div class="langSection"><p class="langTitle">
-LANGUAGE (OPTIONAL)
-</p><select id="language"><option>Auto Detect</option>
-<option>English</option>
-<option>Hindi</option>
-<option>Hinglish</option>
-<option>Urdu</option>
-<option>Bengali</option>
-<option>Tamil</option>
-<option>Telugu</option>
-<option>Marathi</option>
-<option>Gujarati</option>
-<option>Punjabi</option></select></div>
-<button onclick="transcribeVideo()">
-Get Transcript
-</button>
+    <p id="fileName">No file selected</p>
+
+    <div class="langSection">
+        <p class="langTitle">LANGUAGE (OPTIONAL)</p>
+        <select id="language">
+            <option>Auto Detect</option>
+            <option>English</option>
+            <option>Hindi</option>
+            <option>Hinglish</option>
+            <option>Urdu</option>
+            <option>Bengali</option>
+            <option>Tamil</option>
+            <option>Telugu</option>
+            <option>Marathi</option>
+            <option>Gujarati</option>
+            <option>Punjabi</option>
+        </select>
+    </div>
+
+    <button onclick="transcribeVideo()">Get Transcript</button>
 
     <div id="previewBox">
         <h3>Transcript Preview</h3>
-
         <div id="previewText"></div>
-
         <hr>
-
         <div id="loginSection">
+            <p class="lockText">🔒 Login with Google to unlock full transcript</p>
+            <button onclick="googleLogin()">🔵 Continue with Google</button>
+        </div>
+    </div>
 
-<p>
-🔒 Login with Google to unlock full transcript
-</p>
-
-<button onclick="googleLogin()">
-🔵 Continue with Google
-</button>
-
-</div>
 </div>
 
 <script>
@@ -244,30 +258,20 @@ function googleLogin() {
     window.location.href = "/auth/google";
 }
 
-document.addEventListener("DOMContentLoaded",()=>{
-
-document.querySelector(".uploadBox")
-.addEventListener("click",()=>{
-
-document.getElementById("videoFile")
-.click();
-
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector(".uploadBox").addEventListener("click", () => {
+        document.getElementById("videoFile").click();
+    });
 });
 
-});
-    
 const params = new URLSearchParams(window.location.search);
-
 const googleEmail = params.get("email");
-
 if (googleEmail) {
     localStorage.setItem("userEmail", googleEmail);
 }
-    
+
 async function transcribeVideo() {
-
     const fileInput = document.getElementById("videoFile");
-
     if (!fileInput.files.length) {
         alert("Select a video");
         return;
@@ -279,16 +283,13 @@ async function transcribeVideo() {
     previewBox.style.display = "block";
     previewText.innerText = "⏳ Generating transcript...";
 
-    const userEmail =
-localStorage.getItem("userEmail") ||
-"guest@example.com";
+    const userEmail = localStorage.getItem("userEmail") || "guest@example.com";
 
     const formData = new FormData();
     formData.append("email", userEmail);
     formData.append("video", fileInput.files[0]);
 
     try {
-
         const response = await fetch("/transcribe", {
             method: "POST",
             body: formData
@@ -297,47 +298,24 @@ localStorage.getItem("userEmail") ||
         const data = await response.json();
 
         if (data.success) {
-
-    localStorage.setItem(
-        "latestTranscript",
-        data.transcript
-    );
-
-    alert("Transcript Generated");
-
-    previewText.innerText =
-        data.transcript.substring(0,300) + "...";
-
-
+            localStorage.setItem("latestTranscript", data.transcript);
+            alert("Transcript Generated");
+            previewText.innerText = data.transcript.substring(0, 300) + "...";
         } else {
-
-            previewText.innerText =
-                data.error || "Something went wrong";
-
+            previewText.innerText = data.error || "Something went wrong";
         }
 
     } catch (error) {
-
         previewText.innerText = "Server Error";
         console.error(error);
-
     }
 }
 
-document.getElementById("videoFile")
-.addEventListener("change",function(){
-
-if(this.files.length){
-
-document.getElementById(
-"fileName"
-).innerText =
-"📁 " + this.files[0].name;
-
-}
-
+document.getElementById("videoFile").addEventListener("change", function() {
+    if (this.files.length) {
+        document.getElementById("fileName").innerText = "📁 " + this.files[0].name;
+    }
 });
-    
 </script>
 
 </body>
