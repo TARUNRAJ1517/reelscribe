@@ -19,41 +19,97 @@ body{
     color:white;
 }
 
+.langSection{
+margin-top:20px;
+}
+
+.langTitle{
+text-align:left;
+font-size:12px;
+letter-spacing:2px;
+color:#8d8aa5;
+margin-bottom:10px;
+}
+
+#language{
+width:100%;
+padding:15px;
+border-radius:16px;
+border:1px solid #2b224a;
+background:#1a1730;
+color:white;
+font-size:16px;
+outline:none;
+}
+    
 .uploadBox{
-padding:80px 20px;
-min-height:350px;
+border:3px dashed #3b2b6d;
+border-radius:24px;
+padding:60px 20px;
+min-height:300px;
 display:flex;
 flex-direction:column;
 justify-content:center;
 align-items:center;
+background:#0d0a1d;
+cursor:pointer;
+transition:.3s;
+}
+
+.uploadBox:hover{
+border-color:#8b5cf6;
+transform:scale(1.01);
 }
 
 .uploadIcon{
-font-size:70px;
+font-size:80px;
 margin-bottom:20px;
+filter:drop-shadow(
+0 0 15px rgba(139,92,246,.5)
+);
 }
 
 .uploadBox h2{
 font-size:28px;
 margin-bottom:10px;
+text-align:center;
+}
+
+.uploadBox p{
+color:#8d8aa5;
+text-align:center;
 }
 
 .uploadBox p{
 color:#8d8aa5;
 }
 
+.logoCard{
+max-width:600px;
+margin:auto;
+background:#121026;
+border:1px solid #2b224a;
+border-radius:28px;
+padding:25px;
+text-align:center;
+margin-top:20px;
+margin-bottom:20px;
+}
+    
 .container{
 border-radius:30px;
 overflow:hidden;
 }
     
 .container{
-    max-width:500px;
-    margin:auto;
-    background:#121026;
-    border:1px solid #2b224a;
-    box-shadow:0 10px 30px rgba(0,0,0,.08);
-    margin-top:40px;
+max-width:600px;
+margin:auto;
+background:#121026;
+border:1px solid #2b224a;
+border-radius:28px;
+padding:25px;
+margin-top:10px;
+box-shadow:0 0 30px rgba(139,92,246,.08);
 }
 
 h1{
@@ -86,12 +142,24 @@ button{
     cursor:pointer;
 }
 
+#fileName{
+text-align:center;
+color:#b8b8c5;
+margin:15px 0;
+font-size:14px;
+}
+
+button{
+margin-top:20px;
+}
+    
 #previewBox{
-    display:none;
-    margin-top:20px;
-    padding:15px;
-    background:#1a1730;
-    border:1px solid #2b224a;
+display:none;
+margin-top:25px;
+padding:20px;
+background:#1a1730;
+border:1px solid #2b224a;
+border-radius:20px;
 }
 
 #previewText{
@@ -105,16 +173,16 @@ hr{
 </style>
 </head>
 
-<body>
+<body><div class="logoCard"><h1>🚀 ReelScribe</h1><p>
+Upload any video and get an accurate transcript instantly.
+</p></div><div class="container">
 
-<div class="container">
-
-    <h1>🚀 ReelScribe</h1>
-
-    <p>
-        Upload any video and get an accurate transcript instantly.
-    </p>
-
+    <h3 class="sectionTitle">
+INPUT METHOD
+</h3><div class="tabs"><div class="tab active">
+📁 File Upload
+</div></div>
+    
     <div class="uploadBox">
 
 <div class="uploadIcon">
@@ -141,7 +209,19 @@ hidden
 <p id="fileName">
 No file selected
 </p>
-
+<div class="langSection"><p class="langTitle">
+LANGUAGE (OPTIONAL)
+</p><select id="language"><option>Auto Detect</option>
+<option>English</option>
+<option>Hindi</option>
+<option>Hinglish</option>
+<option>Urdu</option>
+<option>Bengali</option>
+<option>Tamil</option>
+<option>Telugu</option>
+<option>Marathi</option>
+<option>Gujarati</option>
+<option>Punjabi</option></select></div>
 <button onclick="transcribeVideo()">
 Get Transcript
 </button>
