@@ -18,8 +18,31 @@ body{
     padding:20px;
     color:white;
 }
+
+.uploadBox{
+border:3px dashed #2b224a;
+border-radius:24px;
+padding:50px 20px;
+text-align:center;
+cursor:pointer;
+background:#121026;
+margin:20px 0;
 }
 
+.uploadIcon{
+font-size:70px;
+margin-bottom:20px;
+}
+
+.uploadBox h2{
+font-size:28px;
+margin-bottom:10px;
+}
+
+.uploadBox p{
+color:#8d8aa5;
+}
+    
 .container{
     max-width:500px;
     margin:auto;
@@ -88,11 +111,28 @@ hr{
         Upload any video and get an accurate transcript instantly.
     </p>
 
-    <input
-        type="file"
-        id="videoFile"
-        accept="video/*"
-    >
+    <div class="uploadBox">
+
+<div class="uploadIcon">
+🎬
+</div>
+
+<h2>
+Video ya Audio Upload Karein
+</h2>
+
+<p>
+MP4 • MOV • WebM • MP3 • M4A
+</p>
+
+<input
+type="file"
+id="videoFile"
+accept="video/*,audio/*"
+hidden
+>
+
+</div>
 
     <button onclick="transcribeVideo()">
         Get Transcript
@@ -125,6 +165,18 @@ function googleLogin() {
     window.location.href = "/auth/google";
 }
 
+document.addEventListener("DOMContentLoaded",()=>{
+
+document.querySelector(".uploadBox")
+.addEventListener("click",()=>{
+
+document.getElementById("videoFile")
+.click();
+
+});
+
+});
+    
 const params = new URLSearchParams(window.location.search);
 
 const googleEmail = params.get("email");
