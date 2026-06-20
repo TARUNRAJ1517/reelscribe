@@ -20,13 +20,12 @@ body{
 }
 
 .uploadBox{
-border:3px dashed #2b224a;
-border-radius:24px;
-padding:50px 20px;
-text-align:center;
-cursor:pointer;
-background:#121026;
-margin:20px 0;
+padding:80px 20px;
+min-height:350px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
 }
 
 .uploadIcon{
@@ -41,6 +40,11 @@ margin-bottom:10px;
 
 .uploadBox p{
 color:#8d8aa5;
+}
+
+.container{
+border-radius:30px;
+overflow:hidden;
 }
     
 .container{
@@ -134,9 +138,13 @@ hidden
 
 </div>
 
-    <button onclick="transcribeVideo()">
-        Get Transcript
-    </button>
+<p id="fileName">
+No file selected
+</p>
+
+<button onclick="transcribeVideo()">
+Get Transcript
+</button>
 
     <div id="previewBox">
         <h3>Transcript Preview</h3>
@@ -245,6 +253,20 @@ localStorage.getItem("userEmail") ||
     }
 }
 
+document.getElementById("videoFile")
+.addEventListener("change",function(){
+
+if(this.files.length){
+
+document.getElementById(
+"fileName"
+).innerText =
+"📁 " + this.files[0].name;
+
+}
+
+});
+    
 </script>
 
 </body>
