@@ -116,6 +116,11 @@ h1{
     color:#b8b8c5;
     margin:15px 0;
     font-size:14px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:100%;
+    padding:0 10px;
 }
 
 .langSection{
@@ -237,7 +242,7 @@ Upload any video and get an accurate transcript instantly.
         </select>
     </div>
 
-    <button onclick="transcribeVideo()">Get Transcript</button>
+    <button id="transcribeBtn" onclick="transcribeVideo()">Get Transcript</button>
 
     <div id="previewBox">
         <h3>Transcript Preview</h3>
@@ -279,7 +284,10 @@ async function transcribeVideo() {
 
     const previewBox = document.getElementById("previewBox");
     const previewText = document.getElementById("previewText");
+    const transcribeBtn = document.getElementById("transcribeBtn");
 
+    // Hide button, show preview
+    transcribeBtn.style.display = "none";
     previewBox.style.display = "block";
     previewText.innerText = "⏳ Generating transcript...";
 
@@ -301,13 +309,18 @@ async function transcribeVideo() {
             localStorage.setItem("latestTranscript", data.transcript);
             alert("Transcript Generated");
             previewText.innerText = data.transcript.substring(0, 300) + "...";
+            // Button hidden rehta hai — success pe kaam ho gaya
         } else {
             previewText.innerText = data.error || "Something went wrong";
+            // Error pe button wapas show karo retry ke liye
+            transcribeBtn.style.display = "block";
         }
 
     } catch (error) {
-        previewText.innerText = "Server Error";
+        previewText.innerText = "❌ Server Error. Please try again.";
         console.error(error);
+        // Error pe button wapas show karo retry ke liye
+        transcribeBtn.style.display = "block";
     }
 }
 
