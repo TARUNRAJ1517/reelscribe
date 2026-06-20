@@ -14,70 +14,27 @@
 
 body{
     background:#0b0718;
-    padding:20px;
     color:white;
     max-width:480px;
     margin:0 auto;
 }
 
-.header{
-    position:sticky;
-    top:0;
-    z-index:1000;
-    background:rgba(11,7,24,.95);
-    backdrop-filter:blur(12px);
-    padding:12px 0;
-    margin-bottom:10px;
-    border-bottom:1px solid #2b224a;
-}
-    
-h1{
-    text-align:center;
-    margin-bottom:8px;
-    font-size:26px;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-}
-
-.subtitle{
-    text-align:center;
-    color:#8d8aa5;
-    font-size:14px;
-    margin-bottom:20px;
-}
-
-.platforms{
-    margin-top:30px;
-    text-align:center;
-}
-
-.platforms h2{
-    font-size:24px;
-    margin-bottom:20px;
-    color:white;
-}
-
-.iconRow{
-    display:flex;
-    justify-content:center;
-    gap:12px;
-    flex-wrap:wrap;
-}
-
+/* ── Header ── */
 .header{
     position:sticky;
     top:0;
     z-index:9999;
-    background:#0b0718;
+    background:rgba(11,7,24,.95);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid #1a1730;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:15px 0;
+    padding:14px 20px;
 }
 
 .logo{
-    font-size:24px;
+    font-size:22px;
     font-weight:bold;
     background:linear-gradient(90deg,#8b5cf6,#ec4899);
     -webkit-background-clip:text;
@@ -88,31 +45,106 @@ h1{
     background:none;
     border:none;
     color:white;
-    font-size:28px;
+    font-size:26px;
     cursor:pointer;
 }
-    
-.platformIcon{
-    width:70px;
-    height:70px;
-    background:#f3f4f6;
-    border-radius:18px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+
+/* ── Menu Overlay ── */
+.menuOverlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.6);
+    z-index:10000;
+    backdrop-filter:blur(4px);
 }
 
-.platformIcon img{
-    width:32px;
-    height:32px;
+.menuBox{
+    background:#121026;
+    border:1px solid #2b224a;
+    margin:20px;
+    border-radius:24px;
+    padding:25px;
 }
-    
+
+.menuTop{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.menuBox a{
+    display:block;
+    padding:16px 0;
+    text-decoration:none;
+    color:#ccc;
+    font-size:17px;
+    border-bottom:1px solid #1a1730;
+}
+
+.menuBox a:last-of-type{ border-bottom:none; }
+
+.closeBtn{
+    border:none;
+    background:none;
+    color:white;
+    font-size:24px;
+    cursor:pointer;
+}
+
+.menuCTA{
+    width:100%;
+    margin-top:20px;
+    padding:16px;
+    border:none;
+    border-radius:30px;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    cursor:pointer;
+}
+
+/* ── Hero Section ── */
+.hero{
+    padding:40px 20px 20px;
+    text-align:center;
+}
+
+.hero h2{
+    font-size:28px;
+    font-weight:bold;
+    color:white;
+    line-height:1.3;
+    margin-bottom:12px;
+}
+
+.hero h2 span{
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.hero p{
+    color:#8d8aa5;
+    font-size:14px;
+    line-height:1.6;
+    margin-bottom:0;
+}
+
+/* ── Main Container ── */
 .container{
+    padding:20px;
+}
+
+.inputCard{
     background:#121026;
     border:1px solid #2b224a;
     border-radius:24px;
     padding:20px;
     box-shadow:0 0 30px rgba(139,92,246,.08);
+    margin-bottom:20px;
 }
 
 .sectionTitle{
@@ -122,6 +154,7 @@ h1{
     margin-bottom:12px;
 }
 
+/* ── Tabs ── */
 .tabs{
     display:flex;
     gap:10px;
@@ -148,56 +181,7 @@ h1{
     color:white;
 }
 
-.uploadBox{
-    border:2px dashed #3b2b6d;
-    border-radius:20px;
-    padding:40px 20px;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    background:#0d0a1d;
-    cursor:pointer;
-    transition:.3s;
-    min-height:200px;
-}
-
-.uploadBox:hover{
-    border-color:#8b5cf6;
-}
-
-.uploadIcon{
-    font-size:60px;
-    margin-bottom:12px;
-    filter:drop-shadow(0 0 12px rgba(139,92,246,.5));
-}
-
-.uploadBox h2{
-    font-size:18px;
-    margin-bottom:8px;
-    text-align:center;
-    color:white;
-}
-
-.uploadHint{
-    color:#8d8aa5;
-    text-align:center;
-    font-size:13px;
-}
-
-#fileName{
-    text-align:center;
-    color:#b8b8c5;
-    margin:12px 0 0;
-    font-size:13px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    max-width:100%;
-    padding:0 10px;
-    display:none;
-}
-
+/* ── URL Input ── */
 .urlInput{
     width:100%;
     padding:16px;
@@ -210,36 +194,80 @@ h1{
     transition:.2s;
 }
 
-.urlInput:focus{
-    border-color:#8b5cf6;
+.urlInput:focus{ border-color:#8b5cf6; }
+.urlInput::placeholder{ color:#8d8aa5; }
+
+/* ── Upload Box ── */
+.uploadBox{
+    border:2px dashed #3b2b6d;
+    border-radius:20px;
+    padding:35px 20px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    background:#0d0a1d;
+    cursor:pointer;
+    transition:.3s;
+    min-height:180px;
 }
 
-.urlInput::placeholder{
+.uploadBox:hover{ border-color:#8b5cf6; }
+
+.uploadIcon{
+    font-size:50px;
+    margin-bottom:10px;
+    filter:drop-shadow(0 0 12px rgba(139,92,246,.5));
+}
+
+.uploadBox h2{
+    font-size:16px;
+    margin-bottom:6px;
+    text-align:center;
+    color:white;
+}
+
+.uploadHint{
     color:#8d8aa5;
+    text-align:center;
+    font-size:12px;
 }
 
+#fileName{
+    text-align:center;
+    color:#b8b8c5;
+    margin:10px 0 0;
+    font-size:13px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:100%;
+    padding:0 10px;
+    display:none;
+}
+
+/* ── Info Box ── */
 .infoBox{
-    margin-top:14px;
-    padding:14px;
+    margin-top:12px;
+    padding:12px;
     background:#1a1730;
     border:1px solid #2b224a;
-    border-radius:14px;
-    font-size:13px;
+    border-radius:12px;
+    font-size:12px;
     color:#8d8aa5;
     line-height:1.6;
 }
 
-.infoBox span{
-    color:#8b5cf6;
-    font-weight:bold;
-}
+.infoBox span{ color:#8b5cf6; font-weight:bold; }
 
+/* ── Divider ── */
 .divider{
     height:1px;
     background:#2b224a;
-    margin:18px 0;
+    margin:16px 0;
 }
 
+/* ── Language ── */
 .langTitle{
     font-size:11px;
     letter-spacing:2px;
@@ -247,62 +275,14 @@ h1{
     margin-bottom:10px;
 }
 
-.menuOverlay{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.5);
-    z-index:10000;
-}
-
-.menuBox{
-    background:white;
-    color:black;
-    margin:20px;
-    border-radius:24px;
-    padding:25px;
-}
-
-.menuTop{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:20px;
-}
-
-.menuBox a{
-    display:block;
-    padding:18px 0;
-    text-decoration:none;
-    color:#333;
-    font-size:18px;
-}
-
-.closeBtn{
-    border:none;
-    background:none;
-    font-size:26px;
-}
-
-.menuCTA{
-    width:100%;
-    margin-top:20px;
-    padding:16px;
-    border:none;
-    border-radius:30px;
-    color:white;
-    font-size:16px;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-}
-    
 #language{
     width:100%;
-    padding:15px;
+    padding:14px;
     border-radius:14px;
     border:1.5px solid #2b224a;
     background:#1a1730;
     color:white;
-    font-size:15px;
+    font-size:14px;
     outline:none;
     appearance:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238d8aa5' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
@@ -310,6 +290,7 @@ h1{
     background-position:right 16px center;
 }
 
+/* ── Transcript Button ── */
 #transcribeBtn{
     width:100%;
     padding:16px;
@@ -320,14 +301,15 @@ h1{
     font-size:17px;
     font-weight:bold;
     cursor:pointer;
-    margin-top:18px;
+    margin-top:16px;
     letter-spacing:.5px;
 }
 
+/* ── Preview Box ── */
 #previewBox{
     display:none;
-    margin-top:18px;
-    padding:18px;
+    margin-top:16px;
+    padding:16px;
     background:#1a1730;
     border:1px solid #2b224a;
     border-radius:18px;
@@ -358,7 +340,6 @@ h1{
     margin-bottom:10px;
 }
 
-/* ── Google Button ── */
 #googleBtn{
     width:100%;
     padding:14px 20px;
@@ -379,242 +360,307 @@ h1{
 
 #googleBtn:hover{
     background:#f1f3f4;
-    box-shadow:0 4px 15px rgba(0,0,0,0.5);
 }
 
-.googleLogo{
-    width:20px;
-    height:20px;
-    flex-shrink:0;
-}
-.how-it-works{
-  margin-top:80px;
-  padding:20px;
+.googleLogo{ width:20px; height:20px; flex-shrink:0; }
+
+/* ── Platforms Section ── */
+.section{
+    padding:0 20px 30px;
 }
 
-.how-it-works h2{
-  text-align:center;
-  color:#fff;
-  font-size:32px;
-  margin-bottom:30px;
+.sectionHeading{
+    font-size:13px;
+    letter-spacing:2px;
+    color:#8d8aa5;
+    text-align:center;
+    margin-bottom:16px;
+}
+
+.platformsRow{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.platformIcon{
+    width:52px;
+    height:52px;
+    background:#121026;
+    border:1px solid #2b224a;
+    border-radius:16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:.2s;
+}
+
+.platformIcon:hover{
+    border-color:#8b5cf6;
+    transform:scale(1.08);
+}
+
+.platformIcon img{
+    width:26px;
+    height:26px;
+    filter:invert(1);
+    opacity:.8;
+}
+
+/* ── Features ── */
+.featuresCard{
+    background:#121026;
+    border:1px solid #2b224a;
+    border-radius:20px;
+    padding:18px;
+    margin:0 20px 30px;
+}
+
+.featuresTitle{
+    font-size:16px;
+    font-weight:bold;
+    margin-bottom:14px;
+    color:white;
+}
+
+.featureItem{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:9px 0;
+    border-bottom:1px solid #1a1730;
+    font-size:13px;
+    color:#ccc;
+    line-height:1.5;
+}
+
+.featureItem:last-child{ border-bottom:none; }
+
+.featureCheck{ color:#8b5cf6; font-size:15px; flex-shrink:0; margin-top:1px; }
+
+/* ── How It Works ── */
+.howSection{
+    padding:0 20px 40px;
+}
+
+.howTitle{
+    font-size:20px;
+    font-weight:bold;
+    text-align:center;
+    margin-bottom:18px;
+    color:white;
 }
 
 .steps{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:20px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
 }
 
-.step-card{
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.08);
-  border-radius:20px;
-  padding:25px;
-  text-align:center;
-  backdrop-filter:blur(10px);
+.stepCard{
+    background:#121026;
+    border:1px solid #2b224a;
+    border-radius:18px;
+    padding:18px;
+    display:flex;
+    align-items:center;
+    gap:16px;
 }
 
-.step-card .icon{
-  font-size:42px;
-  margin-bottom:15px;
-}
+.stepIcon{ font-size:30px; flex-shrink:0; }
 
-.step-card h3{
-  color:white;
-  margin-bottom:10px;
-}
-
-.step-card p{
-  color:#aaa;
-}
-    
+.stepText h3{ font-size:15px; margin-bottom:4px; color:white; }
+.stepText p{ font-size:13px; color:#8d8aa5; }
 </style>
 </head>
 
 <body>
 
+<!-- Header -->
 <div class="header">
     <div class="logo">🚀 ReelScribe</div>
-
-    <button class="menuBtn" onclick="toggleMenu()">
-        ☰
-    </button>
+    <button class="menuBtn" onclick="toggleMenu()">☰</button>
 </div>
 
+<!-- Menu -->
 <div id="menuOverlay" class="menuOverlay">
-
     <div class="menuBox">
-
         <div class="menuTop">
             <div class="logo">🚀 ReelScribe</div>
-
-            <button onclick="toggleMenu()" class="closeBtn">
-                ✕
-            </button>
+            <button onclick="toggleMenu()" class="closeBtn">✕</button>
         </div>
-
-        <a href="/">Home</a>
-        <a href="#how-it-works">How It Works</a>
-        <a href="/buy-credits.html">Pricing</a>
-        <a href="#faq">FAQ</a>
-        <a href="/contact.html">Contact</a>
-
-        <button class="menuCTA">
-            Start for free →
+        <a href="/">🏠 Home</a>
+        <a href="/pricing.html">💰 Pricing</a>
+        <a href="/dashboard.html">📊 Dashboard</a>
+        <button class="menuCTA" onclick="window.location.href='/auth/google'">
+            Login with Google →
         </button>
-
     </div>
-
 </div>
-    
-<p class="subtitle">Upload any video and get an accurate transcript instantly.</p>
 
+<!-- Hero -->
+<div class="hero">
+    <h2>Kisi bhi video ko<br><span>transcript karo</span> — seconds mein</h2>
+    <p>Instagram, YouTube, TikTok ya koi bhi video file<br>paste karo aur accurate transcript pao instantly.</p>
+</div>
+
+<!-- Main Input Card -->
 <div class="container">
+    <div class="inputCard">
 
-    <p class="sectionTitle">INPUT METHOD</p>
+        <p class="sectionTitle">INPUT METHOD</p>
 
-    <div class="tabs">
-        <div class="tab active" id="tabUrl" onclick="switchTab('url')">🔗 Instagram URL</div>
-        <div class="tab" id="tabFile" onclick="switchTab('file')">📁 File Upload</div>
+        <div class="tabs">
+            <div class="tab active" id="tabUrl" onclick="switchTab('url')">🔗 Instagram URL</div>
+            <div class="tab" id="tabFile" onclick="switchTab('file')">📁 File Upload</div>
+        </div>
+
+        <!-- URL Section -->
+        <div id="urlSection" style="display:block;">
+            <input type="url" class="urlInput" id="videoUrl" placeholder="https://www.instagram.com/reel/ABC123xyz/">
+            <div class="infoBox">
+                <span>Public Reels only.</span> Private account ki videos kaam nahi karengi. Full URL paste karein (reel/ ya p/ waali).
+            </div>
+        </div>
+
+        <!-- File Section -->
+        <div id="fileSection" style="display:none;">
+            <div class="uploadBox" id="uploadBox">
+                <div class="uploadIcon">🎬</div>
+                <h2>Video ya Audio drag karein</h2>
+                <p class="uploadHint">MP4 · MOV · WebM · MP3 · M4A</p>
+                <input type="file" id="videoFile" accept="video/*,audio/*" hidden>
+            </div>
+            <p id="fileName"></p>
+            <div class="infoBox">
+                RapidAPI key ki zaroorat <span>nahi</span> file upload ke liye.<br>
+                Instagram video ke liye: <span>snapinsta.app</span>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="langTitle">LANGUAGE (optional)</p>
+        <select id="language">
+            <option>Auto detect</option>
+            <option>English</option>
+            <option>Hindi</option>
+            <option>Hinglish</option>
+            <option>Urdu</option>
+            <option>Bengali</option>
+            <option>Tamil</option>
+            <option>Telugu</option>
+            <option>Marathi</option>
+            <option>Gujarati</option>
+            <option>Punjabi</option>
+        </select>
+
+        <button id="transcribeBtn" onclick="transcribeVideo()">✨ Transcript Nikalo</button>
+
+        <div id="previewBox">
+            <h3>Transcript Preview</h3>
+            <div id="previewText"></div>
+            <div id="loginSection">
+                <hr style="margin:15px 0; border-color:#2b224a;">
+                <p class="lockText">🔒 Login with Google to unlock full transcript</p>
+                <button id="googleBtn" onclick="googleLogin()">
+                    <svg class="googleLogo" viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        <path fill="none" d="M0 0h48v48H0z"/>
+                    </svg>
+                    Continue with Google
+                </button>
+            </div>
+        </div>
+
     </div>
+</div>
 
-    <!-- URL Section -->
-    <div id="urlSection" style="display:block;">
-        <input type="url" class="urlInput" id="videoUrl" placeholder="Enter Instagram, TikTok, etc. Video URL...p">
-        <div class="infoBox">
-            <span>Public Reels only.</span> Private account ki videos kaam nahi karengi. Full URL paste karein (reel/ ya p/ waali).
+<!-- Platforms -->
+<div class="section">
+    <p class="sectionHeading">SUPPORTED PLATFORMS</p>
+    <div class="platformsRow">
+        <div class="platformIcon" title="YouTube">
+            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg">
+        </div>
+        <div class="platformIcon" title="Instagram">
+            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg">
+        </div>
+        <div class="platformIcon" title="TikTok">
+            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg">
+        </div>
+        <div class="platformIcon" title="X / Twitter">
+            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg">
+        </div>
+        <div class="platformIcon" title="Facebook">
+            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg">
+        </div>
+        <div class="platformIcon" title="File Upload">
+            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/files.svg">
         </div>
     </div>
+</div>
 
-    <!-- File Section -->
-    <div id="fileSection" style="display:none;">
-        <div class="uploadBox" id="uploadBox">
-            <div class="uploadIcon">🎬</div>
-            <h2>Video ya Audio drag karein</h2>
-            <p class="uploadHint">MP4 · MOV · WebM · MP3 · M4A</p>
-            <input type="file" id="videoFile" accept="video/*,audio/*" hidden>
-        </div>
-        <p id="fileName"></p>
-        <div class="infoBox">
-            RapidAPI key ki zaroorat <span>nahi</span> file upload ke liye. Sirf Groq key chahiye.<br>
-            Instagram se video download karne ke liye: <span>snapinsta.app</span>
-        </div>
+<!-- Features -->
+<div class="featuresCard">
+    <div class="featuresTitle">✦ ReelScribe kyun use karein?</div>
+    <div class="featureItem">
+        <span class="featureCheck">✦</span>
+        <span>Viral reels ka script dekho — hook samjho, apna content banao</span>
     </div>
-
-    <div class="divider"></div>
-
-    <p class="langTitle">LANGUAGE (optional)</p>
-    <select id="language">
-        <option>Auto detect</option>
-        <option>English</option>
-        <option>Hindi</option>
-        <option>Hinglish</option>
-        <option>Urdu</option>
-        <option>Bengali</option>
-        <option>Tamil</option>
-        <option>Telugu</option>
-        <option>Marathi</option>
-        <option>Gujarati</option>
-        <option>Punjabi</option>
-    </select>
-
-    <button id="transcribeBtn" onclick="transcribeVideo()">✨ Transcript Nikalo</button>
-
-<section class="platforms">
-
-<h2>Supported Platforms</h2>
-
-<div class="iconRow">
-
-<div class="platformIcon">
-<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg">
+    <div class="featureItem">
+        <span class="featureCheck">✦</span>
+        <span>Hindi, English, Hinglish — sabhi languages accurate transcript</span>
+    </div>
+    <div class="featureItem">
+        <span class="featureCheck">✦</span>
+        <span>Instagram URL ya file upload — dono options available</span>
+    </div>
+    <div class="featureItem">
+        <span class="featureCheck">✦</span>
+        <span>Seconds mein result — koi wait nahi, koi complexity nahi</span>
+    </div>
 </div>
 
-<div class="platformIcon">
-<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg">
-</div>
-
-<div class="platformIcon">
-<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg">
-</div>
-
-<div class="platformIcon">
-<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg">
-</div>
-
-<div class="platformIcon">
-<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/pinterest.svg">
-</div>
-
-<div class="platformIcon">
-<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg">
-</div>
-
-<div class="platformIcon">
-<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/googledrive.svg">
-</div>
-
-</div>
-
-</section>
-    
-    <div id="previewBox">
-        <h3>Transcript Preview</h3>
-        <div id="previewText"></div>
-        <div id="loginSection">
-            <hr style="margin:15px 0; border-color:#2b224a;">
-            <p class="lockText">🔒 Login with Google to unlock full transcript</p>
-            <!-- Google Button with real logo -->
-            <button id="googleBtn" onclick="googleLogin()">
-                <svg class="googleLogo" viewBox="0 0 48 48">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                    <path fill="none" d="M0 0h48v48H0z"/>
-                </svg>
-                Continue with Google
-            </button>
+<!-- How It Works -->
+<div class="howSection">
+    <div class="howTitle">⚡ Kaise kaam karta hai?</div>
+    <div class="steps">
+        <div class="stepCard">
+            <div class="stepIcon">🔗</div>
+            <div class="stepText">
+                <h3>URL Paste karo</h3>
+                <p>Koi bhi public Instagram Reel ka URL paste karo</p>
+            </div>
+        </div>
+        <div class="stepCard">
+            <div class="stepIcon">⬇️</div>
+            <div class="stepText">
+                <h3>Video Fetch hogi</h3>
+                <p>ReelScribe automatically video download karega</p>
+            </div>
+        </div>
+        <div class="stepCard">
+            <div class="stepIcon">📝</div>
+            <div class="stepText">
+                <h3>Transcript Ready</h3>
+                <p>AI seconds mein accurate transcript generate karega</p>
+            </div>
         </div>
     </div>
-
 </div>
 
-<section class="how-it-works">
-  <h2>How ReelScribe Works</h2>
-
-  <div class="steps">
-    <div class="step-card">
-      <div class="icon">🔗</div>
-      <h3>Paste URL</h3>
-      <p>Paste any public Instagram Reel URL.</p>
-    </div>
-
-    <div class="step-card">
-      <div class="icon">⬇️</div>
-      <h3>Fetch Video</h3>
-      <p>ReelScribe automatically downloads the reel.</p>
-    </div>
-
-    <div class="step-card">
-      <div class="icon">📝</div>
-      <h3>Get Transcript</h3>
-      <p>AI generates an accurate transcript in seconds.</p>
-    </div>
-  </div>
-</section>
-    
 <script>
 
 function toggleMenu(){
     const menu = document.getElementById("menuOverlay");
-
-    menu.style.display =
-        menu.style.display === "block"
-        ? "none"
-        : "block";
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
 }
-    
+
 function googleLogin(){
     window.location.href = "/auth/google";
 }
