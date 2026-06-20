@@ -11,9 +11,8 @@ const nodemailer = require("nodemailer");
 const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const { exec } = require("child_process");
-const { promisify } = require("util");
-const execAsync = promisify(exec);
+const axios = require("axios");
+const https = require("https");
 
 const Reel = require("./models/Reel");
 const User = require("./models/User");
@@ -115,6 +114,51 @@ function adminAuth(req, res, next) {
     return res.status(401).json({ success: false, error: "Unauthorized" });
   }
   next();
+}
+
+// ── RAPIDAPI SE INSTAGRAM VIDEO URL LAO ──
+async function getInstagramVideoUrl(instagramUrl) {
+  try {
+    const response = await axios.get(
+      "https://instagram-reels-downloader-api.p.rapidapi.com/download",
+      {
+        params: { url: instagramUrl },
+        headers: {
+          "x-rapidapi-key": process.env.RAPID_API_KEY,
+          "x-rapidapi-host": "instagram-reels-downloader-api.p.rapidapi.com"
+        }
+      }
+    );
+
+    const data = response.data;
+
+    if (data.success && data.data && data.data.medias && data.data.medias.length > 0) {
+      return data.data.medias[0].url;
+    }
+
+    throw new Error("Video URL nahi mila API response mein");
+
+  } catch (err) {
+    console.error("RapidAPI Error:", err.response?.data || err.message);
+    throw err;
+  }
+}
+
+// ── VIDEO DOWNLOAD KARO URL SE ──
+function downloadVideo(videoUrl, outputPath) {
+  return new Promise((resolve, reject) => {
+    const file = fs.createWriteStream(outputPath);
+    https.get(videoUrl, (response) => {
+      response.pipe(file);
+      file.on("finish", () => {
+        file.close();
+        resolve();
+      });
+    }).on("error", (err) => {
+      fs.unlink(outputPath, () => {});
+      reject(err);
+    });
+  });
 }
 
 app.get("/test", (req, res) => {
@@ -235,7 +279,7 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
   }
 });
 
-// ── TRANSCRIBE URL (Instagram / YouTube) ──
+// ── TRANSCRIBE URL (Instagram via RapidAPI) ──
 app.post("/transcribe-url", async (req, res) => {
   const { email, url } = req.body;
 
@@ -243,24 +287,18 @@ app.post("/transcribe-url", async (req, res) => {
     return res.status(400).json({ success: false, error: "Email aur URL required hai" });
   }
 
-  // Sirf Instagram aur YouTube allow karo
-  const isYouTube = url.includes("youtube.com") || url.includes("youtu.be");
-  const isInstagram = url.includes("instagram.com");
-
-  if (!isYouTube && !isInstagram) {
+  if (!url.includes("instagram.com")) {
     return res.status(400).json({
       success: false,
-      error: "Sirf YouTube aur Instagram URLs supported hain"
+      error: "Sirf Instagram URLs supported hain"
     });
   }
 
-  // User check
   const user = await User.findOne({ email });
   if (!user) {
     return res.status(404).json({ success: false, error: "User not found. Pehle login karein." });
   }
 
-  // Credits check
   if (user.credits < 2) {
     return res.status(400).json({
       success: false,
@@ -268,45 +306,43 @@ app.post("/transcribe-url", async (req, res) => {
     });
   }
 
-  const outputPath = path.join(__dirname, "uploads", `${Date.now()}_url.mp4`);
-  const cookiesPath = path.join(__dirname, "cookies.txt");
+  const outputPath = path.join(__dirname, "uploads", `${Date.now()}_insta.mp4`);
 
   try {
-    console.log("⏳ Downloading:", url);
+    // Step 1: RapidAPI se video URL lo
+    console.log("⏳ RapidAPI se video URL la raha hoon...");
+    const videoUrl = await getInstagramVideoUrl(url);
+    console.log("✅ Video URL mila:", videoUrl.substring(0, 60) + "...");
 
-    // Cookies file exist check
-    const cookiesFlag = fs.existsSync(cookiesPath)
-      ? `--cookies "${cookiesPath}"`
-      : "";
-
-    await execAsync(
-      `yt-dlp ${cookiesFlag} -f "bestaudio[ext=m4a]/bestaudio/best" --no-playlist -o "${outputPath}" "${url}"`,
-      { timeout: 120000 }
-    );
-
-    console.log("✅ Download complete");
+    // Step 2: Video download karo
+    console.log("⏳ Video download ho rahi hai...");
+    await downloadVideo(videoUrl, outputPath);
+    console.log("✅ Video download complete");
 
     if (!fs.existsSync(outputPath)) {
       return res.status(500).json({ success: false, error: "Video download nahi hua" });
     }
 
-    // Groq se transcribe
+    // Step 3: Groq se transcribe karo
+    console.log("⏳ Transcribing...");
     const transcription = await groq.audio.transcriptions.create({
       file: fs.createReadStream(outputPath),
       model: "whisper-large-v3-turbo"
     });
+    console.log("✅ Transcript ready");
 
-    // 2 credits kato
+    // Step 4: Credits kato
     user.credits -= 2;
     await user.save();
 
-    // History save
+    // Step 5: History save karo
     await Reel.create({
       userEmail: email,
       reelUrl: url,
       transcript: transcription.text
     });
 
+    // Step 6: Cleanup
     fs.unlinkSync(outputPath);
 
     res.json({
@@ -319,13 +355,13 @@ app.post("/transcribe-url", async (req, res) => {
     if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
     console.error("URL Transcribe Error:", error.message);
 
-    let errorMsg = "URL se video nahi mil saka. Check karo URL sahi hai.";
-    if (error.message.includes("Private") || error.message.includes("private")) {
+    let errorMsg = "URL se video nahi mil saka.";
+    if (error.message.includes("private") || error.message.includes("Private")) {
       errorMsg = "Yeh video private hai! Public reel ka URL daalo.";
-    } else if (error.message.includes("timeout")) {
-      errorMsg = "Video bahut bada hai, chhota video try karo.";
-    } else if (error.message.includes("not a bot") || error.message.includes("login")) {
-      errorMsg = "Instagram ne block kiya. Thodi der baad try karo.";
+    } else if (error.message.includes("Video URL nahi mila")) {
+      errorMsg = "Reel nahi mili. Sahi public URL daalo (reel/ ya p/ wala).";
+    } else if (error.response?.status === 429) {
+      errorMsg = "RapidAPI limit khatam ho gayi. Thodi der baad try karo.";
     }
 
     res.status(500).json({ success: false, error: errorMsg });
