@@ -65,6 +65,33 @@ h1{
     flex-wrap:wrap;
 }
 
+.header{
+    position:sticky;
+    top:0;
+    z-index:9999;
+    background:#0b0718;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 0;
+}
+
+.logo{
+    font-size:24px;
+    font-weight:bold;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.menuBtn{
+    background:none;
+    border:none;
+    color:white;
+    font-size:28px;
+    cursor:pointer;
+}
+    
 .platformIcon{
     width:70px;
     height:70px;
@@ -220,6 +247,54 @@ h1{
     margin-bottom:10px;
 }
 
+.menuOverlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.5);
+    z-index:10000;
+}
+
+.menuBox{
+    background:white;
+    color:black;
+    margin:20px;
+    border-radius:24px;
+    padding:25px;
+}
+
+.menuTop{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.menuBox a{
+    display:block;
+    padding:18px 0;
+    text-decoration:none;
+    color:#333;
+    font-size:18px;
+}
+
+.closeBtn{
+    border:none;
+    background:none;
+    font-size:26px;
+}
+
+.menuCTA{
+    width:100%;
+    margin-top:20px;
+    padding:16px;
+    border:none;
+    border-radius:30px;
+    color:white;
+    font-size:16px;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+}
+    
 #language{
     width:100%;
     padding:15px;
@@ -359,14 +434,41 @@ h1{
 <body>
 
 <div class="header">
+    <div class="logo">🚀 ReelScribe</div>
 
-    <h1>🚀 ReelScribe</h1>
-
+    <button class="menuBtn" onclick="toggleMenu()">
+        ☰
+    </button>
 </div>
 
-<p class="subtitle">
-Upload any video and get an accurate transcript instantly.
-</p>
+<div id="menuOverlay" class="menuOverlay">
+
+    <div class="menuBox">
+
+        <div class="menuTop">
+            <div class="logo">🚀 ReelScribe</div>
+
+            <button onclick="toggleMenu()" class="closeBtn">
+                ✕
+            </button>
+        </div>
+
+        <a href="/">Home</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="/buy-credits.html">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="/contact.html">Contact</a>
+
+        <button class="menuCTA">
+            Access Dashboard →
+        </button>
+
+    </div>
+
+</div>
+    
+<p class="subtitle">Upload any video and get an accurate transcript instantly.</p>
+
 <div class="container">
 
     <p class="sectionTitle">INPUT METHOD</p>
@@ -504,6 +606,15 @@ Upload any video and get an accurate transcript instantly.
     
 <script>
 
+function toggleMenu(){
+    const menu = document.getElementById("menuOverlay");
+
+    menu.style.display =
+        menu.style.display === "block"
+        ? "none"
+        : "block";
+}
+    
 function googleLogin(){
     window.location.href = "/auth/google";
 }
