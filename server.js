@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 
 const express = require("express");
@@ -12,6 +11,9 @@ const nodemailer = require("nodemailer");
 const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const { exec } = require("child_process");
+const { promisify } = require("util");
+const execAsync = promisify(exec);
 
 const Reel = require("./models/Reel");
 const User = require("./models/User");
@@ -38,7 +40,6 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.log("❌ MongoDB Error:", err));
 
-// OTP store with expiry
 const otpStore = {};
 
 passport.serializeUser((user, done) => {
@@ -64,17 +65,14 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       try {
         const email = profile.emails[0].value;
-
         let user = await User.findOne({ email });
-
         if (!user) {
           user = await User.create({
             name: profile.displayName,
             email,
-            credits: 10
+            credits: 5
           });
         }
-
         return done(null, user);
       } catch (err) {
         return done(err, null);
@@ -101,14 +99,13 @@ transporter.verify(function(error, success) {
   }
 });
 
-// File upload — 25MB limit
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
 const upload = multer({
   storage,
-  limits: { fileSize: 25 * 1024 * 1024 } // 25MB
+  limits: { fileSize: 25 * 1024 * 1024 }
 });
 
 // ── ADMIN MIDDLEWARE ──
@@ -124,18 +121,11 @@ app.get("/test", (req, res) => {
   res.send("TEST ROUTE WORKING");
 });
 
-app.get(
-  "/auth/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"]
-  })
-);
+app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
 app.get(
   "/auth/google/callback",
-  passport.authenticate("google", {
-    failureRedirect: "/"
-  }),
+  passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     res.redirect("/dashboard.html?email=" + encodeURIComponent(req.user.email));
   }
@@ -150,7 +140,7 @@ app.post("/send-otp", async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore[email] = {
       otp,
-      expiresAt: Date.now() + 5 * 60 * 1000 // 5 min expiry
+      expiresAt: Date.now() + 5 * 60 * 1000
     };
 
     await transporter.sendMail({
@@ -183,7 +173,11 @@ app.post("/verify-otp", async (req, res) => {
 
     let user = await User.findOne({ email });
     if (!user) {
-      user = await User.create({ name: email.split("@")[0], email });
+      user = await User.create({
+        name: email.split("@")[0],
+        email,
+        credits: 5
+      });
     }
 
     res.json({ success: true, user });
@@ -192,27 +186,22 @@ app.post("/verify-otp", async (req, res) => {
   }
 });
 
-// ── TRANSCRIBE ──
+// ── TRANSCRIBE (File Upload) ──
 app.post("/transcribe", upload.single("video"), async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ success: false, error: "Email required" });
 
     const user = await User.findOne({ email });
+    let isGuest = !user;
 
-    let isGuest = false;
-
-if (!user) {
-  isGuest = true;
-}
-
-    if (!isGuest && user.credits <= 0) {
-  if (req.file?.path) fs.unlinkSync(req.file.path);
-  return res.status(400).json({
-    success: false,
-    error: "Credits khatam ho gaye! Admin se contact karein."
-  });
-}
+    if (!isGuest && user.credits < 2) {
+      if (req.file?.path) fs.unlinkSync(req.file.path);
+      return res.status(400).json({
+        success: false,
+        error: "Credits khatam ho gaye! Admin se contact karein."
+      });
+    }
 
     const filePath = req.file.path;
 
@@ -222,9 +211,10 @@ if (!user) {
     });
 
     if (!isGuest) {
-  user.credits -= 1;
-  await user.save();
-}
+      user.credits -= 2;
+      await user.save();
+    }
+
     await Reel.create({
       userEmail: email,
       reelUrl: req.file.originalname,
@@ -245,6 +235,103 @@ if (!user) {
   }
 });
 
+// ── TRANSCRIBE URL (Instagram / YouTube) ──
+app.post("/transcribe-url", async (req, res) => {
+  const { email, url } = req.body;
+
+  if (!email || !url) {
+    return res.status(400).json({ success: false, error: "Email aur URL required hai" });
+  }
+
+  // Sirf Instagram aur YouTube allow karo
+  const isYouTube = url.includes("youtube.com") || url.includes("youtu.be");
+  const isInstagram = url.includes("instagram.com");
+
+  if (!isYouTube && !isInstagram) {
+    return res.status(400).json({
+      success: false,
+      error: "Sirf YouTube aur Instagram URLs supported hain"
+    });
+  }
+
+  // User check
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ success: false, error: "User not found. Pehle login karein." });
+  }
+
+  // Credits check
+  if (user.credits < 2) {
+    return res.status(400).json({
+      success: false,
+      error: "Credits khatam ho gaye! Admin se contact karein."
+    });
+  }
+
+  const outputPath = path.join(__dirname, "uploads", `${Date.now()}_url.mp4`);
+  const cookiesPath = path.join(__dirname, "cookies.txt");
+
+  try {
+    console.log("⏳ Downloading:", url);
+
+    // Cookies file exist check
+    const cookiesFlag = fs.existsSync(cookiesPath)
+      ? `--cookies "${cookiesPath}"`
+      : "";
+
+    await execAsync(
+      `yt-dlp ${cookiesFlag} -f "bestaudio[ext=m4a]/bestaudio/best" --no-playlist -o "${outputPath}" "${url}"`,
+      { timeout: 120000 }
+    );
+
+    console.log("✅ Download complete");
+
+    if (!fs.existsSync(outputPath)) {
+      return res.status(500).json({ success: false, error: "Video download nahi hua" });
+    }
+
+    // Groq se transcribe
+    const transcription = await groq.audio.transcriptions.create({
+      file: fs.createReadStream(outputPath),
+      model: "whisper-large-v3-turbo"
+    });
+
+    // 2 credits kato
+    user.credits -= 2;
+    await user.save();
+
+    // History save
+    await Reel.create({
+      userEmail: email,
+      reelUrl: url,
+      transcript: transcription.text
+    });
+
+    fs.unlinkSync(outputPath);
+
+    res.json({
+      success: true,
+      transcript: transcription.text,
+      creditsLeft: user.credits
+    });
+
+  } catch (error) {
+    if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+    console.error("URL Transcribe Error:", error.message);
+
+    let errorMsg = "URL se video nahi mil saka. Check karo URL sahi hai.";
+    if (error.message.includes("Private") || error.message.includes("private")) {
+      errorMsg = "Yeh video private hai! Public reel ka URL daalo.";
+    } else if (error.message.includes("timeout")) {
+      errorMsg = "Video bahut bada hai, chhota video try karo.";
+    } else if (error.message.includes("not a bot") || error.message.includes("login")) {
+      errorMsg = "Instagram ne block kiya. Thodi der baad try karo.";
+    }
+
+    res.status(500).json({ success: false, error: errorMsg });
+  }
+});
+
 // ── CREDITS ──
 app.get("/credits/:email", async (req, res) => {
   try {
@@ -259,7 +346,6 @@ app.get("/credits/:email", async (req, res) => {
 // ── HISTORY ──
 app.get("/history/:email", async (req, res) => {
   try {
-    // Verify user exists
     const user = await User.findOne({ email: req.params.email });
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
 
@@ -270,7 +356,7 @@ app.get("/history/:email", async (req, res) => {
   }
 });
 
-// ── ADMIN: ALL USERS (protected) ──
+// ── ADMIN: ALL USERS ──
 app.get("/admin/users", adminAuth, async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 });
@@ -280,7 +366,7 @@ app.get("/admin/users", adminAuth, async (req, res) => {
   }
 });
 
-// ── ADMIN: ADD CREDITS (protected) ──
+// ── ADMIN: ADD CREDITS ──
 app.post("/admin/add-credit", adminAuth, async (req, res) => {
   try {
     const { email, credits } = req.body;
