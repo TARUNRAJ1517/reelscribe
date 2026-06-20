@@ -15,7 +15,6 @@
 
 body{
     background:#0b0718;
-    padding:15px;
     color:white;
     min-height:100vh;
     max-width:480px;
@@ -101,29 +100,18 @@ body{
     margin-top:0;
 }
 
-/* ── Topbar ── */
-.topbar{
+/* ── Header ── */
+.header{
+    position:sticky;
+    top:0;
+    z-index:997;
+    background:rgba(11,7,24,.95);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid #1a1730;
     display:flex;
+    justify-content:space-between;
     align-items:center;
-    justify-content:center;
-    position:relative;
-    margin-bottom:15px;
-}
-
-.menuBtn{
-    position:absolute;
-    left:0;
-    width:42px;
-    height:42px;
-    border-radius:50%;
-    background:#121026;
-    border:1px solid #2b224a;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    font-size:20px;
-    color:white;
+    padding:14px 20px;
 }
 
 .logo{
@@ -133,6 +121,20 @@ body{
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
     cursor:pointer;
+}
+
+.menuBtn{
+    background:none;
+    border:none;
+    color:white;
+    font-size:26px;
+    cursor:pointer;
+    line-height:1;
+}
+
+/* ── Main ── */
+.main{
+    padding:15px;
 }
 
 /* ── Container ── */
@@ -216,9 +218,7 @@ body{
     transition:.2s;
 }
 
-.historyItem:hover{
-    border-color:#8b5cf6;
-}
+.historyItem:hover{ border-color:#8b5cf6; }
 
 .historyDate{
     font-size:11px;
@@ -250,7 +250,6 @@ body{
     padding:15px 0;
 }
 
-/* ── Loading ── */
 .loading{
     text-align:center;
     color:#8d8aa5;
@@ -276,16 +275,16 @@ body{
     <button onclick="logout()">🚪 Logout</button>
 </div>
 
-<!-- Topbar -->
-<div class="topbar">
-    <div class="menuBtn" onclick="toggleDrawer()">👤</div>
+<!-- Header -->
+<div class="header">
     <div class="logo" onclick="window.location.href='/'">🚀 ReelScribe</div>
+    <button class="menuBtn" onclick="toggleDrawer()">☰</button>
 </div>
 
 <!-- Main -->
+<div class="main">
 <div class="container">
 
-    <!-- Latest Transcript -->
     <div class="card">
         <h3>📄 Latest Transcript</h3>
         <div class="transcript" id="fullTranscript">
@@ -294,14 +293,12 @@ body{
         <button class="copyBtn" id="copyBtn" onclick="copyTranscript()">📋 Copy Transcript</button>
     </div>
 
-    <!-- New Transcript -->
     <div class="card">
         <h3>🎥 New Transcript</h3>
         <p>Upload a new video or paste Instagram URL</p>
         <button class="mainBtn" onclick="newTranscript()">✨ Create New Transcript</button>
     </div>
 
-    <!-- History -->
     <div class="card">
         <h3>📜 History</h3>
         <div id="historyList">
@@ -310,10 +307,10 @@ body{
     </div>
 
 </div>
+</div>
 
 <script>
 
-// Email setup
 const params = new URLSearchParams(window.location.search);
 const googleEmail = params.get("email");
 if(googleEmail){
@@ -328,7 +325,6 @@ if(!email){
 document.getElementById("drawerEmail").innerText = email;
 document.getElementById("drawerName").innerText = email.split("@")[0];
 
-// ── Load Credits ──
 async function loadCredits(){
     try{
         const res = await fetch("/credits/" + encodeURIComponent(email));
@@ -336,26 +332,20 @@ async function loadCredits(){
         if(data.success){
             document.getElementById("credits").innerText = data.credits;
         }
-    } catch(e){
-        console.log(e);
-    }
+    } catch(e){ console.log(e); }
 }
 
-// ── Load Latest Transcript from Server ──
 async function loadLatestTranscript(){
     try{
         const res = await fetch("/history/" + encodeURIComponent(email));
         const data = await res.json();
-
         const transcriptDiv = document.getElementById("fullTranscript");
         const copyBtn = document.getElementById("copyBtn");
 
         if(data.success && data.data && data.data.length > 0){
-            const latest = data.data[0]; // sabse latest
+            const latest = data.data[0];
             transcriptDiv.innerText = latest.transcript;
-            // localStorage bhi update karo
             localStorage.setItem("latestTranscript", latest.transcript);
-            // Copy button dikhao
             copyBtn.style.display = "block";
         } else {
             transcriptDiv.innerHTML = '<div class="noTranscript">📭 Koi transcript nahi hai abhi.<br>Naya banao!</div>';
@@ -363,26 +353,22 @@ async function loadLatestTranscript(){
         }
     } catch(e){
         document.getElementById("fullTranscript").innerHTML = '<div class="noTranscript">❌ Load nahi hua</div>';
-        console.log(e);
     }
 }
 
-// ── Load History ──
 async function loadHistory(){
     try{
         const res = await fetch("/history/" + encodeURIComponent(email));
         const data = await res.json();
-
         const historyList = document.getElementById("historyList");
 
         if(data.success && data.data && data.data.length > 0){
             historyList.innerHTML = "";
-            data.data.forEach((item, index) => {
+            data.data.forEach((item) => {
                 const date = new Date(item.createdAt).toLocaleDateString("en-IN", {
                     day:"numeric", month:"short", year:"numeric",
                     hour:"2-digit", minute:"2-digit"
                 });
-
                 const div = document.createElement("div");
                 div.className = "historyItem";
                 div.innerHTML = `
@@ -391,7 +377,6 @@ async function loadHistory(){
                     <div class="historyUrl">${item.reelUrl.substring(0, 50)}</div>
                 `;
                 div.onclick = () => {
-                    // Click pe transcript load karo
                     document.getElementById("fullTranscript").innerText = item.transcript;
                     document.getElementById("copyBtn").style.display = "block";
                     localStorage.setItem("latestTranscript", item.transcript);
@@ -404,11 +389,9 @@ async function loadHistory(){
         }
     } catch(e){
         document.getElementById("historyList").innerHTML = '<div class="noHistory">❌ History load nahi hui</div>';
-        console.log(e);
     }
 }
 
-// ── Copy Transcript ──
 function copyTranscript(){
     const text = document.getElementById("fullTranscript").innerText;
     navigator.clipboard.writeText(text).then(()=>{
@@ -418,13 +401,11 @@ function copyTranscript(){
     });
 }
 
-// ── Drawer ──
 function toggleDrawer(){
     document.getElementById("drawer").classList.toggle("active");
     document.getElementById("overlay").classList.toggle("active");
 }
 
-// ── Actions ──
 function newTranscript(){
     localStorage.removeItem("latestTranscript");
     window.location.href = "/new.html";
@@ -440,7 +421,6 @@ function logout(){
     window.location.href = "/";
 }
 
-// ── Init ──
 loadCredits();
 loadLatestTranscript();
 loadHistory();
