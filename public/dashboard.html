@@ -31,9 +31,7 @@ body{
     backdrop-filter:blur(3px);
     z-index:998;
 }
-.overlay.active{
-    display:block;
-}
+.overlay.active{ display:block; }
 
 /* ── Drawer ── */
 .drawer{
@@ -51,11 +49,9 @@ body{
     display:flex;
     flex-direction:column;
     gap:10px;
+    overflow-y:auto;
 }
-
-.drawer.active{
-    left:0;
-}
+.drawer.active{ left:0; }
 
 .drawerAvatar{
     width:55px;
@@ -139,7 +135,7 @@ body{
     cursor:pointer;
 }
 
-/* ── Main Container ── */
+/* ── Container ── */
 .container{
     background:#121026;
     padding:15px;
@@ -175,6 +171,13 @@ body{
     color:#ddd;
 }
 
+.noTranscript{
+    color:#8d8aa5;
+    font-size:14px;
+    text-align:center;
+    padding:20px 0;
+}
+
 .copyBtn{
     width:100%;
     padding:13px;
@@ -186,6 +189,7 @@ body{
     font-weight:bold;
     cursor:pointer;
     margin-top:12px;
+    display:none;
 }
 
 .mainBtn{
@@ -201,6 +205,59 @@ body{
     margin-top:10px;
 }
 
+/* ── History ── */
+.historyItem{
+    background:#0d0a1d;
+    border:1px solid #2b224a;
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:10px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.historyItem:hover{
+    border-color:#8b5cf6;
+}
+
+.historyDate{
+    font-size:11px;
+    color:#8d8aa5;
+    margin-bottom:5px;
+}
+
+.historyPreview{
+    font-size:13px;
+    color:#ccc;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.historyUrl{
+    font-size:11px;
+    color:#8b5cf6;
+    margin-top:4px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.noHistory{
+    text-align:center;
+    color:#8d8aa5;
+    font-size:13px;
+    padding:15px 0;
+}
+
+/* ── Loading ── */
+.loading{
+    text-align:center;
+    color:#8d8aa5;
+    font-size:13px;
+    padding:15px 0;
+}
+
 </style>
 </head>
 <body>
@@ -214,7 +271,7 @@ body{
     <div class="drawerName" id="drawerName">User</div>
     <div class="drawerEmail" id="drawerEmail">Loading...</div>
     <div class="creditsBox">💰 Credits: <span id="credits">Loading...</span></div>
-    <button onclick="historyPage()">📜 History</button>
+    <button onclick="toggleDrawer()">✖ Close</button>
     <button onclick="buyCredits()">💳 Buy Credits</button>
     <button onclick="logout()">🚪 Logout</button>
 </div>
@@ -228,22 +285,35 @@ body{
 <!-- Main -->
 <div class="container">
 
+    <!-- Latest Transcript -->
     <div class="card">
-        <h3>📄 Full Transcript</h3>
-        <div class="transcript" id="fullTranscript">No Transcript</div>
-        <button class="copyBtn" onclick="copyTranscript()">📋 Copy Transcript</button>
+        <h3>📄 Latest Transcript</h3>
+        <div class="transcript" id="fullTranscript">
+            <div class="loading">⏳ Loading...</div>
+        </div>
+        <button class="copyBtn" id="copyBtn" onclick="copyTranscript()">📋 Copy Transcript</button>
     </div>
 
+    <!-- New Transcript -->
     <div class="card">
         <h3>🎥 New Transcript</h3>
-        <p>Upload a new video and generate transcript</p>
-        <button class="mainBtn" onclick="newTranscript()">Create New Transcript</button>
+        <p>Upload a new video or paste Instagram URL</p>
+        <button class="mainBtn" onclick="newTranscript()">✨ Create New Transcript</button>
+    </div>
+
+    <!-- History -->
+    <div class="card">
+        <h3>📜 History</h3>
+        <div id="historyList">
+            <div class="loading">⏳ Loading...</div>
+        </div>
     </div>
 
 </div>
 
 <script>
 
+// Email setup
 const params = new URLSearchParams(window.location.search);
 const googleEmail = params.get("email");
 if(googleEmail){
@@ -258,35 +328,89 @@ if(!email){
 document.getElementById("drawerEmail").innerText = email;
 document.getElementById("drawerName").innerText = email.split("@")[0];
 
-const transcript = localStorage.getItem("latestTranscript");
-if(transcript){
-    document.getElementById("fullTranscript").innerText = transcript;
-}
-
+// ── Load Credits ──
 async function loadCredits(){
     try{
-        const response = await fetch("/credits/" + encodeURIComponent(email));
-        const data = await response.json();
+        const res = await fetch("/credits/" + encodeURIComponent(email));
+        const data = await res.json();
         if(data.success){
             document.getElementById("credits").innerText = data.credits;
         }
-    }catch(error){
-        console.log(error);
+    } catch(e){
+        console.log(e);
     }
 }
-loadCredits();
 
-function toggleDrawer(){
-    document.getElementById("drawer").classList.toggle("active");
-    document.getElementById("overlay").classList.toggle("active");
+// ── Load Latest Transcript from Server ──
+async function loadLatestTranscript(){
+    try{
+        const res = await fetch("/history/" + encodeURIComponent(email));
+        const data = await res.json();
+
+        const transcriptDiv = document.getElementById("fullTranscript");
+        const copyBtn = document.getElementById("copyBtn");
+
+        if(data.success && data.data && data.data.length > 0){
+            const latest = data.data[0]; // sabse latest
+            transcriptDiv.innerText = latest.transcript;
+            // localStorage bhi update karo
+            localStorage.setItem("latestTranscript", latest.transcript);
+            // Copy button dikhao
+            copyBtn.style.display = "block";
+        } else {
+            transcriptDiv.innerHTML = '<div class="noTranscript">📭 Koi transcript nahi hai abhi.<br>Naya banao!</div>';
+            copyBtn.style.display = "none";
+        }
+    } catch(e){
+        document.getElementById("fullTranscript").innerHTML = '<div class="noTranscript">❌ Load nahi hua</div>';
+        console.log(e);
+    }
 }
 
+// ── Load History ──
+async function loadHistory(){
+    try{
+        const res = await fetch("/history/" + encodeURIComponent(email));
+        const data = await res.json();
+
+        const historyList = document.getElementById("historyList");
+
+        if(data.success && data.data && data.data.length > 0){
+            historyList.innerHTML = "";
+            data.data.forEach((item, index) => {
+                const date = new Date(item.createdAt).toLocaleDateString("en-IN", {
+                    day:"numeric", month:"short", year:"numeric",
+                    hour:"2-digit", minute:"2-digit"
+                });
+
+                const div = document.createElement("div");
+                div.className = "historyItem";
+                div.innerHTML = `
+                    <div class="historyDate">📅 ${date}</div>
+                    <div class="historyPreview">${item.transcript.substring(0, 80)}...</div>
+                    <div class="historyUrl">${item.reelUrl.substring(0, 50)}</div>
+                `;
+                div.onclick = () => {
+                    // Click pe transcript load karo
+                    document.getElementById("fullTranscript").innerText = item.transcript;
+                    document.getElementById("copyBtn").style.display = "block";
+                    localStorage.setItem("latestTranscript", item.transcript);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                };
+                historyList.appendChild(div);
+            });
+        } else {
+            historyList.innerHTML = '<div class="noHistory">📭 Koi history nahi hai</div>';
+        }
+    } catch(e){
+        document.getElementById("historyList").innerHTML = '<div class="noHistory">❌ History load nahi hui</div>';
+        console.log(e);
+    }
+}
+
+// ── Copy Transcript ──
 function copyTranscript(){
     const text = document.getElementById("fullTranscript").innerText;
-    if(text === "No Transcript"){
-        alert("Koi transcript nahi hai!");
-        return;
-    }
     navigator.clipboard.writeText(text).then(()=>{
         alert("✅ Transcript copied!");
     }).catch(()=>{
@@ -294,6 +418,13 @@ function copyTranscript(){
     });
 }
 
+// ── Drawer ──
+function toggleDrawer(){
+    document.getElementById("drawer").classList.toggle("active");
+    document.getElementById("overlay").classList.toggle("active");
+}
+
+// ── Actions ──
 function newTranscript(){
     localStorage.removeItem("latestTranscript");
     window.location.href = "/new.html";
@@ -303,15 +434,16 @@ function buyCredits(){
     window.open("https://instagram.com/tarunraj1517","_blank");
 }
 
-function historyPage(){
-    alert("History page coming soon");
-}
-
 function logout(){
     localStorage.removeItem("userEmail");
     localStorage.removeItem("latestTranscript");
     window.location.href = "/";
 }
+
+// ── Init ──
+loadCredits();
+loadLatestTranscript();
+loadHistory();
 
 </script>
 </body>
