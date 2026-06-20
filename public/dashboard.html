@@ -1,329 +1,316 @@
-<!DOCTYPE html><html>
+<!DOCTYPE html>
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ReelScribe Dashboard</title><style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReelScribe Dashboard</title>
+<style>
 
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
 }
 
 body{
-background:#0b0718;
-padding:20px;
-color:white;
+    background:#0b0718;
+    padding:20px;
+    color:white;
 }
 
-.topbar{
-max-width:700px;
-margin:auto;
-display:flex;
-align-items:center;
-justify-content:center;
-position:relative;
-margin-bottom:15px;
+/* ── Overlay ── */
+.overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    backdrop-filter:blur(3px);
+    z-index:998;
+}
+.overlay.active{
+    display:block;
 }
 
-.menuBtn{
-position:absolute;
-left:0;
-width:45px;
-height:45px;
-border-radius:50%;
-background:#121026;
-border:1px solid #2b224a;
-display:flex;
-align-items:center;
-justify-content:center;
-cursor:pointer;
-font-size:22px;
-color:white;
-}
-
-.logo{
-font-size:32px;
-font-weight:bold;
-background:linear-gradient(90deg,#8b5cf6,#ec4899);
--webkit-background-clip:text;
--webkit-text-fill-color:transparent;
-text-align:center;
-cursor:pointer;
-}
-
-.container{
-max-width:700px;
-margin:auto;
-background:#121026;
-padding:20px;
-border-radius:24px;
-border:1px solid #2b224a;
-}
-
-.card{
-background:#1a1730;
-border:1px solid #2b224a;
-border-radius:18px;
-padding:18px;
-margin-bottom:15px;
-}
-
-.card h3{
-margin-bottom:12px;
-}
-
-button{
-width:100%;
-padding:14px;
-border:none;
-border-radius:14px;
-background:linear-gradient(90deg,#8b5cf6,#ec4899);
-color:white;
-font-size:16px;
-font-weight:bold;
-cursor:pointer;
-margin-top:10px;
-}
-
-.transcript{
-white-space:pre-wrap;
-line-height:1.8;
-max-height:450px;
-overflow:auto;
-}
-
+/* ── Drawer ── */
 .drawer{
-position:fixed;
-top:0;
-left:-300px;
-width:280px;
-height:100%;
-background:#121026;
-border-right:1px solid #2b224a;
-padding:20px;
-transition:.3s;
-z-index:999;
+    position:fixed;
+    top:0;
+    left:-320px;
+    width:280px;
+    height:100%;
+    background:#121026;
+    border-right:1px solid #2b224a;
+    padding:30px 20px 20px;
+    transition:.3s ease;
+    z-index:999;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
 }
 
 .drawer.active{
-left:0;
+    left:0;
 }
 
-.drawer h3{
-margin-bottom:8px;
+.drawerAvatar{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#8b5cf6,#ec4899);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    margin-bottom:10px;
 }
 
-.drawer p{
-color:#b8b8c5;
-margin-bottom:15px;
+.drawerName{
+    font-size:18px;
+    font-weight:bold;
+    color:white;
 }
 
-</style></head><body><div id="drawer" class="drawer"><h3 id="drawerName">
-User
-</h3><p id="drawerEmail">
-Loading...
-</p><p>
-💰 Credits:
-<span id="credits">
-Loading...
-</span>
-</p><button onclick="historyPage()">
-📜 History
-</button><button onclick="buyCredits()">
-💳 Buy Credits
-</button><button onclick="logout()">
-🚪 Logout
-</button></div><div class="topbar"><div
-class="menuBtn"
-onclick="toggleDrawer()">
-👤
-</div><div
-class="logo"
-onclick="window.location.href='/'">
-🚀 ReelScribe
-</div></div><div class="container"><div class="card"><h3>
-📄 Full Transcript
-</h3><div
-class="transcript"
-id="fullTranscript">
-No Transcript
-</div></div><div class="card"><h3>
-🎥 New Transcript
-</h3><p>
-Upload a new video and generate transcript
-</p><button onclick="newTranscript()">
-Create New Transcript
-</button></div></div><script>
+.drawerEmail{
+    font-size:13px;
+    color:#8d8aa5;
+    margin-bottom:5px;
+}
 
-  const params =
-new URLSearchParams(window.location.search);
+.creditsBox{
+    background:#1a1730;
+    border:1px solid #2b224a;
+    border-radius:12px;
+    padding:12px 15px;
+    font-size:15px;
+    color:#b8b8c5;
+    margin-bottom:5px;
+}
 
-const googleEmail =
-params.get("email");
+.drawer button{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    color:white;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:0;
+}
 
+/* ── Topbar ── */
+.topbar{
+    max-width:700px;
+    margin:0 auto 15px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+}
+
+.menuBtn{
+    position:absolute;
+    left:0;
+    width:45px;
+    height:45px;
+    border-radius:50%;
+    background:#121026;
+    border:1px solid #2b224a;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-size:22px;
+    color:white;
+}
+
+.logo{
+    font-size:26px;
+    font-weight:bold;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    cursor:pointer;
+}
+
+/* ── Main Container ── */
+.container{
+    max-width:700px;
+    margin:auto;
+    background:#121026;
+    padding:20px;
+    border-radius:24px;
+    border:1px solid #2b224a;
+}
+
+.card{
+    background:#1a1730;
+    border:1px solid #2b224a;
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:15px;
+}
+
+.card h3{
+    margin-bottom:12px;
+    font-size:17px;
+}
+
+.card p{
+    color:#8d8aa5;
+    font-size:14px;
+    margin-bottom:5px;
+}
+
+.transcript{
+    white-space:pre-wrap;
+    line-height:1.8;
+    max-height:450px;
+    overflow:auto;
+    font-size:15px;
+    color:#ddd;
+}
+
+.copyBtn{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    color:white;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:12px;
+}
+
+.mainBtn{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:14px;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:10px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
+
+<!-- Drawer -->
+<div id="drawer" class="drawer">
+    <div class="drawerAvatar">👤</div>
+    <div class="drawerName" id="drawerName">User</div>
+    <div class="drawerEmail" id="drawerEmail">Loading...</div>
+    <div class="creditsBox">💰 Credits: <span id="credits">Loading...</span></div>
+    <button onclick="historyPage()">📜 History</button>
+    <button onclick="buyCredits()">💳 Buy Credits</button>
+    <button onclick="logout()">🚪 Logout</button>
+</div>
+
+<!-- Topbar -->
+<div class="topbar">
+    <div class="menuBtn" onclick="toggleDrawer()">👤</div>
+    <div class="logo" onclick="window.location.href='/'">🚀 ReelScribe</div>
+</div>
+
+<!-- Main -->
+<div class="container">
+
+    <div class="card">
+        <h3>📄 Full Transcript</h3>
+        <div class="transcript" id="fullTranscript">No Transcript</div>
+        <button class="copyBtn" onclick="copyTranscript()">📋 Copy Transcript</button>
+    </div>
+
+    <div class="card">
+        <h3>🎥 New Transcript</h3>
+        <p>Upload a new video and generate transcript</p>
+        <button class="mainBtn" onclick="newTranscript()">Create New Transcript</button>
+    </div>
+
+</div>
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+const googleEmail = params.get("email");
 if(googleEmail){
-
-localStorage.setItem(
-"userEmail",
-googleEmail
-);
-
+    localStorage.setItem("userEmail", googleEmail);
 }
 
-const email =
-localStorage.getItem(
-"userEmail"
-);
-
+const email = localStorage.getItem("userEmail");
 if(!email){
-
-window.location.href="/";
-
+    window.location.href = "/";
 }
 
-document.getElementById(
-"drawerEmail"
-).innerText =
-email;
+document.getElementById("drawerEmail").innerText = email;
+document.getElementById("drawerName").innerText = email.split("@")[0];
 
-document.getElementById(
-"drawerName"
-).innerText =
-email.split("@")[0];
-
-const transcript =
-localStorage.getItem(
-"latestTranscript"
-);
-
+const transcript = localStorage.getItem("latestTranscript");
 if(transcript){
-
-document.getElementById(
-"fullTranscript"
-).innerText =
-transcript;
-
+    document.getElementById("fullTranscript").innerText = transcript;
 }
 
 async function loadCredits(){
-
-try{
-
-const response =
-await fetch(
-"/credits/" +
-encodeURIComponent(email)
-);
-
-const data =
-await response.json();
-
-if(data.success){
-
-document.getElementById(
-"credits"
-).innerText =
-data.credits;
-
+    try{
+        const response = await fetch("/credits/" + encodeURIComponent(email));
+        const data = await response.json();
+        if(data.success){
+            document.getElementById("credits").innerText = data.credits;
+        }
+    }catch(error){
+        console.log(error);
+    }
 }
-
-}catch(error){
-
-console.log(error);
-
-}
-
-}
-
 loadCredits();
 
 function toggleDrawer(){
+    document.getElementById("drawer").classList.toggle("active");
+    document.getElementById("overlay").classList.toggle("active");
+}
 
-document.getElementById(
-"drawer"
-).classList.toggle(
-"active"
-);
-
+function copyTranscript(){
+    const text = document.getElementById("fullTranscript").innerText;
+    if(text === "No Transcript"){
+        alert("Koi transcript nahi hai!");
+        return;
+    }
+    navigator.clipboard.writeText(text).then(()=>{
+        alert("✅ Transcript copied!");
+    }).catch(()=>{
+        alert("Copy failed, manually select karo.");
+    });
 }
 
 function newTranscript(){
-
-localStorage.removeItem(
-"latestTranscript"
-);
-
-window.location.href=
-"/new.html";
-
+    localStorage.removeItem("latestTranscript");
+    window.location.href = "/new.html";
 }
 
 function buyCredits(){
-
-window.open(
-"https://instagram.com/tarunraj1517",
-"_blank"
-);
-
+    window.open("https://instagram.com/tarunraj1517","_blank");
 }
 
 function historyPage(){
-
-alert(
-"History page coming soon"
-);
-
+    alert("History page coming soon");
 }
 
 function logout(){
-
-localStorage.removeItem(
-"userEmail"
-);
-
-localStorage.removeItem(
-"latestTranscript"
-);
-
-window.location.href="/";
-
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("latestTranscript");
+    window.location.href = "/";
 }
 
-document.addEventListener(
-"click",
-function(e){
-
-const drawer =
-document.getElementById(
-"drawer"
-);
-
-const menuBtn =
-document.querySelector(
-".menuBtn"
-);
-
-if(
-drawer.classList.contains(
-"active"
-) &&
-!drawer.contains(
-e.target
-) &&
-!menuBtn.contains(
-e.target
-)
-){
-
-drawer.classList.remove(
-"active"
-);
-
-}
-
-}
-);
-
-</script></body>
+</script>
+</body>
 </html>
