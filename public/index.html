@@ -247,8 +247,8 @@ Upload any video and get an accurate transcript instantly.
     <div id="previewBox">
         <h3>Transcript Preview</h3>
         <div id="previewText"></div>
-        <hr>
-        <div id="loginSection">
+        <div id="loginSection" style="display:none;">
+            <hr style="margin:15px 0; border-color:#2b224a;">
             <p class="lockText">🔒 Login with Google to unlock full transcript</p>
             <button onclick="googleLogin()">🔵 Continue with Google</button>
         </div>
@@ -307,9 +307,8 @@ async function transcribeVideo() {
 
         if (data.success) {
             localStorage.setItem("latestTranscript", data.transcript);
-            alert("Transcript Generated");
             previewText.innerText = data.transcript.substring(0, 300) + "...";
-            // Button hidden rehta hai — success pe kaam ho gaya
+            document.getElementById("loginSection").style.display = "block";
         } else {
             previewText.innerText = data.error || "Something went wrong";
             // Error pe button wapas show karo retry ke liye
