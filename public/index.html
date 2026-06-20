@@ -268,6 +268,47 @@ h1{
     height:20px;
     flex-shrink:0;
 }
+.how-it-works{
+  margin-top:80px;
+  padding:20px;
+}
+
+.how-it-works h2{
+  text-align:center;
+  color:#fff;
+  font-size:32px;
+  margin-bottom:30px;
+}
+
+.steps{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;
+}
+
+.step-card{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;
+  padding:25px;
+  text-align:center;
+  backdrop-filter:blur(10px);
+}
+
+.step-card .icon{
+  font-size:42px;
+  margin-bottom:15px;
+}
+
+.step-card h3{
+  color:white;
+  margin-bottom:10px;
+}
+
+.step-card p{
+  color:#aaa;
+}
+    
 </style>
 </head>
 
@@ -349,6 +390,30 @@ h1{
 
 </div>
 
+<section class="how-it-works">
+  <h2>How ReelScribe Works</h2>
+
+  <div class="steps">
+    <div class="step-card">
+      <div class="icon">🔗</div>
+      <h3>Paste URL</h3>
+      <p>Paste any public Instagram Reel URL.</p>
+    </div>
+
+    <div class="step-card">
+      <div class="icon">⬇️</div>
+      <h3>Fetch Video</h3>
+      <p>ReelScribe automatically downloads the reel.</p>
+    </div>
+
+    <div class="step-card">
+      <div class="icon">📝</div>
+      <h3>Get Transcript</h3>
+      <p>AI generates an accurate transcript in seconds.</p>
+    </div>
+  </div>
+</section>
+    
 <script>
 
 function googleLogin(){
