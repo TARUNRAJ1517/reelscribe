@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ReelScribe</title>
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#0b0718;
+    padding:20px;
+    color:white;
+    max-width:480px;
+    margin:0 auto;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:8px;
+    font-size:26px;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.subtitle{
+    text-align:center;
+    color:#8d8aa5;
+    font-size:14px;
+    margin-bottom:20px;
+}
+
+.platforms{
+    margin-top:30px;
+    text-align:center;
+}
+
+.platforms h2{
+    font-size:24px;
+    margin-bottom:20px;
+    color:white;
+}
+
+.iconRow{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.platformIcon{
+    width:70px;
+    height:70px;
+    background:#f3f4f6;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.platformIcon img{
+    width:32px;
+    height:32px;
+}
+    
+.container{
+    background:#121026;
+    border:1px solid #2b224a;
+    border-radius:24px;
+    padding:20px;
+    box-shadow:0 0 30px rgba(139,92,246,.08);
+}
+
+.sectionTitle{
+    font-size:11px;
+    letter-spacing:2px;
+    color:#8d8aa5;
+    margin-bottom:12px;
+}
+
+.tabs{
+    display:flex;
+    gap:10px;
+    margin-bottom:18px;
+}
+
+.tab{
+    flex:1;
+    text-align:center;
+    padding:12px 8px;
+    border-radius:14px;
+    background:#1a1730;
+    border:1.5px solid #2b224a;
+    color:#8d8aa5;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.tab.active{
+    background:transparent;
+    border:1.5px solid #8b5cf6;
+    color:white;
+}
+
+.uploadBox{
+    border:2px dashed #3b2b6d;
+    border-radius:20px;
+    padding:40px 20px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    background:#0d0a1d;
+    cursor:pointer;
+    transition:.3s;
+    min-height:200px;
+}
+
+.uploadBox:hover{
+    border-color:#8b5cf6;
+}
+
+.uploadIcon{
+    font-size:60px;
+    margin-bottom:12px;
+    filter:drop-shadow(0 0 12px rgba(139,92,246,.5));
+}
+
+.uploadBox h2{
+    font-size:18px;
+    margin-bottom:8px;
+    text-align:center;
+    color:white;
+}
+
+.uploadHint{
+    color:#8d8aa5;
+    text-align:center;
+    font-size:13px;
+}
+
+#fileName{
+    text-align:center;
+    color:#b8b8c5;
+    margin:12px 0 0;
+    font-size:13px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:100%;
+    padding:0 10px;
+    display:none;
+}
+
+.urlInput{
+    width:100%;
+    padding:16px;
+    border-radius:16px;
+    border:1.5px solid #2b224a;
+    background:#1a1730;
+    color:white;
+    font-size:14px;
+    outline:none;
+    transition:.2s;
+}
+
+.urlInput:focus{
+    border-color:#8b5cf6;
+}
+
+.urlInput::placeholder{
+    color:#8d8aa5;
+}
+
+.infoBox{
+    margin-top:14px;
+    padding:14px;
+    background:#1a1730;
+    border:1px solid #2b224a;
+    border-radius:14px;
+    font-size:13px;
+    color:#8d8aa5;
+    line-height:1.6;
+}
+
+.infoBox span{
+    color:#8b5cf6;
+    font-weight:bold;
+}
+
+.divider{
+    height:1px;
+    background:#2b224a;
+    margin:18px 0;
+}
+
+.langTitle{
+    font-size:11px;
+    letter-spacing:2px;
+    color:#8d8aa5;
+    margin-bottom:10px;
+}
+
+#language{
+    width:100%;
+    padding:15px;
+    border-radius:14px;
+    border:1.5px solid #2b224a;
+    background:#1a1730;
+    color:white;
+    font-size:15px;
+    outline:none;
+    appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238d8aa5' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 16px center;
+}
+
+#transcribeBtn{
+    width:100%;
+    padding:16px;
+    border:none;
+    border-radius:16px;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:18px;
+    letter-spacing:.5px;
+}
+
+#previewBox{
+    display:none;
+    margin-top:18px;
+    padding:18px;
+    background:#1a1730;
+    border:1px solid #2b224a;
+    border-radius:18px;
+}
+
+#previewBox h3{
+    margin-bottom:10px;
+    color:white;
+    font-size:15px;
+}
+
+#previewText{
+    white-space:pre-wrap;
+    line-height:1.7;
+    color:#ccc;
+    font-size:14px;
+}
+
+#loginSection{
+    display:none;
+    margin-top:15px;
+}
+
+.lockText{
+    text-align:center;
+    color:#8d8aa5;
+    font-size:13px;
+    margin-bottom:10px;
+}
+
+/* ── Google Button ── */
+#googleBtn{
+    width:100%;
+    padding:14px 20px;
+    border:none;
+    border-radius:14px;
+    background:white;
+    color:#3c4043;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.4);
+    transition:.2s;
+}
+
+#googleBtn:hover{
+    background:#f1f3f4;
+    box-shadow:0 4px 15px rgba(0,0,0,0.5);
+}
+
+.googleLogo{
+    width:20px;
+    height:20px;
+    flex-shrink:0;
+}
+.how-it-works{
+  margin-top:80px;
+  padding:20px;
+}
+
+.how-it-works h2{
+  text-align:center;
+  color:#fff;
+  font-size:32px;
+  margin-bottom:30px;
+}
+
+.steps{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;
+}
+
+.step-card{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;
+  padding:25px;
+  text-align:center;
+  backdrop-filter:blur(10px);
+}
+
+.step-card .icon{
+  font-size:42px;
+  margin-bottom:15px;
+}
+
+.step-card h3{
+  color:white;
+  margin-bottom:10px;
+}
+
+.step-card p{
+  color:#aaa;
+}
+    
+</style>
+</head>
+
+<body>
+
+<h1>🚀 ReelScribe</h1>
+<p class="subtitle">Upload any video and get an accurate transcript instantly.</p>
+
+<div class="container">
+
+    <p class="sectionTitle">INPUT METHOD</p>
+
+    <div class="tabs">
+        <div class="tab active" id="tabUrl" onclick="switchTab('url')">🔗 Instagram URL</div>
+        <div class="tab" id="tabFile" onclick="switchTab('file')">📁 File Upload</div>
+    </div>
+
+    <!-- URL Section -->
+    <div id="urlSection" style="display:block;">
+        <input type="url" class="urlInput" id="videoUrl" placeholder="https://www.instagram.com/reel/ABC123xyz/">
+        <div class="infoBox">
+            <span>Public Reels only.</span> Private account ki videos kaam nahi karengi. Full URL paste karein (reel/ ya p/ waali).
+        </div>
+    </div>
+
+    <!-- File Section -->
+    <div id="fileSection" style="display:none;">
+        <div class="uploadBox" id="uploadBox">
+            <div class="uploadIcon">🎬</div>
+            <h2>Video ya Audio drag karein</h2>
+            <p class="uploadHint">MP4 · MOV · WebM · MP3 · M4A</p>
+            <input type="file" id="videoFile" accept="video/*,audio/*" hidden>
+        </div>
+        <p id="fileName"></p>
+        <div class="infoBox">
+            RapidAPI key ki zaroorat <span>nahi</span> file upload ke liye. Sirf Groq key chahiye.<br>
+            Instagram se video download karne ke liye: <span>snapinsta.app</span>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p class="langTitle">LANGUAGE (optional)</p>
+    <select id="language">
+        <option>Auto detect</option>
+        <option>English</option>
+        <option>Hindi</option>
+        <option>Hinglish</option>
+        <option>Urdu</option>
+        <option>Bengali</option>
+        <option>Tamil</option>
+        <option>Telugu</option>
+        <option>Marathi</option>
+        <option>Gujarati</option>
+        <option>Punjabi</option>
+    </select>
+
+    <button id="transcribeBtn" onclick="transcribeVideo()">✨ Transcript Nikalo</button>
+
+<section class="platforms">
+
+<h2>Supported Platforms</h2>
+
+<div class="iconRow">
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg">
+</div>
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg">
+</div>
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg">
+</div>
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg">
+</div>
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/pinterest.svg">
+</div>
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg">
+</div>
+
+<div class="platformIcon">
+<img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/googledrive.svg">
+</div>
+
+</div>
+
+</section>
+    
+    <div id="previewBox">
+        <h3>Transcript Preview</h3>
+        <div id="previewText"></div>
+        <div id="loginSection">
+            <hr style="margin:15px 0; border-color:#2b224a;">
+            <p class="lockText">🔒 Login with Google to unlock full transcript</p>
+            <!-- Google Button with real logo -->
+            <button id="googleBtn" onclick="googleLogin()">
+                <svg class="googleLogo" viewBox="0 0 48 48">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                </svg>
+                Continue with Google
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<section class="how-it-works">
+  <h2>How ReelScribe Works</h2>
+
+  <div class="steps">
+    <div class="step-card">
+      <div class="icon">🔗</div>
+      <h3>Paste URL</h3>
+      <p>Paste any public Instagram Reel URL.</p>
+    </div>
+
+    <div class="step-card">
+      <div class="icon">⬇️</div>
+      <h3>Fetch Video</h3>
+      <p>ReelScribe automatically downloads the reel.</p>
+    </div>
+
+    <div class="step-card">
+      <div class="icon">📝</div>
+      <h3>Get Transcript</h3>
+      <p>AI generates an accurate transcript in seconds.</p>
+    </div>
+  </div>
+</section>
+    
+<script>
+
+function googleLogin(){
+    window.location.href = "/auth/google";
+}
+
+function switchTab(tab){
+    const urlSection = document.getElementById("urlSection");
+    const fileSection = document.getElementById("fileSection");
+    const tabUrl = document.getElementById("tabUrl");
+    const tabFile = document.getElementById("tabFile");
+
+    if(tab === "url"){
+        urlSection.style.display = "block";
+        fileSection.style.display = "none";
+        tabUrl.classList.add("active");
+        tabFile.classList.remove("active");
+    } else {
+        urlSection.style.display = "none";
+        fileSection.style.display = "block";
+        tabUrl.classList.remove("active");
+        tabFile.classList.add("active");
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("uploadBox").addEventListener("click", () => {
+        document.getElementById("videoFile").click();
+    });
+
+    document.getElementById("videoFile").addEventListener("change", function(){
+        if(this.files.length){
+            const fn = document.getElementById("fileName");
+            fn.style.display = "block";
+            fn.innerText = "📁 " + this.files[0].name;
+        }
+    });
+});
+
+const params = new URLSearchParams(window.location.search);
+const googleEmail = params.get("email");
+if(googleEmail){
+    localStorage.setItem("userEmail", googleEmail);
+}
+
+async function transcribeVideo(){
+    const isUrl = document.getElementById("tabUrl").classList.contains("active");
+    const btn = document.getElementById("transcribeBtn");
+    const previewBox = document.getElementById("previewBox");
+    const previewText = document.getElementById("previewText");
+    const userEmail = localStorage.getItem("userEmail") || "guest@example.com";
+
+    btn.style.display = "none";
+    previewBox.style.display = "block";
+    previewText.innerText = "⏳ Transcript ban raha hai...";
+
+    try {
+        let response;
+
+        if(isUrl){
+            const url = document.getElementById("videoUrl").value.trim();
+            if(!url){
+                alert("Instagram URL daalo pehle!");
+                btn.style.display = "block";
+                previewBox.style.display = "none";
+                return;
+            }
+            response = await fetch("/transcribe-url", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: userEmail, url })
+            });
+        } else {
+            const fileInput = document.getElementById("videoFile");
+            if(!fileInput.files.length){
+                alert("Pehle video select karo!");
+                btn.style.display = "block";
+                previewBox.style.display = "none";
+                return;
+            }
+            const formData = new FormData();
+            formData.append("email", userEmail);
+            formData.append("video", fileInput.files[0]);
+            response = await fetch("/transcribe", {
+                method: "POST",
+                body: formData
+            });
+        }
+
+        const data = await response.json();
+
+        if(data.success){
+            localStorage.setItem("latestTranscript", data.transcript);
+            previewText.innerText = data.transcript.substring(0, 300) + "...";
+            document.getElementById("loginSection").style.display = "block";
+        } else {
+            previewText.innerText = "❌ " + (data.error || "Something went wrong");
+            btn.style.display = "block";
+        }
+
+    } catch(error){
+        previewText.innerText = "❌ Server Error. Please try again.";
+        btn.style.display = "block";
+        console.error(error);
+    }
+}
+
+</script>
+</body>
+</html>
