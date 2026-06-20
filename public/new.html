@@ -14,37 +14,24 @@
 
 body{
     background:#0b0718;
-    padding:20px;
     color:white;
     max-width:480px;
     margin:0 auto;
     min-height:100vh;
 }
 
-/* ── Topbar ── */
-.topbar{
+/* ── Header ── */
+.header{
+    position:sticky;
+    top:0;
+    z-index:999;
+    background:rgba(11,7,24,.95);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid #1a1730;
     display:flex;
+    justify-content:space-between;
     align-items:center;
-    justify-content:center;
-    position:relative;
-    margin-bottom:20px;
-}
-
-.backBtn{
-    position:absolute;
-    left:0;
-    width:42px;
-    height:42px;
-    border-radius:50%;
-    background:#121026;
-    border:1px solid #2b224a;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    font-size:20px;
-    color:white;
-    text-decoration:none;
+    padding:14px 20px;
 }
 
 .logo{
@@ -54,6 +41,22 @@ body{
     -webkit-background-clip:text;
     -webkit-text-fill-color:transparent;
     cursor:pointer;
+}
+
+.backBtn{
+    background:none;
+    border:1px solid #2b224a;
+    border-radius:10px;
+    color:white;
+    font-size:15px;
+    cursor:pointer;
+    padding:8px 14px;
+    background:#121026;
+}
+
+/* ── Main ── */
+.main{
+    padding:20px;
 }
 
 /* ── Container ── */
@@ -114,9 +117,7 @@ body{
     min-height:200px;
 }
 
-.uploadBox:hover{
-    border-color:#8b5cf6;
-}
+.uploadBox:hover{ border-color:#8b5cf6; }
 
 .uploadIcon{
     font-size:60px;
@@ -163,13 +164,8 @@ body{
     transition:.2s;
 }
 
-.urlInput:focus{
-    border-color:#8b5cf6;
-}
-
-.urlInput::placeholder{
-    color:#8d8aa5;
-}
+.urlInput:focus{ border-color:#8b5cf6; }
+.urlInput::placeholder{ color:#8d8aa5; }
 
 /* ── Info Box ── */
 .infoBox{
@@ -183,10 +179,7 @@ body{
     line-height:1.6;
 }
 
-.infoBox span{
-    color:#8b5cf6;
-    font-weight:bold;
-}
+.infoBox span{ color:#8b5cf6; font-weight:bold; }
 
 /* ── Divider ── */
 .divider{
@@ -251,18 +244,18 @@ body{
 </head>
 <body>
 
-<!-- Topbar -->
-<div class="topbar">
-    <a class="backBtn" onclick="window.location.href='/dashboard.html'">←</a>
+<!-- Header -->
+<div class="header">
     <div class="logo" onclick="window.location.href='/'">🚀 ReelScribe</div>
+    <button class="backBtn" onclick="window.location.href='/dashboard.html'">← Back</button>
 </div>
 
-<!-- Container -->
+<!-- Main -->
+<div class="main">
 <div class="container">
 
     <p class="sectionTitle">INPUT METHOD</p>
 
-    <!-- Tabs -->
     <div class="tabs">
         <div class="tab active" id="tabUrl" onclick="switchTab('url')">🔗 Instagram URL</div>
         <div class="tab" id="tabFile" onclick="switchTab('file')">📁 File Upload</div>
@@ -293,7 +286,6 @@ body{
 
     <div class="divider"></div>
 
-    <!-- Language -->
     <p class="langTitle">LANGUAGE (optional)</p>
     <select id="language">
         <option>Auto detect</option>
@@ -309,22 +301,18 @@ body{
         <option>Punjabi</option>
     </select>
 
-    <!-- Button -->
     <button id="generateBtn" onclick="transcribeVideo()">✨ Transcript Nikalo</button>
 
-    <!-- Status -->
     <div id="status"></div>
 
+</div>
 </div>
 
 <script>
 
 const email = localStorage.getItem("userEmail");
-if(!email){
-    window.location.href = "/";
-}
+if(!email){ window.location.href = "/"; }
 
-// Tab switch
 function switchTab(tab){
     const urlSection = document.getElementById("urlSection");
     const fileSection = document.getElementById("fileSection");
@@ -344,12 +332,10 @@ function switchTab(tab){
     }
 }
 
-// Upload box click
 document.getElementById("uploadBox").addEventListener("click", () => {
     document.getElementById("videoFile").click();
 });
 
-// File name show
 document.getElementById("videoFile").addEventListener("change", function(){
     if(this.files.length){
         const fn = document.getElementById("fileName");
@@ -358,7 +344,6 @@ document.getElementById("videoFile").addEventListener("change", function(){
     }
 });
 
-// Main function
 async function transcribeVideo(){
     const isUrl = document.getElementById("tabUrl").classList.contains("active");
     const btn = document.getElementById("generateBtn");
