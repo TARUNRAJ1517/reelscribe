@@ -3,193 +3,248 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>New Transcript</title>
-
+<title>New Transcript – ReelScribe</title>
 <style>
 
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
 }
 
 body{
-background:#f5f7fb;
-padding:20px;
+    background:#0b0718;
+    padding:20px;
+    color:white;
+    min-height:100vh;
 }
 
+/* ── Topbar ── */
+.topbar{
+    max-width:600px;
+    margin:0 auto 20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+}
+
+.backBtn{
+    position:absolute;
+    left:0;
+    width:45px;
+    height:45px;
+    border-radius:50%;
+    background:#121026;
+    border:1px solid #2b224a;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-size:20px;
+    color:white;
+    text-decoration:none;
+}
+
+.logo{
+    font-size:24px;
+    font-weight:bold;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    cursor:pointer;
+}
+
+/* ── Container ── */
 .container{
-max-width:500px;
-margin:auto;
-background:white;
-padding:25px;
-border-radius:20px;
-box-shadow:0 10px 30px rgba(0,0,0,.08);
-margin-top:40px;
+    max-width:600px;
+    margin:auto;
+    background:#121026;
+    border:1px solid #2b224a;
+    border-radius:28px;
+    padding:25px;
+    box-shadow:0 0 30px rgba(139,92,246,.08);
 }
 
-h1{
-text-align:center;
-margin-bottom:10px;
+.pageTitle{
+    font-size:22px;
+    font-weight:bold;
+    text-align:center;
+    margin-bottom:6px;
 }
 
-p{
-text-align:center;
-color:#666;
-margin-bottom:20px;
+.subtitle{
+    text-align:center;
+    color:#8d8aa5;
+    font-size:14px;
+    margin-bottom:25px;
 }
 
-input[type="file"]{
-width:100%;
-margin-bottom:15px;
+/* ── Upload Box ── */
+.uploadBox{
+    border:3px dashed #3b2b6d;
+    border-radius:24px;
+    padding:50px 20px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    background:#0d0a1d;
+    cursor:pointer;
+    transition:.3s;
+    margin-bottom:15px;
 }
 
-button{
-width:100%;
-padding:15px;
-border:none;
-border-radius:12px;
-background:linear-gradient(90deg,#6d5dfc,#00d4c6);
-color:white;
-font-size:18px;
-font-weight:bold;
-cursor:pointer;
+.uploadBox:hover{
+    border-color:#8b5cf6;
+    transform:scale(1.01);
 }
 
+.uploadIcon{
+    font-size:70px;
+    margin-bottom:15px;
+    filter:drop-shadow(0 0 15px rgba(139,92,246,.5));
+}
+
+.uploadBox h2{
+    font-size:20px;
+    margin-bottom:8px;
+    text-align:center;
+}
+
+.uploadHint{
+    color:#8d8aa5;
+    font-size:13px;
+    text-align:center;
+}
+
+#fileName{
+    text-align:center;
+    color:#b8b8c5;
+    font-size:13px;
+    margin-bottom:15px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:100%;
+    padding:0 10px;
+}
+
+/* ── Button ── */
+#generateBtn{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:14px;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    color:white;
+    font-size:17px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* ── Status ── */
 #status{
-margin-top:15px;
-padding:15px;
-background:#fafafa;
-border-radius:12px;
-white-space:pre-wrap;
-line-height:1.6;
-display:none;
+    display:none;
+    margin-top:15px;
+    padding:15px;
+    background:#1a1730;
+    border:1px solid #2b224a;
+    border-radius:14px;
+    white-space:pre-wrap;
+    line-height:1.6;
+    color:#ccc;
+    font-size:14px;
+    text-align:center;
 }
 
 </style>
-
 </head>
-
 <body>
 
+<!-- Topbar -->
+<div class="topbar">
+    <a class="backBtn" onclick="window.location.href='/dashboard.html'">←</a>
+    <div class="logo" onclick="window.location.href='/'">🚀 ReelScribe</div>
+</div>
+
+<!-- Main -->
 <div class="container">
 
-<h1>🎥 New Transcript</h1>
+    <div class="pageTitle">🎥 New Transcript</div>
+    <p class="subtitle">Upload a video and generate a full transcript</p>
 
-<p>
-Upload a video and generate a full transcript
-</p>
+    <div class="uploadBox" onclick="document.getElementById('videoFile').click()">
+        <div class="uploadIcon">🎬</div>
+        <h2>Video Upload Karein</h2>
+        <p class="uploadHint">MP4 • MOV • WebM • MP3 • M4A</p>
+        <input type="file" id="videoFile" accept="video/*,audio/*" hidden>
+    </div>
 
-<input
-type="file"
-id="videoFile"
-accept="video/*"
->
+    <p id="fileName">No file selected</p>
 
-<button onclick="transcribeVideo()">
-Generate Transcript
-</button>
+    <button id="generateBtn" onclick="transcribeVideo()">Generate Transcript</button>
 
-<div id="status"></div>
+    <div id="status"></div>
 
 </div>
 
 <script>
 
-const email =
-localStorage.getItem("userEmail");
-
+const email = localStorage.getItem("userEmail");
 if(!email){
-
-window.location.href =
-"/";
-
+    window.location.href = "/";
 }
+
+document.getElementById("videoFile").addEventListener("change", function(){
+    if(this.files.length){
+        document.getElementById("fileName").innerText = "📁 " + this.files[0].name;
+    }
+});
 
 async function transcribeVideo(){
+    const file = document.getElementById("videoFile").files[0];
+    if(!file){
+        alert("Pehle video select karo!");
+        return;
+    }
 
-const file =
-document.getElementById(
-"videoFile"
-).files[0];
+    const status = document.getElementById("status");
+    const btn = document.getElementById("generateBtn");
 
-if(!file){
+    // Hide button, show status
+    btn.style.display = "none";
+    status.style.display = "block";
+    status.innerText = "⏳ Generating Transcript...";
 
-alert("Select a video");
-return;
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("video", file);
 
-}
+    try{
+        const response = await fetch("/transcribe", {
+            method:"POST",
+            body:formData
+        });
 
-const status =
-document.getElementById(
-"status"
-);
+        const data = await response.json();
 
-status.style.display =
-"block";
+        if(data.success){
+            localStorage.setItem("latestTranscript", data.transcript);
+            window.location.href = "/dashboard.html";
+        } else {
+            status.innerText = "❌ " + (data.error || "Something went wrong");
+            btn.style.display = "block"; // retry
+        }
 
-status.innerText =
-"⏳ Generating Transcript...";
-
-const formData =
-new FormData();
-
-formData.append(
-"email",
-email
-);
-
-formData.append(
-"video",
-file
-);
-
-try{
-
-const response =
-await fetch(
-"/transcribe",
-{
-method:"POST",
-body:formData
-}
-);
-
-const data =
-await response.json();
-
-if(data.success){
-
-localStorage.setItem(
-"latestTranscript",
-data.transcript
-);
-
-window.location.href =
-"/dashboard.html";
-
-}else{
-
-status.innerText =
-data.error ||
-"Something went wrong";
-
-}
-
-}catch(err){
-
-status.innerText =
-"Server Error";
-
-console.log(err);
-
-}
-
+    } catch(err){
+        status.innerText = "❌ Server Error. Please try again.";
+        btn.style.display = "block"; // retry
+        console.log(err);
+    }
 }
 
 </script>
-
 </body>
 </html>
