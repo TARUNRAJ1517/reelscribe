@@ -1,10 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Node packages install
+apt-get update
+apt-get install -y ffmpeg python3 python3-pip
+
+pip3 install yt-dlp
+
 npm install
-
-# yt-dlp install
-curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
-chmod +x /usr/local/bin/yt-dlp
-
-echo "✅ yt-dlp installed: $(yt-dlp --version)"
