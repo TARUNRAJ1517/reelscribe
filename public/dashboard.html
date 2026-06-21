@@ -6,19 +6,16 @@
 <title>ReelScribe Dashboard</title>
 <style>
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
-}
+*{ margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
 
 body{
     background:#0b0718;
     color:white;
-    min-height:100vh;
     max-width:480px;
     margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
 }
 
 /* ── Overlay ── */
@@ -32,18 +29,16 @@ body{
 }
 .overlay.active{ display:block; }
 
-/* ── Drawer — RIGHT SE OPEN ── */
+/* ── Drawer RIGHT ── */
 .drawer{
     position:fixed;
     top:0;
     right:-320px;
-    left:auto;
     width:75%;
     max-width:280px;
     height:100%;
     background:#121026;
     border-left:1px solid #2b224a;
-    border-right:none;
     padding:30px 20px 20px;
     transition:.3s ease;
     z-index:999;
@@ -52,241 +47,159 @@ body{
     gap:10px;
     overflow-y:auto;
 }
-.drawer.active{
-    right:0;
-}
+.drawer.active{ right:0; }
 
 .drawerAvatar{
-    width:55px;
-    height:55px;
-    border-radius:50%;
+    width:55px; height:55px; border-radius:50%;
     background:linear-gradient(135deg,#8b5cf6,#ec4899);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:26px;
-    margin-bottom:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:26px; margin-bottom:8px;
 }
-
-.drawerName{
-    font-size:17px;
-    font-weight:bold;
-    color:white;
-}
-
-.drawerEmail{
-    font-size:12px;
-    color:#8d8aa5;
-    margin-bottom:5px;
-    word-break:break-all;
-}
-
+.drawerName{ font-size:17px; font-weight:bold; color:white; }
+.drawerEmail{ font-size:12px; color:#8d8aa5; margin-bottom:5px; word-break:break-all; }
 .creditsBox{
-    background:#1a1730;
-    border:1px solid #2b224a;
-    border-radius:12px;
-    padding:12px 15px;
-    font-size:14px;
-    color:#b8b8c5;
-    margin-bottom:5px;
+    background:#1a1730; border:1px solid #2b224a;
+    border-radius:12px; padding:12px 15px;
+    font-size:14px; color:#b8b8c5; margin-bottom:5px;
 }
-
 .drawer button{
-    width:100%;
-    padding:13px;
-    border:none;
-    border-radius:12px;
+    width:100%; padding:13px; border:none; border-radius:12px;
     background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    color:white;
-    font-size:15px;
-    font-weight:bold;
-    cursor:pointer;
-    margin-top:0;
+    color:white; font-size:15px; font-weight:bold; cursor:pointer; margin-top:0;
 }
 
 /* ── Header ── */
 .header{
-    position:sticky;
-    top:0;
-    z-index:997;
+    position:sticky; top:0; z-index:997;
     background:rgba(11,7,24,.95);
     backdrop-filter:blur(12px);
     border-bottom:1px solid #1a1730;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:14px 20px;
+    display:flex; justify-content:space-between;
+    align-items:center; padding:14px 20px;
 }
-
 .logo{
-    font-size:22px;
-    font-weight:bold;
+    font-size:22px; font-weight:bold;
     background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
     cursor:pointer;
 }
-
 .menuBtn{
-    background:none;
-    border:none;
-    color:white;
-    font-size:26px;
-    cursor:pointer;
-    line-height:1;
+    background:none; border:none;
+    color:white; font-size:26px; cursor:pointer; line-height:1;
 }
 
-/* ── Main ── */
-.main{ padding:15px; }
-
-/* ── Container ── */
-.container{
-    background:#121026;
+/* ── Main grows to fill space ── */
+.main{
     padding:15px;
-    border-radius:20px;
-    border:1px solid #2b224a;
+    flex:1;
+}
+
+.container{
+    background:#121026; padding:15px;
+    border-radius:20px; border:1px solid #2b224a;
 }
 
 .card{
-    background:#1a1730;
-    border:1px solid #2b224a;
-    border-radius:16px;
-    padding:15px;
-    margin-bottom:12px;
+    background:#1a1730; border:1px solid #2b224a;
+    border-radius:16px; padding:15px; margin-bottom:12px;
 }
-
 .cardHeader{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:10px;
+    display:flex; justify-content:space-between;
+    align-items:center; margin-bottom:10px;
 }
-
 .card h3{ font-size:16px; }
+.card p{ color:#8d8aa5; font-size:13px; margin-bottom:5px; }
 
-.card p{
-    color:#8d8aa5;
-    font-size:13px;
-    margin-bottom:5px;
-}
-
-/* ── History Toggle ── */
 .toggleBtn{
-    background:none;
-    border:1px solid #2b224a;
-    border-radius:8px;
-    color:#8d8aa5;
-    font-size:12px;
-    padding:4px 10px;
-    cursor:pointer;
+    background:none; border:1px solid #2b224a;
+    border-radius:8px; color:#8d8aa5;
+    font-size:12px; padding:4px 10px; cursor:pointer;
 }
-
-.toggleBtn:hover{
-    border-color:#8b5cf6;
-    color:white;
-}
+.toggleBtn:hover{ border-color:#8b5cf6; color:white; }
 
 .transcript{
-    white-space:pre-wrap;
-    line-height:1.7;
-    max-height:400px;
-    overflow:auto;
-    font-size:14px;
-    color:#ddd;
+    white-space:pre-wrap; line-height:1.7;
+    max-height:400px; overflow:auto;
+    font-size:14px; color:#ddd;
 }
-
 .noTranscript{
-    color:#8d8aa5;
-    font-size:14px;
-    text-align:center;
-    padding:20px 0;
+    color:#8d8aa5; font-size:14px;
+    text-align:center; padding:20px 0;
 }
-
 .copyBtn{
-    width:100%;
-    padding:13px;
-    border:none;
-    border-radius:12px;
+    width:100%; padding:13px; border:none; border-radius:12px;
     background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    color:white;
-    font-size:15px;
-    font-weight:bold;
-    cursor:pointer;
-    margin-top:12px;
-    display:none;
+    color:white; font-size:15px; font-weight:bold;
+    cursor:pointer; margin-top:12px; display:none;
 }
-
 .mainBtn{
-    width:100%;
-    padding:13px;
-    border:none;
-    border-radius:12px;
+    width:100%; padding:13px; border:none; border-radius:12px;
     background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    color:white;
-    font-size:15px;
-    font-weight:bold;
-    cursor:pointer;
-    margin-top:10px;
+    color:white; font-size:15px; font-weight:bold;
+    cursor:pointer; margin-top:10px;
 }
 
-/* ── History ── */
 #historyContent{ display:none; }
 
 .historyItem{
-    background:#0d0a1d;
-    border:1px solid #2b224a;
-    border-radius:12px;
-    padding:12px;
-    margin-bottom:10px;
-    cursor:pointer;
+    background:#0d0a1d; border:1px solid #2b224a;
+    border-radius:12px; padding:12px; margin-bottom:10px;
+    cursor:pointer; transition:.2s;
+}
+.historyItem:hover{ border-color:#8b5cf6; }
+.historyDate{ font-size:11px; color:#8d8aa5; margin-bottom:5px; }
+.historyPreview{ font-size:13px; color:#ccc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.historyUrl{ font-size:11px; color:#8b5cf6; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.noHistory{ text-align:center; color:#8d8aa5; font-size:13px; padding:15px 0; }
+.loading{ text-align:center; color:#8d8aa5; font-size:13px; padding:15px 0; }
+
+/* ── Footer always bottom ── */
+footer{
+    padding:30px 20px 20px;
+    border-top:1px solid #1a1730;
+    text-align:left;
+    margin-top:auto;
+}
+
+.footerLegal{
+    font-size:11px;
+    letter-spacing:2px;
+    color:#3d3a52;
+    margin-bottom:16px;
+}
+
+.footerLinks{
+    margin-bottom:24px;
+}
+
+.footerLinks a{
+    display:block;
+    color:#8d8aa5;
+    font-size:15px;
+    text-decoration:none;
+    margin-bottom:12px;
     transition:.2s;
 }
 
-.historyItem:hover{ border-color:#8b5cf6; }
+.footerLinks a:hover{ color:white; }
 
-.historyDate{
-    font-size:11px;
-    color:#8d8aa5;
-    margin-bottom:5px;
+.footerDivider{
+    height:1px;
+    background:#1a1730;
+    margin-bottom:20px;
 }
 
-.historyPreview{
-    font-size:13px;
-    color:#ccc;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-
-.historyUrl{
-    font-size:11px;
-    color:#8b5cf6;
-    margin-top:4px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-
-.noHistory{
+.footerCopy{
     text-align:center;
-    color:#8d8aa5;
+    color:#3d3a52;
     font-size:13px;
-    padding:15px 0;
+    margin-bottom:8px;
 }
 
-.loading{
+.footerTagline{
     text-align:center;
-    color:#8d8aa5;
+    color:#3d3a52;
     font-size:13px;
-    padding:15px 0;
-}
-
-/* ── Footer ── */
-footer{
-    margin-top:40px;
-    padding:30px 20px;
-    border-top:1px solid #1a1730;
-    text-align:center;
 }
 
 </style>
@@ -296,7 +209,7 @@ footer{
 <!-- Overlay -->
 <div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
 
-<!-- Drawer — RIGHT SE ── -->
+<!-- Drawer RIGHT -->
 <div id="drawer" class="drawer">
     <div class="drawerAvatar">👤</div>
     <div class="drawerName" id="drawerName">User</div>
@@ -317,7 +230,6 @@ footer{
 <div class="main">
 <div class="container">
 
-    <!-- Latest Transcript -->
     <div class="card">
         <h3>📄 Latest Transcript</h3>
         <div class="transcript" id="fullTranscript">
@@ -326,14 +238,12 @@ footer{
         <button class="copyBtn" id="copyBtn" onclick="copyTranscript()">📋 Copy Transcript</button>
     </div>
 
-    <!-- New Transcript -->
     <div class="card">
         <h3>🎥 New Transcript</h3>
         <p>Upload a new video or paste Instagram URL</p>
         <button class="mainBtn" onclick="newTranscript()">✨ Create New Transcript</button>
     </div>
 
-    <!-- History — Collapsible ── -->
     <div class="card">
         <div class="cardHeader">
             <h3>📜 History</h3>
@@ -349,13 +259,23 @@ footer{
 </div>
 </div>
 
+<!-- Footer always at bottom -->
+<footer>
+    <p class="footerLegal">LEGAL</p>
+    <div class="footerLinks">
+        <a href="/terms.html">Terms of Service</a>
+        <a href="/privacy.html">Privacy Policy</a>
+    </div>
+    <div class="footerDivider"></div>
+    <p class="footerCopy">© 2026 ReelScribe. All rights reserved.</p>
+    <p class="footerTagline">Transcribe · Repurpose · Scale</p>
+</footer>
+
 <script>
 
 const params = new URLSearchParams(window.location.search);
 const googleEmail = params.get("email");
-if(googleEmail){
-    localStorage.setItem("userEmail", googleEmail);
-}
+if(googleEmail){ localStorage.setItem("userEmail", googleEmail); }
 
 const email = localStorage.getItem("userEmail");
 if(!email){ window.location.href = "/"; }
@@ -363,7 +283,6 @@ if(!email){ window.location.href = "/"; }
 document.getElementById("drawerEmail").innerText = email;
 document.getElementById("drawerName").innerText = email.split("@")[0];
 
-// ── History Toggle ──
 let historyLoaded = false;
 let historyOpen = false;
 
@@ -371,14 +290,10 @@ function toggleHistory(){
     historyOpen = !historyOpen;
     const content = document.getElementById("historyContent");
     const btn = document.getElementById("historyToggle");
-
     if(historyOpen){
         content.style.display = "block";
         btn.innerText = "Hide ▲";
-        if(!historyLoaded){
-            loadHistory();
-            historyLoaded = true;
-        }
+        if(!historyLoaded){ loadHistory(); historyLoaded = true; }
     } else {
         content.style.display = "none";
         btn.innerText = "Show ▼";
@@ -389,9 +304,7 @@ async function loadCredits(){
     try{
         const res = await fetch("/credits/" + encodeURIComponent(email));
         const data = await res.json();
-        if(data.success){
-            document.getElementById("credits").innerText = data.credits;
-        }
+        if(data.success){ document.getElementById("credits").innerText = data.credits; }
     } catch(e){ console.log(e); }
 }
 
@@ -401,7 +314,6 @@ async function loadLatestTranscript(){
         const data = await res.json();
         const transcriptDiv = document.getElementById("fullTranscript");
         const copyBtn = document.getElementById("copyBtn");
-
         if(data.success && data.data && data.data.length > 0){
             const latest = data.data[0];
             transcriptDiv.innerText = latest.transcript;
@@ -421,7 +333,6 @@ async function loadHistory(){
         const res = await fetch("/history/" + encodeURIComponent(email));
         const data = await res.json();
         const historyList = document.getElementById("historyList");
-
         if(data.success && data.data && data.data.length > 0){
             historyList.innerHTML = "";
             data.data.forEach((item) => {
@@ -471,9 +382,7 @@ function newTranscript(){
     window.location.href = "/new.html";
 }
 
-function buyCredits(){
-    window.location.href = "/pricing.html";
-}
+function buyCredits(){ window.location.href = "/pricing.html"; }
 
 function logout(){
     localStorage.removeItem("userEmail");
@@ -485,22 +394,5 @@ loadCredits();
 loadLatestTranscript();
 
 </script>
-    <!-- Footer -->
-    <footer>
-    <p style="color:#3d3a52; font-size:11px; letter-spacing:2px; margin-bottom:16px;">LEGAL</p>
-    <p style="margin-bottom:12px;">
-        <a href="/terms.html" style="color:#8d8aa5; font-size:15px; text-decoration:none;">Terms of Service</a>
-    </p>
-    <p style="margin-bottom:24px;">
-        <a href="/privacy.html" style="color:#8d8aa5; font-size:15px; text-decoration:none;">Privacy Policy</a>
-    </p>
-    <hr style="border-color:#1a1730; margin-bottom:20px;">
-    <p style="color:#3d3a52; font-size:13px; margin-bottom:10px;">
-        © 2026 ReelScribe. All rights reserved.
-    </p>
-    <p style="color:#3d3a52; font-size:13px;">
-        Transcribe · Repurpose · Scale
-    </p>
-</footer>
 </body>
 </html>
