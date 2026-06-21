@@ -1,67 +1,305 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin Panel</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ReelScribe Admin</title>
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
+
+body{
+    background:#0b0718;
+    color:white;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.loginCard, .adminCard{
+    background:#121026;
+    border:1px solid #2b224a;
+    border-radius:24px;
+    padding:30px 24px;
+    width:100%;
+    max-width:420px;
+}
+
+h2{
+    font-size:22px;
+    margin-bottom:6px;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.subtitle{
+    color:#8d8aa5;
+    font-size:13px;
+    margin-bottom:24px;
+}
+
+label{
+    font-size:11px;
+    letter-spacing:2px;
+    color:#8d8aa5;
+    display:block;
+    margin-bottom:8px;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    border-radius:14px;
+    border:1.5px solid #2b224a;
+    background:#1a1730;
+    color:white;
+    font-size:15px;
+    outline:none;
+    margin-bottom:16px;
+    transition:.2s;
+}
+
+input:focus{ border-color:#8b5cf6; }
+input::placeholder{ color:#8d8aa5; }
+
+input[type="password"]{ letter-spacing:3px; }
+
+.btn{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:14px;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899);
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:4px;
+    transition:.2s;
+}
+
+.btn:hover{ opacity:.9; }
+
+/* ── Result Box ── */
+.resultBox{
+    margin-top:16px;
+    padding:14px;
+    background:#1a1730;
+    border:1px solid #2b224a;
+    border-radius:14px;
+    font-size:13px;
+    line-height:1.6;
+    display:none;
+}
+
+.resultBox.success{ border-color:#22c55e; color:#86efac; }
+.resultBox.error{ border-color:#ef4444; color:#fca5a5; }
+
+/* ── Users Table ── */
+.usersCard{
+    background:#121026;
+    border:1px solid #2b224a;
+    border-radius:20px;
+    padding:20px;
+    width:100%;
+    max-width:420px;
+    margin-top:16px;
+}
+
+.usersCard h3{
+    font-size:16px;
+    margin-bottom:14px;
+    color:white;
+}
+
+.userItem{
+    background:#1a1730;
+    border:1px solid #2b224a;
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.userEmail{ font-size:13px; color:#ccc; }
+.userCredits{
+    font-size:13px;
+    color:#8b5cf6;
+    font-weight:bold;
+}
+
+.noUsers{
+    text-align:center;
+    color:#8d8aa5;
+    font-size:13px;
+    padding:15px 0;
+}
+
+/* ── Divider ── */
+.divider{
+    height:1px;
+    background:#2b224a;
+    margin:20px 0;
+}
+
+/* ── Lock screen ── */
+#lockScreen{ display:flex; }
+#adminScreen{ display:none; flex-direction:column; align-items:center; width:100%; }
+</style>
 </head>
 <body>
 
-<h2>Admin Credit Panel 🚀</h2>
+<!-- Lock Screen -->
+<div id="lockScreen">
+    <div class="loginCard">
+        <h2>🔐 Admin Panel</h2>
+        <p class="subtitle">ReelScribe Admin Access</p>
 
-<input
-  type="email"
-  id="email"
-  placeholder="User Email"
-/>
+        <label>ADMIN SECRET KEY</label>
+        <input type="password" id="adminKey" placeholder="Enter secret key..." onkeydown="if(event.key==='Enter') unlock()">
 
-<br><br>
+        <button class="btn" onclick="unlock()">🔓 Unlock Panel</button>
 
-<input
-  type="number"
-  id="credits"
-  placeholder="Credits"
-/>
+        <div class="resultBox" id="loginResult"></div>
+    </div>
+</div>
 
-<br><br>
+<!-- Admin Screen -->
+<div id="adminScreen">
 
-<button onclick="addCredits()">
-  Add Credits
-</button>
+    <!-- Add Credits -->
+    <div class="adminCard">
+        <h2>💰 Add Credits</h2>
+        <p class="subtitle">User ko manually credits add karo</p>
 
-<br><br>
+        <label>USER EMAIL</label>
+        <input type="email" id="email" placeholder="user@example.com">
 
-<pre id="result"></pre>
+        <label>CREDITS</label>
+        <input type="number" id="credits" placeholder="10" min="1">
+
+        <button class="btn" onclick="addCredits()">✅ Add Credits</button>
+
+        <div class="resultBox" id="addResult"></div>
+    </div>
+
+    <!-- All Users -->
+    <div class="usersCard">
+        <h3>👥 All Users</h3>
+        <div id="usersList">
+            <div class="noUsers">⏳ Loading...</div>
+        </div>
+        <button class="btn" onclick="loadUsers()" style="margin-top:10px;">🔄 Refresh</button>
+    </div>
+
+</div>
 
 <script>
 
-async function addCredits() {
+let SECRET_KEY = "";
 
-  const email =
-    document.getElementById("email").value;
-
-  const credits =
-    document.getElementById("credits").value;
-
-  const response = await fetch(
-    "/admin/add-credit",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        email,
-        credits
-      })
+function unlock(){
+    const key = document.getElementById("adminKey").value.trim();
+    if(!key){
+        showResult("loginResult", "❌ Key daalo pehle!", false);
+        return;
     }
-  );
+    SECRET_KEY = key;
 
-  const data = await response.json();
+    // Test karo backend se
+    fetch("/admin/users", {
+        headers: { "x-admin-key": key }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success){
+            document.getElementById("lockScreen").style.display = "none";
+            document.getElementById("adminScreen").style.display = "flex";
+            loadUsers();
+        } else {
+            showResult("loginResult", "❌ Wrong key! Access denied.", false);
+            SECRET_KEY = "";
+        }
+    })
+    .catch(() => {
+        showResult("loginResult", "❌ Server error. Try again.", false);
+        SECRET_KEY = "";
+    });
+}
 
-  document.getElementById("result").innerText =
-    JSON.stringify(data, null, 2);
+async function addCredits(){
+    const email = document.getElementById("email").value.trim();
+    const credits = document.getElementById("credits").value.trim();
+
+    if(!email || !credits){
+        showResult("addResult", "❌ Email aur credits dono daalo!", false);
+        return;
+    }
+
+    try {
+        const res = await fetch("/admin/add-credit", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-admin-key": SECRET_KEY
+            },
+            body: JSON.stringify({ email, credits: parseInt(credits) })
+        });
+
+        const data = await res.json();
+
+        if(data.success){
+            showResult("addResult", `✅ ${credits} credits add kiye!\n📧 ${data.user.email}\n💰 Total credits: ${data.user.credits}`, true);
+            document.getElementById("email").value = "";
+            document.getElementById("credits").value = "";
+            loadUsers();
+        } else {
+            showResult("addResult", "❌ " + (data.error || "Something went wrong"), false);
+        }
+    } catch(e){
+        showResult("addResult", "❌ Server error!", false);
+    }
+}
+
+async function loadUsers(){
+    try {
+        const res = await fetch("/admin/users", {
+            headers: { "x-admin-key": SECRET_KEY }
+        });
+        const data = await res.json();
+        const list = document.getElementById("usersList");
+
+        if(data.success && data.data.length > 0){
+            list.innerHTML = "";
+            data.data.forEach(user => {
+                const div = document.createElement("div");
+                div.className = "userItem";
+                div.innerHTML = `
+                    <div class="userEmail">📧 ${user.email}</div>
+                    <div class="userCredits">💰 ${user.credits}</div>
+                `;
+                list.appendChild(div);
+            });
+        } else {
+            list.innerHTML = '<div class="noUsers">📭 Koi user nahi hai</div>';
+        }
+    } catch(e){
+        document.getElementById("usersList").innerHTML = '<div class="noUsers">❌ Load nahi hua</div>';
+    }
+}
+
+function showResult(id, msg, success){
+    const el = document.getElementById(id);
+    el.style.display = "block";
+    el.innerText = msg;
+    el.className = "resultBox " + (success ? "success" : "error");
 }
 
 </script>
-
 </body>
 </html>
