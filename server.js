@@ -13,6 +13,7 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const axios = require("axios");
 const https = require("https");
+const { YoutubeTranscript } = require("youtube-transcript");
 
 const Reel = require("./models/Reel");
 const User = require("./models/User");
@@ -161,6 +162,21 @@ function downloadVideo(videoUrl, outputPath) {
   });
 }
 
+// ── YOUTUBE VIDEO ID NIKALO ──
+function getYouTubeVideoId(url) {
+  const patterns = [
+    /youtube\.com\/watch\?v=([^&]+)/,
+    /youtu\.be\/([^?]+)/,
+    /youtube\.com\/shorts\/([^?]+)/,
+    /youtube\.com\/embed\/([^?]+)/
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
 app.get("/test", (req, res) => {
   res.send("TEST ROUTE WORKING");
 });
@@ -279,7 +295,7 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
   }
 });
 
-// ── TRANSCRIBE URL (Instagram via RapidAPI) ──
+// ── TRANSCRIBE URL (Instagram + YouTube) ──
 app.post("/transcribe-url", async (req, res) => {
   const { email, url } = req.body;
 
@@ -287,10 +303,13 @@ app.post("/transcribe-url", async (req, res) => {
     return res.status(400).json({ success: false, error: "Email aur URL required hai" });
   }
 
-  if (!url.includes("instagram.com")) {
+  const isYouTube = url.includes("youtube.com") || url.includes("youtu.be");
+  const isInstagram = url.includes("instagram.com");
+
+  if (!isYouTube && !isInstagram) {
     return res.status(400).json({
       success: false,
-      error: "Sirf Instagram URLs supported hain"
+      error: "Sirf YouTube aur Instagram URLs supported hain"
     });
   }
 
@@ -306,15 +325,75 @@ app.post("/transcribe-url", async (req, res) => {
     });
   }
 
+  // ── YOUTUBE FLOW ──
+  if (isYouTube) {
+    try {
+      console.log("⏳ YouTube transcript fetch kar raha hoon...");
+
+      const videoId = getYouTubeVideoId(url);
+      if (!videoId) {
+        return res.status(400).json({ success: false, error: "Invalid YouTube URL" });
+      }
+
+      // Transcript fetch karo
+      const transcriptArr = await YoutubeTranscript.fetchTranscript(videoId);
+
+      if (!transcriptArr || transcriptArr.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: "Is video mein transcript/captions available nahi hain."
+        });
+      }
+
+      // Array ko plain text mein convert karo
+      const transcript = transcriptArr
+        .map(item => item.text)
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      console.log("✅ YouTube transcript ready");
+
+      // Credits kato
+      user.credits -= 2;
+      await user.save();
+
+      // History save karo
+      await Reel.create({
+        userEmail: email,
+        reelUrl: url,
+        transcript
+      });
+
+      return res.json({
+        success: true,
+        transcript,
+        creditsLeft: user.credits,
+        source: "youtube-captions"
+      });
+
+    } catch (error) {
+      console.error("YouTube Transcript Error:", error.message);
+
+      let errorMsg = "YouTube transcript fetch nahi hua.";
+      if (error.message.includes("disabled") || error.message.includes("Transcript is disabled")) {
+        errorMsg = "Is video mein captions disabled hain. Dusra video try karo.";
+      } else if (error.message.includes("available")) {
+        errorMsg = "Is video mein transcript available nahi hai.";
+      }
+
+      return res.status(500).json({ success: false, error: errorMsg });
+    }
+  }
+
+  // ── INSTAGRAM FLOW ──
   const outputPath = path.join(__dirname, "uploads", `${Date.now()}_insta.mp4`);
 
   try {
-    // Step 1: RapidAPI se video URL lo
     console.log("⏳ RapidAPI se video URL la raha hoon...");
     const videoUrl = await getInstagramVideoUrl(url);
     console.log("✅ Video URL mila:", videoUrl.substring(0, 60) + "...");
 
-    // Step 2: Video download karo
     console.log("⏳ Video download ho rahi hai...");
     await downloadVideo(videoUrl, outputPath);
     console.log("✅ Video download complete");
@@ -323,7 +402,6 @@ app.post("/transcribe-url", async (req, res) => {
       return res.status(500).json({ success: false, error: "Video download nahi hua" });
     }
 
-    // Step 3: Groq se transcribe karo
     console.log("⏳ Transcribing...");
     const transcription = await groq.audio.transcriptions.create({
       file: fs.createReadStream(outputPath),
@@ -331,29 +409,27 @@ app.post("/transcribe-url", async (req, res) => {
     });
     console.log("✅ Transcript ready");
 
-    // Step 4: Credits kato
     user.credits -= 2;
     await user.save();
 
-    // Step 5: History save karo
     await Reel.create({
       userEmail: email,
       reelUrl: url,
       transcript: transcription.text
     });
 
-    // Step 6: Cleanup
     fs.unlinkSync(outputPath);
 
-    res.json({
+    return res.json({
       success: true,
       transcript: transcription.text,
-      creditsLeft: user.credits
+      creditsLeft: user.credits,
+      source: "groq-whisper"
     });
 
   } catch (error) {
     if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
-    console.error("URL Transcribe Error:", error.message);
+    console.error("Instagram Transcribe Error:", error.message);
 
     let errorMsg = "URL se video nahi mil saka.";
     if (error.message.includes("private") || error.message.includes("Private")) {
@@ -364,7 +440,7 @@ app.post("/transcribe-url", async (req, res) => {
       errorMsg = "RapidAPI limit khatam ho gayi. Thodi der baad try karo.";
     }
 
-    res.status(500).json({ success: false, error: errorMsg });
+    return res.status(500).json({ success: false, error: errorMsg });
   }
 });
 
