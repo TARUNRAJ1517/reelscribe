@@ -314,11 +314,9 @@ app.post("/transcribe-url", async (req, res) => {
   }
 
   const user = await User.findOne({ email });
-  if (!user) {
-    return res.status(404).json({ success: false, error: "User not found. Pehle login karein." });
-  }
+const isGuest = !user;
 
-  if (user.credits < 2) {
+if (!isGuest && user.credits < 2) {
     return res.status(400).json({
       success: false,
       error: "Credits khatam ho gaye! Admin se contact karein."
