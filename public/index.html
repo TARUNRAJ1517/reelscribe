@@ -5,523 +5,227 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ReelScribe</title>
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
-}
+*{ margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
 
-body{
-    background:#0b0718;
-    color:white;
-    max-width:480px;
-    margin:0 auto;
-}
+body{ background:#0b0718; color:white; max-width:480px; margin:0 auto; }
 
-/* ── Header ── */
 .header{
-    position:sticky;
-    top:0;
-    z-index:9999;
-    background:rgba(11,7,24,.95);
-    backdrop-filter:blur(12px);
+    position:sticky; top:0; z-index:9999;
+    background:rgba(11,7,24,.95); backdrop-filter:blur(12px);
     border-bottom:1px solid #1a1730;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+    display:flex; justify-content:space-between; align-items:center;
     padding:14px 20px;
 }
 
-/* ── Footer always bottom ── */
-footer{
-    padding:30px 20px 20px;
-    border-top:1px solid #1a1730;
-    text-align:left;
-    margin-top:auto;
-}
-
-.footerLegal{
-    font-size:11px;
-    letter-spacing:2px;
-    color:#3d3a52;
-    margin-bottom:16px;
-}
-
-.footerLinks{
-    margin-bottom:24px;
-}
-
-.footerLinks a{
-    display:block;
-    color:#8d8aa5;
-    font-size:15px;
-    text-decoration:none;
-    margin-bottom:12px;
-    transition:.2s;
-}
-
-.footerLinks a:hover{ color:white; }
-
-.footerDivider{
-    height:1px;
-    background:#1a1730;
-    margin-bottom:20px;
-}
-
-.footerCopy{
-    text-align:center;
-    color:#3d3a52;
-    font-size:13px;
-    margin-bottom:8px;
-}
-
-.footerTagline{
-    text-align:center;
-    color:#3d3a52;
-    font-size:13px;
-}
-
-    
 .logo{
-    font-size:22px;
-    font-weight:bold;
+    font-size:22px; font-weight:bold;
     background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
 }
 
-.menuBtn{
-    background:none;
-    border:none;
-    color:white;
-    font-size:26px;
-    cursor:pointer;
-}
+.menuBtn{ background:none; border:none; color:white; font-size:26px; cursor:pointer; }
 
-/* ── Menu Overlay ── */
 .menuOverlay{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.6);
-    z-index:10000;
-    backdrop-filter:blur(4px);
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.6); z-index:10000; backdrop-filter:blur(4px);
 }
 
 .menuBox{
-    background:#121026;
-    border:1px solid #2b224a;
-    margin:20px;
-    border-radius:24px;
-    padding:25px;
+    background:#121026; border:1px solid #2b224a;
+    margin:20px; border-radius:24px; padding:25px;
 }
 
 .menuTop{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:20px;
+    display:flex; justify-content:space-between;
+    align-items:center; margin-bottom:20px;
 }
 
 .menuBox a{
-    display:block;
-    padding:16px 0;
-    text-decoration:none;
-    color:#ccc;
-    font-size:17px;
-    border-bottom:1px solid #1a1730;
+    display:block; padding:16px 0; text-decoration:none;
+    color:#ccc; font-size:17px; border-bottom:1px solid #1a1730;
 }
 
 .menuBox a:last-of-type{ border-bottom:none; }
 
-.closeBtn{
-    border:none;
-    background:none;
-    color:white;
-    font-size:24px;
-    cursor:pointer;
-}
+.closeBtn{ border:none; background:none; color:white; font-size:24px; cursor:pointer; }
 
 .menuCTA{
-    width:100%;
-    margin-top:20px;
-    padding:16px;
-    border:none;
-    border-radius:30px;
-    color:white;
-    font-size:16px;
-    font-weight:bold;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    cursor:pointer;
+    width:100%; margin-top:20px; padding:16px; border:none;
+    border-radius:30px; color:white; font-size:16px; font-weight:bold;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899); cursor:pointer;
 }
 
-/* ── Hero Section ── */
-.hero{
-    padding:40px 20px 20px;
-    text-align:center;
-}
+.hero{ padding:40px 20px 20px; text-align:center; }
 
-.hero h2{
-    font-size:28px;
-    font-weight:bold;
-    color:white;
-    line-height:1.3;
-    margin-bottom:12px;
-}
+.hero h2{ font-size:28px; font-weight:bold; color:white; line-height:1.3; margin-bottom:12px; }
 
 .hero h2 span{
     background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
 }
 
-.hero p{
-    color:#8d8aa5;
-    font-size:14px;
-    line-height:1.6;
-    margin-bottom:0;
-}
+.hero p{ color:#8d8aa5; font-size:14px; line-height:1.6; }
 
-/* ── Main Container ── */
-.container{
-    padding:20px;
-}
+.container{ padding:20px; }
 
 .inputCard{
-    background:#121026;
-    border:1px solid #2b224a;
-    border-radius:24px;
-    padding:20px;
-    box-shadow:0 0 30px rgba(139,92,246,.08);
-    margin-bottom:20px;
+    background:#121026; border:1px solid #2b224a;
+    border-radius:24px; padding:20px;
+    box-shadow:0 0 30px rgba(139,92,246,.08); margin-bottom:20px;
 }
 
-.sectionTitle{
-    font-size:11px;
-    letter-spacing:2px;
-    color:#8d8aa5;
-    margin-bottom:12px;
-}
+.sectionTitle{ font-size:11px; letter-spacing:2px; color:#8d8aa5; margin-bottom:12px; }
 
-/* ── Tabs ── */
-.tabs{
-    display:flex;
-    gap:10px;
-    margin-bottom:18px;
-}
+.tabs{ display:flex; gap:10px; margin-bottom:18px; }
 
 .tab{
-    flex:1;
-    text-align:center;
-    padding:12px 8px;
-    border-radius:14px;
-    background:#1a1730;
-    border:1.5px solid #2b224a;
-    color:#8d8aa5;
-    font-size:14px;
-    font-weight:bold;
-    cursor:pointer;
-    transition:.2s;
+    flex:1; text-align:center; padding:12px 8px; border-radius:14px;
+    background:#1a1730; border:1.5px solid #2b224a;
+    color:#8d8aa5; font-size:14px; font-weight:bold; cursor:pointer; transition:.2s;
 }
 
-.tab.active{
-    background:transparent;
-    border:1.5px solid #8b5cf6;
-    color:white;
-}
+.tab.active{ background:transparent; border:1.5px solid #8b5cf6; color:white; }
 
-/* ── URL Input ── */
 .urlInput{
-    width:100%;
-    padding:16px;
-    border-radius:16px;
-    border:1.5px solid #2b224a;
-    background:#1a1730;
-    color:white;
-    font-size:14px;
-    outline:none;
-    transition:.2s;
+    width:100%; padding:16px; border-radius:16px; border:1.5px solid #2b224a;
+    background:#1a1730; color:white; font-size:14px; outline:none; transition:.2s;
 }
 
 .urlInput:focus{ border-color:#8b5cf6; }
 .urlInput::placeholder{ color:#8d8aa5; }
 
-/* ── Upload Box ── */
 .uploadBox{
-    border:2px dashed #3b2b6d;
-    border-radius:20px;
-    padding:35px 20px;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    background:#0d0a1d;
-    cursor:pointer;
-    transition:.3s;
-    min-height:180px;
+    border:2px dashed #3b2b6d; border-radius:20px; padding:35px 20px;
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    background:#0d0a1d; cursor:pointer; transition:.3s; min-height:180px;
 }
 
 .uploadBox:hover{ border-color:#8b5cf6; }
 
-.uploadIcon{
-    font-size:50px;
-    margin-bottom:10px;
-    filter:drop-shadow(0 0 12px rgba(139,92,246,.5));
-}
+.uploadIcon{ font-size:50px; margin-bottom:10px; filter:drop-shadow(0 0 12px rgba(139,92,246,.5)); }
 
-.uploadBox h2{
-    font-size:16px;
-    margin-bottom:6px;
-    text-align:center;
-    color:white;
-}
+.uploadBox h2{ font-size:16px; margin-bottom:6px; text-align:center; color:white; }
 
-.uploadHint{
-    color:#8d8aa5;
-    text-align:center;
-    font-size:12px;
-}
+.uploadHint{ color:#8d8aa5; text-align:center; font-size:12px; }
 
 #fileName{
-    text-align:center;
-    color:#b8b8c5;
-    margin:10px 0 0;
-    font-size:13px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    max-width:100%;
-    padding:0 10px;
-    display:none;
+    text-align:center; color:#b8b8c5; margin:10px 0 0; font-size:13px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    max-width:100%; padding:0 10px; display:none;
 }
 
-/* ── Info Box ── */
 .infoBox{
-    margin-top:12px;
-    padding:12px;
-    background:#1a1730;
-    border:1px solid #2b224a;
-    border-radius:12px;
-    font-size:12px;
-    color:#8d8aa5;
-    line-height:1.6;
+    margin-top:12px; padding:12px; background:#1a1730;
+    border:1px solid #2b224a; border-radius:12px;
+    font-size:12px; color:#8d8aa5; line-height:1.6;
 }
 
 .infoBox span{ color:#8b5cf6; font-weight:bold; }
 
-/* ── Divider ── */
-.divider{
-    height:1px;
-    background:#2b224a;
-    margin:16px 0;
-}
+.divider{ height:1px; background:#2b224a; margin:16px 0; }
 
-/* ── Language ── */
-.langTitle{
-    font-size:11px;
-    letter-spacing:2px;
-    color:#8d8aa5;
-    margin-bottom:10px;
-}
+.langTitle{ font-size:11px; letter-spacing:2px; color:#8d8aa5; margin-bottom:10px; }
 
 #language{
-    width:100%;
-    padding:14px;
-    border-radius:14px;
-    border:1.5px solid #2b224a;
-    background:#1a1730;
-    color:white;
-    font-size:14px;
-    outline:none;
-    appearance:none;
+    width:100%; padding:14px; border-radius:14px; border:1.5px solid #2b224a;
+    background:#1a1730; color:white; font-size:14px; outline:none; appearance:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238d8aa5' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat:no-repeat;
-    background-position:right 16px center;
+    background-repeat:no-repeat; background-position:right 16px center;
 }
 
-/* ── Transcript Button ── */
 #transcribeBtn{
-    width:100%;
-    padding:16px;
-    border:none;
-    border-radius:16px;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    color:white;
-    font-size:17px;
-    font-weight:bold;
-    cursor:pointer;
-    margin-top:16px;
-    letter-spacing:.5px;
+    width:100%; padding:16px; border:none; border-radius:16px;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899); color:white;
+    font-size:17px; font-weight:bold; cursor:pointer; margin-top:16px; letter-spacing:.5px;
 }
 
-/* ── Preview Box ── */
 #previewBox{
-    display:none;
-    margin-top:16px;
-    padding:16px;
-    background:#1a1730;
-    border:1px solid #2b224a;
-    border-radius:18px;
+    display:none; margin-top:16px; padding:16px;
+    background:#1a1730; border:1px solid #2b224a; border-radius:18px;
 }
 
-#previewBox h3{
-    margin-bottom:10px;
-    color:white;
-    font-size:15px;
-}
+#previewBox h3{ margin-bottom:10px; color:white; font-size:15px; }
 
-#previewText{
-    white-space:pre-wrap;
-    line-height:1.7;
-    color:#ccc;
-    font-size:14px;
-}
+#previewText{ white-space:pre-wrap; line-height:1.7; color:#ccc; font-size:14px; }
 
-#loginSection{
-    display:none;
-    margin-top:15px;
-}
+#loginSection{ display:none; margin-top:15px; }
 
-.lockText{
-    text-align:center;
-    color:#8d8aa5;
-    font-size:13px;
-    margin-bottom:10px;
+.lockText{ text-align:center; color:#8d8aa5; font-size:13px; margin-bottom:10px; }
+
+/* Dashboard redirect box — logged in users ke liye */
+#dashboardSection{ display:none; margin-top:15px; }
+
+.dashBtn{
+    width:100%; padding:14px 20px; border:none; border-radius:14px;
+    background:linear-gradient(90deg,#8b5cf6,#ec4899); color:white;
+    font-size:15px; font-weight:bold; cursor:pointer;
 }
 
 #googleBtn{
-    width:100%;
-    padding:14px 20px;
-    border:none;
-    border-radius:14px;
-    background:white;
-    color:#3c4043;
-    font-size:15px;
-    font-weight:600;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:12px;
-    box-shadow:0 2px 10px rgba(0,0,0,0.4);
-    transition:.2s;
+    width:100%; padding:14px 20px; border:none; border-radius:14px;
+    background:white; color:#3c4043; font-size:15px; font-weight:600;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    gap:12px; box-shadow:0 2px 10px rgba(0,0,0,0.4); transition:.2s;
 }
 
-#googleBtn:hover{
-    background:#f1f3f4;
-}
+#googleBtn:hover{ background:#f1f3f4; }
 
 .googleLogo{ width:20px; height:20px; flex-shrink:0; }
 
-/* ── Platforms Section ── */
-.section{
-    padding:0 20px 30px;
-}
+.section{ padding:0 20px 30px; }
 
-.sectionHeading{
-    font-size:13px;
-    letter-spacing:2px;
-    color:#8d8aa5;
-    text-align:center;
-    margin-bottom:16px;
-}
+.sectionHeading{ font-size:13px; letter-spacing:2px; color:#8d8aa5; text-align:center; margin-bottom:16px; }
 
-.platformsRow{
-    display:flex;
-    justify-content:center;
-    gap:10px;
-    flex-wrap:wrap;
-}
+.platformsRow{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
 
 .platformIcon{
-    width:52px;
-    height:52px;
-    background:#121026;
-    border:1px solid #2b224a;
-    border-radius:16px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transition:.2s;
+    width:52px; height:52px; background:#121026; border:1px solid #2b224a;
+    border-radius:16px; display:flex; align-items:center; justify-content:center; transition:.2s;
 }
 
-.platformIcon:hover{
-    border-color:#8b5cf6;
-    transform:scale(1.08);
-}
+.platformIcon:hover{ border-color:#8b5cf6; transform:scale(1.08); }
 
-.platformIcon img{
-    width:26px;
-    height:26px;
-    filter:invert(1);
-    opacity:.8;
-}
+.platformIcon img{ width:26px; height:26px; filter:invert(1); opacity:.8; }
 
-/* ── Features ── */
 .featuresCard{
-    background:#121026;
-    border:1px solid #2b224a;
-    border-radius:20px;
-    padding:18px;
-    margin:0 20px 30px;
+    background:#121026; border:1px solid #2b224a;
+    border-radius:20px; padding:18px; margin:0 20px 30px;
 }
 
-.featuresTitle{
-    font-size:16px;
-    font-weight:bold;
-    margin-bottom:14px;
-    color:white;
-}
+.featuresTitle{ font-size:16px; font-weight:bold; margin-bottom:14px; color:white; }
 
 .featureItem{
-    display:flex;
-    align-items:flex-start;
-    gap:10px;
-    padding:9px 0;
-    border-bottom:1px solid #1a1730;
-    font-size:13px;
-    color:#ccc;
-    line-height:1.5;
+    display:flex; align-items:flex-start; gap:10px; padding:9px 0;
+    border-bottom:1px solid #1a1730; font-size:13px; color:#ccc; line-height:1.5;
 }
 
 .featureItem:last-child{ border-bottom:none; }
 
 .featureCheck{ color:#8b5cf6; font-size:15px; flex-shrink:0; margin-top:1px; }
 
-/* ── How It Works ── */
-.howSection{
-    padding:0 20px 40px;
-}
+.howSection{ padding:0 20px 40px; }
 
-.howTitle{
-    font-size:20px;
-    font-weight:bold;
-    text-align:center;
-    margin-bottom:18px;
-    color:white;
-}
+.howTitle{ font-size:20px; font-weight:bold; text-align:center; margin-bottom:18px; color:white; }
 
-.steps{
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-}
+.steps{ display:flex; flex-direction:column; gap:12px; }
 
 .stepCard{
-    background:#121026;
-    border:1px solid #2b224a;
-    border-radius:18px;
-    padding:18px;
-    display:flex;
-    align-items:center;
-    gap:16px;
+    background:#121026; border:1px solid #2b224a;
+    border-radius:18px; padding:18px; display:flex; align-items:center; gap:16px;
 }
 
 .stepIcon{ font-size:30px; flex-shrink:0; }
-
 .stepText h3{ font-size:15px; margin-bottom:4px; color:white; }
 .stepText p{ font-size:13px; color:#8d8aa5; }
+
+footer{ padding:30px 20px 20px; border-top:1px solid #1a1730; text-align:left; margin-top:auto; }
+.footerLegal{ font-size:11px; letter-spacing:2px; color:#3d3a52; margin-bottom:16px; }
+.footerLinks{ margin-bottom:24px; }
+.footerLinks a{ display:block; color:#8d8aa5; font-size:15px; text-decoration:none; margin-bottom:12px; transition:.2s; }
+.footerLinks a:hover{ color:white; }
+.footerDivider{ height:1px; background:#1a1730; margin-bottom:20px; }
+.footerCopy{ text-align:center; color:#3d3a52; font-size:13px; margin-bottom:8px; }
+.footerTagline{ text-align:center; color:#3d3a52; font-size:13px; }
 </style>
 </head>
 
@@ -542,9 +246,13 @@ footer{
         </div>
         <a href="/">🏠 Home</a>
         <a href="/pricing.html">💰 Pricing</a>
-        <a href="/dashboard.html">📊 Dashboard</a>
-        <button class="menuCTA" onclick="window.location.href='/auth/google'">
+        <!-- Logged in hone pe Dashboard dikhega -->
+        <a href="/dashboard.html" id="menuDashboard" style="display:none;">📊 Dashboard</a>
+        <button class="menuCTA" id="menuLoginBtn" onclick="window.location.href='/auth/google'">
             Login with Google →
+        </button>
+        <button class="menuCTA" id="menuDashBtn" style="display:none; background:linear-gradient(90deg,#1a1730,#2b224a); border:1px solid #2b224a;" onclick="window.location.href='/dashboard.html'">
+            Go to Dashboard →
         </button>
     </div>
 </div>
@@ -552,7 +260,7 @@ footer{
 <!-- Hero -->
 <div class="hero">
     <h2>Unlock Any<br><span>Viral Video</span> — Script 🚀</h2>
-    <p>Analyze viral content, discover powerful hooks, and turn any video into text within seconds. Supports Instagram Reels, TikTok, YouTube Shorts, and uploaded files.</p>
+    <p>Analyze viral content, discover powerful hooks, and turn any video into text within seconds.</p>
 </div>
 
 <!-- Main Input Card -->
@@ -566,15 +274,13 @@ footer{
             <div class="tab" id="tabFile" onclick="switchTab('file')">📁 File Upload</div>
         </div>
 
-        <!-- URL Section -->
         <div id="urlSection" style="display:block;">
             <input type="url" class="urlInput" id="videoUrl" placeholder="Enter Instagram, TikTok, etc. Video URL...">
             <div class="infoBox">
-                <span>Public Reels only.</span> Private account ki videos kaam nahi karengi. Full URL paste karein (reel/ ya p/ waali).
+                <span>Public Reels only.</span> Private account ki videos kaam nahi karengi.
             </div>
         </div>
 
-        <!-- File Section -->
         <div id="fileSection" style="display:none;">
             <div class="uploadBox" id="uploadBox">
                 <div class="uploadIcon">🎬</div>
@@ -606,11 +312,13 @@ footer{
             <option>Punjabi</option>
         </select>
 
-        <button id="transcribeBtn" onclick="transcribeVideo()">✨ Get Transcript </button>
+        <button id="transcribeBtn" onclick="transcribeVideo()">✨ Get Transcript</button>
 
         <div id="previewBox">
             <h3>Transcript Preview</h3>
             <div id="previewText"></div>
+
+            <!-- Sirf guest ke liye Google login -->
             <div id="loginSection">
                 <hr style="margin:15px 0; border-color:#2b224a;">
                 <p class="lockText">🔒 Login with Google to unlock full transcript</p>
@@ -625,6 +333,16 @@ footer{
                     Continue with Google
                 </button>
             </div>
+
+            <!-- Logged in users ke liye Dashboard redirect -->
+            <div id="dashboardSection">
+                <hr style="margin:15px 0; border-color:#2b224a;">
+                <p class="lockText">✅ Aap logged in hain! Full transcript dashboard pe dekho.</p>
+                <button class="dashBtn" onclick="window.location.href='/dashboard.html'">
+                    📊 Dashboard pe Dekho →
+                </button>
+            </div>
+
         </div>
 
     </div>
@@ -634,46 +352,22 @@ footer{
 <div class="section">
     <p class="sectionHeading">SUPPORTED PLATFORMS</p>
     <div class="platformsRow">
-        <div class="platformIcon" title="YouTube">
-            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg">
-        </div>
-        <div class="platformIcon" title="Instagram">
-            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg">
-        </div>
-        <div class="platformIcon" title="TikTok">
-            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg">
-        </div>
-        <div class="platformIcon" title="X / Twitter">
-            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg">
-        </div>
-        <div class="platformIcon" title="Facebook">
-            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg">
-        </div>
-        <div class="platformIcon" title="File Upload">
-            <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/files.svg">
-        </div>
+        <div class="platformIcon" title="YouTube"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg"></div>
+        <div class="platformIcon" title="Instagram"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg"></div>
+        <div class="platformIcon" title="TikTok"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg"></div>
+        <div class="platformIcon" title="X / Twitter"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg"></div>
+        <div class="platformIcon" title="Facebook"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg"></div>
+        <div class="platformIcon" title="File Upload"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/files.svg"></div>
     </div>
 </div>
 
 <!-- Features -->
 <div class="featuresCard">
     <div class="featuresTitle">✦ Why Creators Choose ReelScribe</div>
-    <div class="featureItem">
-        <span class="featureCheck">✦</span>
-        <span>Extract exact scripts from viral videos and study what makes them work</span>
-    </div>
-    <div class="featureItem">
-        <span class="featureCheck">✦</span>
-        <span>Accurate transcripts for English, Hindi, Hinglish, and multiple languages.</span>
-    </div>
-    <div class="featureItem">
-        <span class="featureCheck">✦</span>
-        <span>Paste a link or upload a file — ReelScribe handles the rest.</span>
-    </div>
-    <div class="featureItem">
-        <span class="featureCheck">✦</span>
-        <span>Get clean transcripts in seconds with AI-powered accuracy</span>
-    </div>
+    <div class="featureItem"><span class="featureCheck">✦</span><span>Extract exact scripts from viral videos and study what makes them work</span></div>
+    <div class="featureItem"><span class="featureCheck">✦</span><span>Accurate transcripts for English, Hindi, Hinglish, and multiple languages</span></div>
+    <div class="featureItem"><span class="featureCheck">✦</span><span>Paste a link or upload a file — ReelScribe handles the rest</span></div>
+    <div class="featureItem"><span class="featureCheck">✦</span><span>Get clean transcripts in seconds with AI-powered accuracy</span></div>
 </div>
 
 <!-- How It Works -->
@@ -682,38 +376,53 @@ footer{
     <div class="steps">
         <div class="stepCard">
             <div class="stepIcon">🔗</div>
-            <div class="stepText">
-                <h3>Paste a Video Link</h3>
-                <p>Paste any public Instagram Reel or upload a video file.</p>
-            </div>
+            <div class="stepText"><h3>Paste a Video Link</h3><p>Paste any public Instagram Reel or upload a video file.</p></div>
         </div>
         <div class="stepCard">
             <div class="stepIcon">⬇️</div>
-            <div class="stepText">
-                <h3>AI Processes the Content</h3>
-                <p>Our AI automatically analyzes the video and extracts speech.</p>
-            </div>
+            <div class="stepText"><h3>AI Processes the Content</h3><p>Our AI automatically analyzes the video and extracts speech.</p></div>
         </div>
         <div class="stepCard">
             <div class="stepIcon">📝</div>
-            <div class="stepText">
-                <h3>Receive the Transcript</h3>
-                <p>Get a clean, accurate transcript ready to read, copy, or reuse.</p>
-            </div>
+            <div class="stepText"><h3>Receive the Transcript</h3><p>Get a clean, accurate transcript ready to read, copy, or reuse.</p></div>
         </div>
     </div>
 </div>
 
+<footer>
+    <p class="footerLegal">LEGAL</p>
+    <div class="footerLinks">
+        <a href="/terms.html">Terms of Service</a>
+        <a href="/privacy.html">Privacy Policy</a>
+    </div>
+    <div class="footerDivider"></div>
+    <p class="footerCopy">© 2026 ReelScribe. All rights reserved.</p>
+    <p class="footerTagline">Transcribe · Repurpose · Scale</p>
+</footer>
+
 <script>
+
+// ── Logged in check ──
+const params = new URLSearchParams(window.location.search);
+const googleEmail = params.get("email");
+if(googleEmail){ localStorage.setItem("userEmail", googleEmail); }
+
+const userEmail = localStorage.getItem("userEmail");
+const isLoggedIn = userEmail && userEmail !== "guest@example.com";
+
+// Menu update
+if(isLoggedIn){
+    document.getElementById("menuDashboard").style.display = "block";
+    document.getElementById("menuLoginBtn").style.display = "none";
+    document.getElementById("menuDashBtn").style.display = "block";
+}
 
 function toggleMenu(){
     const menu = document.getElementById("menuOverlay");
     menu.style.display = menu.style.display === "block" ? "none" : "block";
 }
 
-function googleLogin(){
-    window.location.href = "/auth/google";
-}
+function googleLogin(){ window.location.href = "/auth/google"; }
 
 function switchTab(tab){
     const urlSection = document.getElementById("urlSection");
@@ -748,18 +457,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-const params = new URLSearchParams(window.location.search);
-const googleEmail = params.get("email");
-if(googleEmail){
-    localStorage.setItem("userEmail", googleEmail);
-}
-
 async function transcribeVideo(){
     const isUrl = document.getElementById("tabUrl").classList.contains("active");
     const btn = document.getElementById("transcribeBtn");
     const previewBox = document.getElementById("previewBox");
     const previewText = document.getElementById("previewText");
-    const userEmail = localStorage.getItem("userEmail") || "guest@example.com";
+    const email = isLoggedIn ? userEmail : "guest@example.com";
 
     btn.style.display = "none";
     previewBox.style.display = "block";
@@ -771,7 +474,7 @@ async function transcribeVideo(){
         if(isUrl){
             const url = document.getElementById("videoUrl").value.trim();
             if(!url){
-                alert("Instagram URL daalo pehle!");
+                alert("URL daalo pehle!");
                 btn.style.display = "block";
                 previewBox.style.display = "none";
                 return;
@@ -779,7 +482,7 @@ async function transcribeVideo(){
             response = await fetch("/transcribe-url", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: userEmail, url })
+                body: JSON.stringify({ email, url })
             });
         } else {
             const fileInput = document.getElementById("videoFile");
@@ -790,12 +493,9 @@ async function transcribeVideo(){
                 return;
             }
             const formData = new FormData();
-            formData.append("email", userEmail);
+            formData.append("email", email);
             formData.append("video", fileInput.files[0]);
-            response = await fetch("/transcribe", {
-                method: "POST",
-                body: formData
-            });
+            response = await fetch("/transcribe", { method: "POST", body: formData });
         }
 
         const data = await response.json();
@@ -803,7 +503,14 @@ async function transcribeVideo(){
         if(data.success){
             localStorage.setItem("latestTranscript", data.transcript);
             previewText.innerText = data.transcript.substring(0, 300) + "...";
-            document.getElementById("loginSection").style.display = "block";
+
+            // Logged in → Dashboard button dikhao
+            // Guest → Google login dikhao
+            if(isLoggedIn){
+                document.getElementById("dashboardSection").style.display = "block";
+            } else {
+                document.getElementById("loginSection").style.display = "block";
+            }
         } else {
             previewText.innerText = "❌ " + (data.error || "Something went wrong");
             btn.style.display = "block";
@@ -817,16 +524,5 @@ async function transcribeVideo(){
 }
 
 </script>
-    <!-- Footer always at bottom -->
-<footer>
-    <p class="footerLegal">LEGAL</p>
-    <div class="footerLinks">
-        <a href="/terms.html">Terms of Service</a>
-        <a href="/privacy.html">Privacy Policy</a>
-    </div>
-    <div class="footerDivider"></div>
-    <p class="footerCopy">© 2026 ReelScribe. All rights reserved.</p>
-    <p class="footerTagline">Transcribe · Repurpose · Scale</p>
-</footer>
 </body>
 </html>
