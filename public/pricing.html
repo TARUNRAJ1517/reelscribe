@@ -5,341 +5,110 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Buy Credits – ReelScribe</title>
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
-}
+*{ margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
 
-body{
-    background:#0b0718;
-    padding:20px;
-    color:white;
-    max-width:480px;
-    margin:0 auto;
-    min-height:100vh;
-}
+body{ background:#0b0718; padding:20px; color:white; max-width:480px; margin:0 auto; min-height:100vh; }
 
-/* ── Topbar ── */
-.topbar{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    position:relative;
-    margin-bottom:25px;
-}
+.topbar{ display:flex; align-items:center; justify-content:center; position:relative; margin-bottom:25px; }
 
-.header{
-    position:sticky;
-    top:0;
-    z-index:1000;
-    background:#0b0718;
-}
-    
 .backBtn{
-    position:absolute;
-    left:0;
-    width:42px;
-    height:42px;
-    border-radius:50%;
-    background:#121026;
-    border:1px solid #2b224a;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    font-size:20px;
-    color:white;
+    position:absolute; left:0; width:42px; height:42px; border-radius:50%;
+    background:#121026; border:1px solid #2b224a; display:flex;
+    align-items:center; justify-content:center; cursor:pointer; font-size:20px; color:white;
 }
 
-/* ── Footer always bottom ── */
-footer{
-    padding:30px 20px 20px;
-    border-top:1px solid #1a1730;
-    text-align:left;
-    margin-top:auto;
-}
+.logo{ font-size:22px; font-weight:bold; background:linear-gradient(90deg,#8b5cf6,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 
-.footerLegal{
-    font-size:11px;
-    letter-spacing:2px;
-    color:#3d3a52;
-    margin-bottom:16px;
-}
+.pageHeader{ text-align:center; margin-bottom:25px; }
 
-.footerLinks{
-    margin-bottom:24px;
-}
+.pageHeader h2{ font-size:24px; margin-bottom:8px; background:linear-gradient(90deg,#8b5cf6,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 
-.footerLinks a{
-    display:block;
-    color:#8d8aa5;
-    font-size:15px;
-    text-decoration:none;
-    margin-bottom:12px;
-    transition:.2s;
-}
+.pageHeader p{ color:#8d8aa5; font-size:14px; }
 
+.creditsInfo{ background:#1a1730; border:1px solid #2b224a; border-radius:16px; padding:14px 18px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; }
+
+.creditsInfo span{ color:#8d8aa5; font-size:13px; }
+.creditsInfo strong{ color:#8b5cf6; font-size:16px; }
+
+.plansGrid{ display:flex; flex-direction:column; gap:14px; margin-bottom:20px; }
+
+.planCard{ background:#121026; border:1.5px solid #2b224a; border-radius:20px; padding:20px; position:relative; transition:.2s; cursor:pointer; }
+
+.planCard:hover{ border-color:#8b5cf6; transform:scale(1.01); }
+
+.planCard.popular{ border-color:#8b5cf6; background:#150d2e; }
+
+.popularBadge{ position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:linear-gradient(90deg,#8b5cf6,#ec4899); color:white; font-size:11px; font-weight:bold; padding:4px 14px; border-radius:20px; white-space:nowrap; }
+
+.planTop{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+
+.planEmoji{ font-size:32px; }
+
+.planPrice{ text-align:right; }
+
+.planPrice .amount{ font-size:28px; font-weight:bold; background:linear-gradient(90deg,#8b5cf6,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+
+.planPrice .per{ font-size:12px; color:#8d8aa5; }
+
+.planName{ font-size:18px; font-weight:bold; margin-bottom:4px; }
+
+.planCredits{ font-size:13px; color:#8d8aa5; margin-bottom:12px; }
+
+.planFeatures{ list-style:none; margin-bottom:16px; }
+
+.planFeatures li{ font-size:13px; color:#ccc; padding:4px 0; }
+
+.planFeatures li::before{ content:"✅ "; }
+
+.buyBtn{ width:100%; padding:13px; border:none; border-radius:14px; background:linear-gradient(90deg,#8b5cf6,#ec4899); color:white; font-size:15px; font-weight:bold; cursor:pointer; transition:.2s; }
+
+.buyBtn:hover{ opacity:.9; }
+
+.note{ background:#1a1730; border:1px solid #2b224a; border-radius:14px; padding:14px; font-size:13px; color:#8d8aa5; text-align:center; line-height:1.7; }
+
+.note span{ color:#8b5cf6; font-weight:bold; }
+
+.contactBtn{ width:100%; padding:14px; border:1.5px solid #2b224a; border-radius:14px; background:transparent; color:#8d8aa5; font-size:14px; cursor:pointer; margin-top:12px; transition:.2s; }
+
+.contactBtn:hover{ border-color:#8b5cf6; color:white; }
+
+footer{ padding:30px 20px 20px; border-top:1px solid #1a1730; text-align:left; margin-top:40px; }
+.footerLegal{ font-size:11px; letter-spacing:2px; color:#3d3a52; margin-bottom:16px; }
+.footerLinks{ margin-bottom:24px; }
+.footerLinks a{ display:block; color:#8d8aa5; font-size:15px; text-decoration:none; margin-bottom:12px; transition:.2s; }
 .footerLinks a:hover{ color:white; }
-
-.footerDivider{
-    height:1px;
-    background:#1a1730;
-    margin-bottom:20px;
-}
-
-.footerCopy{
-    text-align:center;
-    color:#3d3a52;
-    font-size:13px;
-    margin-bottom:8px;
-}
-
-.footerTagline{
-    text-align:center;
-    color:#3d3a52;
-    font-size:13px;
-}
-
-    
-.logo{
-    font-size:22px;
-    font-weight:bold;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-}
-
-/* ── Header ── */
-.pageHeader{
-    text-align:center;
-    margin-bottom:25px;
-}
-
-.pageHeader h2{
-    font-size:24px;
-    margin-bottom:8px;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-}
-
-.pageHeader p{
-    color:#8d8aa5;
-    font-size:14px;
-}
-
-/* ── Credits Info ── */
-.creditsInfo{
-    background:#1a1730;
-    border:1px solid #2b224a;
-    border-radius:16px;
-    padding:14px 18px;
-    margin-bottom:20px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-}
-
-.creditsInfo span{
-    color:#8d8aa5;
-    font-size:13px;
-}
-
-.creditsInfo strong{
-    color:#8b5cf6;
-    font-size:16px;
-}
-
-/* ── Plans ── */
-.plansGrid{
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-    margin-bottom:20px;
-}
-
-.planCard{
-    background:#121026;
-    border:1.5px solid #2b224a;
-    border-radius:20px;
-    padding:20px;
-    position:relative;
-    transition:.2s;
-    cursor:pointer;
-}
-
-.planCard:hover{
-    border-color:#8b5cf6;
-    transform:scale(1.01);
-}
-
-.planCard.popular{
-    border-color:#8b5cf6;
-    background:#150d2e;
-}
-
-.popularBadge{
-    position:absolute;
-    top:-12px;
-    left:50%;
-    transform:translateX(-50%);
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    color:white;
-    font-size:11px;
-    font-weight:bold;
-    padding:4px 14px;
-    border-radius:20px;
-    white-space:nowrap;
-}
-
-.planTop{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:12px;
-}
-
-.planEmoji{
-    font-size:32px;
-}
-
-.planPrice{
-    text-align:right;
-}
-
-.planPrice .amount{
-    font-size:28px;
-    font-weight:bold;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    -webkit-background-clip:text;
-    -webkit-text-fill-color:transparent;
-}
-
-.planPrice .per{
-    font-size:12px;
-    color:#8d8aa5;
-}
-
-.planName{
-    font-size:18px;
-    font-weight:bold;
-    margin-bottom:4px;
-}
-
-.planCredits{
-    font-size:13px;
-    color:#8d8aa5;
-    margin-bottom:12px;
-}
-
-.planFeatures{
-    list-style:none;
-    margin-bottom:16px;
-}
-
-.planFeatures li{
-    font-size:13px;
-    color:#ccc;
-    padding:4px 0;
-}
-
-.planFeatures li::before{
-    content:"✅ ";
-}
-
-.buyBtn{
-    width:100%;
-    padding:13px;
-    border:none;
-    border-radius:14px;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    color:white;
-    font-size:15px;
-    font-weight:bold;
-    cursor:pointer;
-    transition:.2s;
-}
-
-.buyBtn:hover{
-    opacity:.9;
-}
-
-.planCard.popular .buyBtn{
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    box-shadow:0 4px 15px rgba(139,92,246,.4);
-}
-
-/* ── Note ── */
-.note{
-    background:#1a1730;
-    border:1px solid #2b224a;
-    border-radius:14px;
-    padding:14px;
-    font-size:13px;
-    color:#8d8aa5;
-    text-align:center;
-    line-height:1.7;
-}
-
-.note span{
-    color:#8b5cf6;
-    font-weight:bold;
-}
-
-/* ── Contact ── */
-.contactBtn{
-    width:100%;
-    padding:14px;
-    border:1.5px solid #2b224a;
-    border-radius:14px;
-    background:transparent;
-    color:#8d8aa5;
-    font-size:14px;
-    cursor:pointer;
-    margin-top:12px;
-    transition:.2s;
-}
-
-.contactBtn:hover{
-    border-color:#8b5cf6;
-    color:white;
-}
-
+.footerDivider{ height:1px; background:#1a1730; margin-bottom:20px; }
+.footerCopy{ text-align:center; color:#3d3a52; font-size:13px; margin-bottom:8px; }
+.footerTagline{ text-align:center; color:#3d3a52; font-size:13px; }
 </style>
 </head>
 <body>
 
 <!-- Topbar -->
 <div class="topbar">
-    <div class="backBtn" onclick="window.location.href='/dashboard.html'">←</div>
+    <div class="backBtn" onclick="window.history.back()">←</div>
     <div class="logo">🚀 ReelScribe</div>
 </div>
 
 <!-- Header -->
 <div class="pageHeader">
-    <h2>💰 Buy Credits </h2>
+    <h2>💰 Buy Credits</h2>
     <p>⚡ Fast AI Transcription • Credits never expire</p>
 </div>
 
-<!-- Current Credits -->
-<div class="creditsInfo">
-    <span> Your Credit :</span>
+<!-- Current Credits — sirf logged in users ke liye -->
+<div class="creditsInfo" id="creditsBox" style="display:none;">
+    <span>Your Credits:</span>
     <strong>💰 <span id="currentCredits">...</span> Credits</strong>
 </div>
 
 <!-- Plans -->
 <div class="plansGrid">
 
-    <!-- Small Pack -->
     <div class="planCard" onclick="buyPlan('small')">
         <div class="planTop">
             <div class="planEmoji">🥉</div>
-            <div class="planPrice">
-                <div class="amount">₹29</div>
-                <div class="per">one-time</div>
-            </div>
+            <div class="planPrice"><div class="amount">₹29</div><div class="per">one-time</div></div>
         </div>
         <div class="planName">Starter Pack</div>
         <div class="planCredits">10 Credits = 5 Transcripts</div>
@@ -351,15 +120,11 @@ footer{
         <button class="buyBtn">Buy for ₹29 →</button>
     </div>
 
-    <!-- Medium Pack -->
     <div class="planCard popular" onclick="buyPlan('medium')">
         <div class="popularBadge">⭐ MOST POPULAR</div>
         <div class="planTop">
             <div class="planEmoji">🥈</div>
-            <div class="planPrice">
-                <div class="amount">₹99</div>
-                <div class="per">one-time</div>
-            </div>
+            <div class="planPrice"><div class="amount">₹99</div><div class="per">one-time</div></div>
         </div>
         <div class="planName">Pro Pack</div>
         <div class="planCredits">50 Credits = 25 Transcripts</div>
@@ -372,14 +137,10 @@ footer{
         <button class="buyBtn">Buy for ₹99 →</button>
     </div>
 
-    <!-- Large Pack -->
     <div class="planCard" onclick="buyPlan('large')">
         <div class="planTop">
             <div class="planEmoji">🥇</div>
-            <div class="planPrice">
-                <div class="amount">₹179</div>
-                <div class="per">one-time</div>
-            </div>
+            <div class="planPrice"><div class="amount">₹179</div><div class="per">one-time</div></div>
         </div>
         <div class="planName">Power Pack</div>
         <div class="planCredits">100 Credits = 50 Transcripts</div>
@@ -394,25 +155,39 @@ footer{
 
 </div>
 
-<!-- Note -->
 <div class="note">
     <p>💳 Secure payment system coming soon.</p>
-<p>For instant credits, contact us on Instagram.</p>
-<p style="margin-top:6px;">⚡ Credits are added manually within minutes.</p>
+    <p>For instant credits, contact us on Instagram.</p>
+    <p style="margin-top:6px;">⚡ Credits are added manually within minutes.</p>
 </div>
 
 <button class="contactBtn" onclick="contactAdmin()">
     📩 Admin se Contact Karein
 </button>
 
+<footer>
+    <p class="footerLegal">LEGAL</p>
+    <div class="footerLinks">
+        <a href="/terms.html">Terms of Service</a>
+        <a href="/privacy.html">Privacy Policy</a>
+    </div>
+    <div class="footerDivider"></div>
+    <p class="footerCopy">© 2026 ReelScribe. All rights reserved.</p>
+    <p class="footerTagline">Transcribe · Repurpose · Scale</p>
+</footer>
+
 <script>
 
+// ✅ Guest bhi dekh sakta hai — no redirect!
 const email = localStorage.getItem("userEmail");
-if(!email){
-    window.location.href = "/";
+const isLoggedIn = email && email !== "guest@example.com";
+
+// Sirf logged in hone pe credits dikhao
+if(isLoggedIn){
+    document.getElementById("creditsBox").style.display = "flex";
+    loadCredits();
 }
 
-// Load current credits
 async function loadCredits(){
     try{
         const res = await fetch("/credits/" + encodeURIComponent(email));
@@ -424,9 +199,7 @@ async function loadCredits(){
         document.getElementById("currentCredits").innerText = "?";
     }
 }
-loadCredits();
 
-// Buy plan — Instagram DM pe bhejo
 function buyPlan(plan){
     const plans = {
         small:  { name:"Starter Pack", credits:10,  price:29  },
@@ -435,37 +208,20 @@ function buyPlan(plan){
     };
 
     const selected = plans[plan];
-    const msg = `Hi! Main ReelScribe ka ${selected.name} (${selected.credits} Credits - ₹${selected.price}) kharidna chahta hoon. Mera email: ${email}`;
+    const userInfo = isLoggedIn ? email : "Guest User";
+    const msg = `Hi! Main ReelScribe ka ${selected.name} (${selected.credits} Credits - ₹${selected.price}) kharidna chahta hoon. Mera email: ${userInfo}`;
 
-    // Instagram DM open karo
-    window.open(
-        `https://www.instagram.com/tarunraj1517/`,
-        "_blank"
-    );
+    window.open("https://www.instagram.com/tarunraj1517/", "_blank");
 
-    // Message copy karo
     navigator.clipboard.writeText(msg).then(()=>{
-        alert(`✅ Message copy ho gaya!\n\nInstagram pe DM karein aur yeh message paste karein:\n\n"${msg}"`);
+        alert(`✅ Message copy ho gaya!\n\nInstagram pe DM karein:\n\n"${msg}"`);
     }).catch(()=>{
         alert(`Instagram pe DM karein:\n@tarunraj1517\n\nYeh message bhejein:\n"${msg}"`);
     });
 }
 
-function contactAdmin(){
-    buyPlan("medium");
-}
+function contactAdmin(){ buyPlan("medium"); }
 
 </script>
-    <!-- Footer always at bottom -->
-<footer>
-    <p class="footerLegal">LEGAL</p>
-    <div class="footerLinks">
-        <a href="/terms.html">Terms of Service</a>
-        <a href="/privacy.html">Privacy Policy</a>
-    </div>
-    <div class="footerDivider"></div>
-    <p class="footerCopy">© 2026 ReelScribe. All rights reserved.</p>
-    <p class="footerTagline">Transcribe · Repurpose · Scale</p>
-</footer>
 </body>
 </html>
