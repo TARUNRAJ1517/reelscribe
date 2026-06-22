@@ -353,8 +353,10 @@ if (!isGuest && user.credits < 2) {
       console.log("✅ YouTube transcript ready");
 
       // Credits kato
-      user.credits -= 2;
-      await user.save();
+      if (user) {
+   user.credits -= 2;
+   await user.save();
+}
 
       // History save karo
       await Reel.create({
@@ -407,8 +409,10 @@ if (!isGuest && user.credits < 2) {
     });
     console.log("✅ Transcript ready");
 
-    user.credits -= 2;
-    await user.save();
+    if (user) {
+   user.credits -= 2;
+   await user.save();
+}
 
     await Reel.create({
       userEmail: email,
