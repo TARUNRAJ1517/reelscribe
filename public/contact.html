@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact ReelScribe</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#0b0718;
+color:white;
+max-width:480px;
+margin:0 auto;
+min-height:100vh;
+}
+
+.topbar{
+display:flex;
+align-items:center;
+justify-content:center;
+position:relative;
+padding:20px;
+border-bottom:1px solid #1a1730;
+}
+
+.backBtn{
+position:absolute;
+left:20px;
+width:42px;
+height:42px;
+border-radius:50%;
+background:#121026;
+border:1px solid #2b224a;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+font-size:20px;
+color:white;
+}
+
+.logo{
+font-size:22px;
+font-weight:bold;
+background:linear-gradient(90deg,#8b5cf6,#ec4899);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+.hero{
+padding:40px 25px 20px;
+text-align:center;
+}
+
+.hero h1{
+font-size:30px;
+margin-bottom:12px;
+}
+
+.hero span{
+background:linear-gradient(90deg,#8b5cf6,#ec4899);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+.hero p{
+color:#8d8aa5;
+line-height:1.7;
+}
+
+.card{
+background:#121026;
+border:1px solid #2b224a;
+border-radius:22px;
+padding:22px;
+margin:18px 20px;
+text-align:center;
+}
+
+.icon{
+font-size:36px;
+margin-bottom:12px;
+}
+
+.card h2{
+font-size:18px;
+margin-bottom:8px;
+}
+
+.card p{
+color:#b8b8c5;
+font-size:14px;
+line-height:1.7;
+}
+
+.btn{
+display:block;
+width:100%;
+padding:14px;
+margin-top:14px;
+border:none;
+border-radius:14px;
+background:linear-gradient(90deg,#8b5cf6,#ec4899);
+color:white;
+font-size:15px;
+font-weight:bold;
+cursor:pointer;
+text-decoration:none;
+}
+
+.inputField,
+.textArea{
+width:100%;
+padding:14px;
+margin-top:12px;
+border-radius:14px;
+border:1px solid #2b224a;
+background:#1a1730;
+color:white;
+font-size:14px;
+outline:none;
+}
+
+.textArea{
+resize:none;
+min-height:120px;
+}
+
+.successMsg{
+display:none;
+margin-top:14px;
+padding:12px;
+border-radius:12px;
+background:#1f3a28;
+border:1px solid #22c55e;
+color:#86efac;
+font-size:13px;
+}
+
+footer{
+padding:35px 20px;
+text-align:center;
+color:#555;
+font-size:13px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+<div class="backBtn" onclick="history.back()">←</div>
+<div class="logo">🚀 ReelScribe</div>
+</div>
+
+<div class="hero">
+<h1>Contact <span>ReelScribe</span></h1>
+<p>
+Need help? Have questions?<br>
+We're here to help.
+</p>
+</div>
+
+<div class="card">
+<div class="icon">📸</div>
+<h2>Instagram Support</h2>
+<p>Message us directly on Instagram.</p>
+
+<a class="btn"
+href="https://www.instagram.com/tarunraj1517/"
+target="_blank">
+Open Instagram
+</a>
+</div>
+
+<div class="card">
+<div class="icon">📧</div>
+<h2>Email Support</h2>
+
+<p>
+support@reelscribe.site
+</p>
+
+<a class="btn"
+href="mailto:support@reelscribe.site">
+Send Email
+</a>
+</div>
+
+<div class="card">
+
+<div class="icon">✉️</div>
+
+<h2>Send Us A Message</h2>
+
+<p>
+Have feedback, ideas or need support?
+Send us a message below.
+</p>
+
+<input
+type="text"
+class="inputField"
+id="name"
+placeholder="Your Name">
+
+<input
+type="email"
+class="inputField"
+id="email"
+placeholder="Your Email">
+
+<textarea
+class="textArea"
+id="message"
+placeholder="Your Message"></textarea>
+
+<button class="btn" onclick="sendMessage()">
+Send Message 🚀
+</button>
+
+<div class="successMsg" id="successMsg">
+✅ Email app opened successfully.
+</div>
+
+</div>
+
+<div class="card">
+<div class="icon">⏱️</div>
+
+<h2>Response Time</h2>
+
+<p>
+Most messages are answered within
+24 hours.
+</p>
+</div>
+
+<footer>
+© 2026 ReelScribe • Built for Creators 🚀
+</footer>
+
+<script>
+
+function sendMessage(){
+
+const name =
+document.getElementById("name").value.trim();
+
+const email =
+document.getElementById("email").value.trim();
+
+const message =
+document.getElementById("message").value.trim();
+
+if(!name || !email || !message){
+alert("Please fill all fields.");
+return;
+}
+
+const subject =
+encodeURIComponent("ReelScribe Contact Form");
+
+const body =
+encodeURIComponent(
+`Name: ${name}
+
+Email: ${email}
+
+Message:
+${message}`
+);
+
+window.location.href =
+`mailto:support@reelscribe.site?subject=${subject}&body=${body}`;
+
+document.getElementById("successMsg").style.display="block";
+}
+
+</script>
+
+</body>
+</html>
