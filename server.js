@@ -20,7 +20,13 @@ const User = require("./models/User");
 const GuestUsage = require("./models/GuestUsage");
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://reelscribe.site",
+    "https://www.reelscribe.site"
+  ],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.static("public"));
 
