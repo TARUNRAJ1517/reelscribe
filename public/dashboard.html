@@ -279,11 +279,16 @@ const params = new URLSearchParams(window.location.search);
 const googleEmail = params.get("email");
 if(googleEmail){ localStorage.setItem("userEmail", googleEmail); }
 
-const email = localStorage.getItem("userEmail");
-if(!email){ window.location.href = "/"; }
+const email = localStorage.getItem("userEmail") || "";
+const isGuest = !email;
 
-document.getElementById("drawerEmail").innerText = email;
-document.getElementById("drawerName").innerText = email.split("@")[0];
+if(!isGuest){
+    document.getElementById("drawerEmail").innerText = email;
+    document.getElementById("drawerName").innerText = email.split("@")[0];
+} else {
+    document.getElementById("drawerEmail").innerText = "Guest User";
+    document.getElementById("drawerName").innerText = "Guest";
+}
 
 let historyLoaded = false;
 let historyOpen = false;
@@ -302,7 +307,28 @@ function toggleHistory(){
     }
 }
 
+async function savePendingTranscript(){
+    const transcript = localStorage.getItem("latestTranscript");
+    if(!transcript) return;
+    try{
+        await fetch("/save-transcript",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                email,
+                transcript
+            })
+        });
+        localStorage.removeItem("latestTranscript");
+    }catch(err){
+        console.log(err);
+    }
+}
+
 async function loadCredits(){
+    if(isGuest) return;
     try{
         const res = await fetch("/credits/" + encodeURIComponent(email));
         const data = await res.json();
@@ -311,11 +337,37 @@ async function loadCredits(){
 }
 
 async function loadLatestTranscript(){
+    const transcriptDiv = document.getElementById("fullTranscript");
+    const copyBtn = document.getElementById("copyBtn");
+
+    // Guest user — localStorage se dikhao
+    if(isGuest){
+        const guestTranscript = localStorage.getItem("latestTranscript");
+        const isPreview = localStorage.getItem("isPreview") === "true";
+        if(guestTranscript){
+            transcriptDiv.innerText = guestTranscript;
+            copyBtn.style.display = "block";
+            if(isPreview){
+                // Preview banner inject karo
+                const banner = document.createElement("div");
+                banner.style.cssText = "background:linear-gradient(135deg,#6d5dfc,#b06ab3);border-radius:12px;padding:16px 20px;margin-top:16px;text-align:center;";
+                banner.innerHTML = `
+                    <p style="font-size:13px;color:#fff;margin-bottom:10px;">⚠️ Yeh sirf <b>100 words ka preview</b> hai.<br>Full transcript ke liye login karein!</p>
+                    <button onclick="window.location.href='/'" style="background:#fff;color:#6d5dfc;border:none;padding:10px 24px;border-radius:8px;font-weight:bold;cursor:pointer;font-size:14px;">🔐 Login Karo — Free Hai!</button>
+                `;
+                transcriptDiv.after(banner);
+            }
+        } else {
+            transcriptDiv.innerHTML = '<div class="noTranscript">📭 Koi transcript nahi hai.<br>Naya banao!</div>';
+            copyBtn.style.display = "none";
+        }
+        return;
+    }
+
+    // Logged in user — server se fetch karo
     try{
         const res = await fetch("/history/" + encodeURIComponent(email));
         const data = await res.json();
-        const transcriptDiv = document.getElementById("fullTranscript");
-        const copyBtn = document.getElementById("copyBtn");
         if(data.success && data.data && data.data.length > 0){
             const latest = data.data[0];
             transcriptDiv.innerText = latest.transcript;
@@ -326,7 +378,7 @@ async function loadLatestTranscript(){
             copyBtn.style.display = "none";
         }
     } catch(e){
-        document.getElementById("fullTranscript").innerHTML = '<div class="noTranscript">❌ Load nahi hua</div>';
+        transcriptDiv.innerHTML = '<div class="noTranscript">❌ Load nahi hua</div>';
     }
 }
 
@@ -392,8 +444,11 @@ function logout(){
     window.location.href = "/";
 }
 
-loadCredits();
-loadLatestTranscript();
+(async () => {
+    await savePendingTranscript();
+    loadCredits();
+    loadLatestTranscript();
+})();
 
 </script>
 </body>
