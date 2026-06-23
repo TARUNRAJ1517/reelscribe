@@ -121,7 +121,6 @@ function getYouTubeVideoId(url) {
 }
 
 async function checkGuestLimit(req) {
-
   const ip =
     req.headers["x-forwarded-for"]?.split(",")[0] ||
     req.socket.remoteAddress;
@@ -129,20 +128,18 @@ async function checkGuestLimit(req) {
   let guest = await GuestUsage.findOne({ ip });
 
   if (!guest) {
-    guest = await GuestUsage.create({
-      ip,
-      previewCount: 0
-    });
+    guest = await GuestUsage.create({ ip, previewCount: 0 });
   }
 
+  // 3 previews already used → force login
   if (guest.previewCount >= 3) {
-    return false;
+    return { allowed: false, previewsUsed: guest.previewCount };
   }
 
   guest.previewCount += 1;
   await guest.save();
 
-  return true;
+  return { allowed: true, previewsUsed: guest.previewCount };
 }
 
 app.get("/test", (req, res) => res.send("TEST ROUTE WORKING"));
@@ -189,17 +186,19 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
 
     const user = await User.findOne({ email });
     const isGuest = !user;
-    if (isGuest) {
-  const allowed = await checkGuestLimit(req);
 
-  if (!allowed) {
-    return res.status(403).json({
-      success: false,
-      loginRequired: true,
-      error: "Free preview limit reached. Login required."
-    });
-  }
-}
+    if (isGuest) {
+      const { allowed } = await checkGuestLimit(req);
+      if (!allowed) {
+        if (req.file?.path) fs.unlinkSync(req.file.path);
+        return res.status(403).json({
+          success: false,
+          loginRequired: true,
+          forceLogin: true,
+          error: "Aapke 3 free previews khatam ho gaye. Full transcript ke liye login karein."
+        });
+      }
+    }
 
     // Logged in user ke liye credits check
     if (!isGuest && user.credits < 2) {
@@ -213,20 +212,28 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
       model: "whisper-large-v3-turbo"
     });
 
-    // Logged in user ke credits kato
+    const fullTranscript = transcription.text;
+
     if (!isGuest) {
+      // Logged in: full transcript, save history, deduct credits
       user.credits -= 2;
       await user.save();
-      // History save karo sirf logged in ke liye
-      await Reel.create({ userEmail: email, reelUrl: req.file.originalname, transcript: transcription.text });
+      await Reel.create({ userEmail: email, reelUrl: req.file.originalname, transcript: fullTranscript });
     }
 
     fs.unlinkSync(filePath);
 
+    // Guest ko sirf 100 words ka preview
+    const words = fullTranscript.split(/\s+/);
+    const previewTranscript = words.slice(0, 100).join(" ");
+    const isPreview = isGuest && words.length > 100;
+
     res.json({
       success: true,
-      transcript: transcription.text,
+      transcript: isGuest ? previewTranscript : fullTranscript,
       isGuest,
+      isPreview,
+      totalWords: words.length,
       creditsLeft: user ? user.credits : 0
     });
 
@@ -251,20 +258,37 @@ app.post("/transcribe-url", async (req, res) => {
 
   const user = await User.findOne({ email });
   const isGuest = !user;
-  if (isGuest) {
-  const allowed = await checkGuestLimit(req);
 
-if (!allowed) {
-  return res.status(403).json({
-    success: false,
-    loginRequired: true,
-    error: "Free preview limit reached. Login required."
-  });
-}
+  if (isGuest) {
+    const { allowed } = await checkGuestLimit(req);
+    if (!allowed) {
+      return res.status(403).json({
+        success: false,
+        loginRequired: true,
+        forceLogin: true,
+        error: "Aapke 3 free previews khatam ho gaye. Full transcript ke liye login karein."
+      });
+    }
+  }
 
   // Logged in user ke credits check
   if (!isGuest && user.credits < 2) {
     return res.status(400).json({ success: false, error: "Credits khatam ho gaye! Admin se contact karein." });
+  }
+
+  // Helper: guest ke liye 100 word preview banana
+  function buildResponse(fullTranscript, source) {
+    const words = fullTranscript.split(/\s+/);
+    const isPreview = isGuest && words.length > 100;
+    return {
+      success: true,
+      transcript: isGuest ? words.slice(0, 100).join(" ") : fullTranscript,
+      isGuest,
+      isPreview,
+      totalWords: words.length,
+      creditsLeft: isGuest ? 0 : user.credits,
+      source
+    };
   }
 
   // ── YOUTUBE ──
@@ -288,13 +312,7 @@ if (!allowed) {
         await Reel.create({ userEmail: email, reelUrl: url, transcript });
       }
 
-      return res.json({
-        success: true,
-        transcript,
-        isGuest,
-        creditsLeft: isGuest ? 0 : user.credits,
-        source: "youtube-captions"
-      });
+      return res.json(buildResponse(transcript, "youtube-captions"));
 
     } catch (error) {
       console.error("YouTube Transcript Error:", error.message);
@@ -333,13 +351,7 @@ if (!allowed) {
 
     fs.unlinkSync(outputPath);
 
-    return res.json({
-      success: true,
-      transcript: transcription.text,
-      isGuest,
-      creditsLeft: isGuest ? 0 : user.credits,
-      source: "groq-whisper"
-    });
+    return res.json(buildResponse(transcription.text, "groq-whisper"));
 
   } catch (error) {
     if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
