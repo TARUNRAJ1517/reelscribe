@@ -17,6 +17,7 @@ const { YoutubeTranscript } = require("youtube-transcript");
 
 const Reel = require("./models/Reel");
 const User = require("./models/User");
+const GuestUsage = require("./models/GuestUsage");
 
 const app = express();
 app.use(cors());
@@ -119,6 +120,31 @@ function getYouTubeVideoId(url) {
   return null;
 }
 
+async function checkGuestLimit(req) {
+
+  const ip =
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.socket.remoteAddress;
+
+  let guest = await GuestUsage.findOne({ ip });
+
+  if (!guest) {
+    guest = await GuestUsage.create({
+      ip,
+      previewCount: 0
+    });
+  }
+
+  if (guest.previewCount >= 3) {
+    return false;
+  }
+
+  guest.previewCount += 1;
+  await guest.save();
+
+  return true;
+}
+
 app.get("/test", (req, res) => res.send("TEST ROUTE WORKING"));
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 app.get("/auth/google/callback",
@@ -163,6 +189,17 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
 
     const user = await User.findOne({ email });
     const isGuest = !user;
+    if (isGuest) {
+  const allowed = await checkGuestLimit(req);
+
+  if (!allowed) {
+    return res.status(403).json({
+      success: false,
+      loginRequired: true,
+      error: "Free preview limit reached. Login required."
+    });
+  }
+}
 
     // Logged in user ke liye credits check
     if (!isGuest && user.credits < 2) {
@@ -214,6 +251,16 @@ app.post("/transcribe-url", async (req, res) => {
 
   const user = await User.findOne({ email });
   const isGuest = !user;
+  if (isGuest) {
+  const allowed = await checkGuestLimit(req);
+
+if (!allowed) {
+  return res.status(403).json({
+    success: false,
+    loginRequired: true,
+    error: "Free preview limit reached. Login required."
+  });
+}
 
   // Logged in user ke credits check
   if (!isGuest && user.credits < 2) {
