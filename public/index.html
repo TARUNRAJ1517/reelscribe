@@ -514,12 +514,12 @@ async function transcribeVideo(){
             if(data.isGuest){
                 // ✅ Guest — 300 words preview + login button
                 const words = data.transcript.split(" ");
-                const preview = words.slice(0, 60).join(" "); // ~300 chars
+                const preview = words.slice(0, 60).join(" "); // ~100 chars
                 previewText.innerText = preview + (words.length > 60 ? "..." : "");
                 document.getElementById("loginSection").style.display = "block";
             } else {
-                // ✅ Logged in — 300 chars preview + dashboard button
-                previewText.innerText = data.transcript.substring(0, 300) + "...";
+                // ✅ Logged in — 100 chars preview + dashboard button
+                previewText.innerText = data.transcript.substring(0, 100) + "...";
                 document.getElementById("dashboardSection").style.display = "block";
             }
 
