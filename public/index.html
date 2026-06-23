@@ -508,6 +508,15 @@ async function transcribeVideo(){
 
         const data = await response.json();
 
+        if(data.loginRequired){
+    previewText.innerText = "❌ " + data.error;
+
+    document.getElementById("loginSection").style.display = "block";
+
+    btn.style.display = "block";
+    return;
+}
+
         if(data.success){
             localStorage.setItem("latestTranscript", data.transcript);
 
