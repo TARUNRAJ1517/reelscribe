@@ -292,7 +292,7 @@ app.post("/send-otp", async (req, res) => {
     console.log("Sending OTP to:", email);
 
     await resend.emails.send({
-      from: "ReelScribe <onboarding@resend.dev>",
+      from: "ReelScribe <noreply@reelscribe.site>",
       to: email,
       subject: "Your ReelScribe OTP",
       html: `
