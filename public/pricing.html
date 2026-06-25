@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pricing – ReelScribe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #05030d;
+  --s1: #0c0919;
+  --s2: #121024;
+  --border: #1c1830;
+  --border2: #261f40;
+  --purple: #7c3aed;
+  --purple-light: #a78bfa;
+  --pink: #db2777;
+  --text: #f1eeff;
+  --sub: #9689b8;
+  --muted: #4e4668;
+  --grad: linear-gradient(135deg, #7c3aed, #db2777);
+  --glow: 0 0 40px rgba(124,58,237,0.18);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── NAV ── */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(5,3,13,0.85);
+  backdrop-filter: blur(16px);
+}
+.nav-logo {
+  font-size: 16px; font-weight: 800; letter-spacing: -0.4px;
+  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.nav-back {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 500; color: var(--sub);
+  cursor: pointer; border: none; background: none;
+  font-family: inherit; transition: color .2s; padding: 0;
+}
+.nav-back svg { width: 14px; height: 14px; }
+.nav-back:hover { color: var(--text); }
+
+/* ── HERO ── */
+.hero {
+  text-align: center;
+  padding: 52px 24px 36px;
+}
+.eyebrow {
+  display: inline-block;
+  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--purple-light);
+  margin-bottom: 16px;
+}
+.hero h1 {
+  font-size: 32px; font-weight: 900; line-height: 1.1;
+  letter-spacing: -1px; margin-bottom: 14px;
+}
+.hero h1 em {
+  font-style: normal;
+  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero p {
+  font-size: 15px; color: var(--sub); line-height: 1.6;
+  max-width: 280px; margin: 0 auto;
+}
+
+/* ── TOGGLE ── */
+.toggle-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; margin: 0 0 28px; font-size: 13px; font-weight: 500;
+}
+.toggle-label { color: var(--muted); transition: color .2s; }
+.toggle-label.active { color: var(--text); }
+.toggle-track {
+  width: 42px; height: 22px; border-radius: 11px;
+  background: var(--s2); border: 1px solid var(--border2);
+  position: relative; cursor: pointer; transition: background .25s, border-color .25s;
+  flex-shrink: 0;
+}
+.toggle-track.on { background: var(--purple); border-color: var(--purple); }
+.toggle-track::after {
+  content: ''; position: absolute;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: white; top: 2px; left: 2px;
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+.toggle-track.on::after { transform: translateX(20px); }
+.save-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.4px;
+  color: #16a34a; background: rgba(22,163,74,0.12);
+  border: 1px solid rgba(22,163,74,0.25);
+  padding: 2px 8px; border-radius: 100px;
+}
+
+/* ── WRAPPER ── */
+.wrap { max-width: 420px; margin: 0 auto; padding: 0 20px; }
+
+/* ── FREE CARD ── */
+.free-card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.free-card-info strong { font-size: 13px; font-weight: 700; display: block; margin-bottom: 3px; }
+.free-card-info span { font-size: 12px; color: var(--muted); }
+.tag-current {
+  font-size: 11px; font-weight: 600; color: var(--purple-light);
+  background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.2);
+  padding: 4px 10px; border-radius: 8px; white-space: nowrap;
+}
+
+/* ── PLAN CARDS ── */
+.plans { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+
+.plan {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 20px; padding: 22px 20px 20px;
+  position: relative; transition: border-color .25s;
+}
+.plan:hover { border-color: var(--border2); }
+.plan.pro {
+  background: linear-gradient(160deg, #100b22 0%, #0d0920 100%);
+  border-color: rgba(124,58,237,0.5);
+  box-shadow: var(--glow);
+}
+
+.pro-badge {
+  position: absolute; top: -10px; left: 20px;
+  font-size: 9px; font-weight: 800; letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: var(--grad); color: white;
+  padding: 3px 12px; border-radius: 100px;
+}
+
+/* Plan header */
+.plan-head {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; margin-bottom: 18px;
+}
+.plan-icon-wrap {
+  width: 38px; height: 38px; border-radius: 11px;
+  background: var(--s2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.plan.pro .plan-icon-wrap {
+  background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.3);
+}
+.plan-icon-wrap svg { width: 18px; height: 18px; }
+
+.plan-title-group { flex: 1; padding-left: 12px; }
+.plan-name { font-size: 15px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 3px; }
+.plan-desc { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+.plan-pricing { text-align: right; flex-shrink: 0; }
+.plan-old { font-size: 12px; color: var(--muted); text-decoration: line-through; display: none; height: 16px; }
+.plan-amount {
+  font-size: 26px; font-weight: 900; letter-spacing: -1px; line-height: 1;
+  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.plan-cycle { font-size: 10px; color: var(--muted); margin-top: 3px; font-weight: 500; }
+
+/* Divider */
+.plan-sep { height: 1px; background: var(--border); margin: 0 0 16px; }
+
+/* Features */
+.feat-list { list-style: none; margin-bottom: 18px; }
+.feat-list li {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: var(--sub); padding: 4.5px 0; font-weight: 500;
+}
+.plan.pro .feat-list li { color: #c4b8e8; }
+.check {
+  width: 16px; height: 16px; border-radius: 5px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2);
+}
+.check svg { width: 9px; height: 9px; color: #22c55e; }
+.check.v { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.3); }
+.check.v svg { color: var(--purple-light); }
+
+/* CTA buttons */
+.cta {
+  width: 100%; padding: 13px; border-radius: 12px; border: none;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  font-family: 'Inter', sans-serif; letter-spacing: -0.1px;
+  transition: opacity .2s, transform .15s;
+}
+.cta-fill { background: var(--grad); color: white; }
+.cta-fill:hover { opacity: 0.85; }
+.cta-outline {
+  background: transparent; color: var(--sub);
+  border: 1px solid var(--border2);
+}
+.cta-outline:hover { color: var(--text); border-color: rgba(124,58,237,0.4); }
+
+/* ── BOTTOM NOTE ── */
+.note {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px 18px;
+  text-align: center; margin-bottom: 10px;
+}
+.note p { font-size: 12px; color: var(--muted); line-height: 1.8; }
+.note p strong { color: var(--sub); font-weight: 600; }
+
+.support-btn {
+  width: 100%; padding: 13px; border-radius: 12px;
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--muted); font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: 'Inter', sans-serif; transition: .2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.support-btn svg { width: 15px; height: 15px; }
+.support-btn:hover { color: var(--text); border-color: rgba(124,58,237,0.4); }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  margin-top: 40px; padding: 20px 20px 0;
+  max-width: 420px; margin-left: auto; margin-right: auto;
+}
+.foot-links { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 14px; }
+.foot-links a { font-size: 12px; color: var(--muted); text-decoration: none; transition: color .2s; }
+.foot-links a:hover { color: var(--sub); }
+.foot-copy { font-size: 11px; color: var(--muted); text-align: center; padding-bottom: 20px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <button class="nav-back" onclick="window.history.back()">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M10 3L5 8l5 5"/>
+    </svg>
+    Back
+  </button>
+  <div class="nav-logo">ReelScribe</div>
+  <div style="width:52px"></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Pricing</div>
+  <h1>Simple, transparent<br><em>pricing.</em></h1>
+  <p>Everything you need to transcribe and clip your content — in one plan.</p>
+</div>
+
+<div class="toggle-row">
+  <span class="toggle-label active" id="lbl-m">Monthly</span>
+  <div class="toggle-track" id="sw" onclick="toggleBilling()"></div>
+  <span class="toggle-label" id="lbl-y">Annually</span>
+  <span class="save-tag">Save 17%</span>
+</div>
+
+<div class="wrap">
+
+  <!-- Free -->
+  <div class="free-card">
+    <div class="free-card-info">
+      <strong>Free</strong>
+      <span>5 transcripts · No clip generation</span>
+    </div>
+    <div class="tag-current">Current plan</div>
+  </div>
+
+  <!-- Plans -->
+  <div class="plans">
+
+    <!-- Starter -->
+    <div class="plan">
+      <div class="plan-head">
+        <div class="plan-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <div class="plan-title-group">
+          <div class="plan-name">Starter</div>
+          <div class="plan-desc">For individuals getting started</div>
+        </div>
+        <div class="plan-pricing">
+          <div class="plan-old" id="s-old"></div>
+          <div class="plan-amount" id="s-price">₹149</div>
+          <div class="plan-cycle" id="s-cycle">per month</div>
+        </div>
+      </div>
+      <div class="plan-sep"></div>
+      <ul class="feat-list">
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>30 transcripts / month</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>AI clip generation</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>3–5 clips per video</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>2 videos/day · 10 videos/month</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>All languages</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>Download all clips</li>
+      </ul>
+      <button class="cta cta-outline" onclick="buyPlan('starter')">Get Starter</button>
+    </div>
+
+    <!-- Pro -->
+    <div class="plan pro">
+      <div class="pro-badge">Most Popular</div>
+      <div class="plan-head">
+        <div class="plan-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="plan-title-group">
+          <div class="plan-name">Pro</div>
+          <div class="plan-desc">For active content creators</div>
+        </div>
+        <div class="plan-pricing">
+          <div class="plan-old" id="p-old"></div>
+          <div class="plan-amount" id="p-price">₹299</div>
+          <div class="plan-cycle" id="p-cycle">per month</div>
+        </div>
+      </div>
+      <div class="plan-sep"></div>
+      <ul class="feat-list">
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>60 transcripts / month</li>
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>AI clip generation</li>
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>5–12 clips per video</li>
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>5 videos/day · 15 videos/month</li>
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>All languages</li>
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>Download all clips</li>
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>Priority processing</li>
+      </ul>
+      <button class="cta cta-fill" onclick="buyPlan('pro')">Get Pro</button>
+    </div>
+
+    <!-- Agency -->
+    <div class="plan">
+      <div class="plan-head">
+        <div class="plan-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+          </svg>
+        </div>
+        <div class="plan-title-group">
+          <div class="plan-name">Agency</div>
+          <div class="plan-desc">For teams and agencies</div>
+        </div>
+        <div class="plan-pricing">
+          <div class="plan-old" id="a-old"></div>
+          <div class="plan-amount" id="a-price">₹599</div>
+          <div class="plan-cycle" id="a-cycle">per month</div>
+        </div>
+      </div>
+      <div class="plan-sep"></div>
+      <ul class="feat-list">
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>150 transcripts / month</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>AI clip generation</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>5–12 clips per video</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>15 videos/day · 60 videos/month</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>All languages</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>Download all clips</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>Priority processing</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>Dedicated support</li>
+      </ul>
+      <button class="cta cta-outline" onclick="buyPlan('agency')">Get Agency</button>
+    </div>
+
+  </div>
+
+  <!-- Note -->
+  <div class="note">
+    <p>Secure payment gateway is <strong>coming soon.</strong><br>
+    To activate your plan today, reach out via Instagram.<br>
+    Access is granted <strong>within minutes.</strong></p>
+  </div>
+  <button class="support-btn" onclick="contactAdmin()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    Contact Support
+  </button>
+
+</div>
+
+<footer>
+  <div class="foot-links">
+    <a href="/about.html">About</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+  <p class="foot-copy">© 2026 ReelScribe · Transcribe · Repurpose · Scale</p>
+</footer>
+
+<script>
+let yearly = false;
+const prices = {
+  starter: { m: 149, y: 124 },
+  pro:     { m: 299, y: 249 },
+  agency:  { m: 599, y: 499 }
+};
+
+function toggleBilling() {
+  yearly = !yearly;
+  document.getElementById('sw').classList.toggle('on', yearly);
+  document.getElementById('lbl-m').classList.toggle('active', !yearly);
+  document.getElementById('lbl-y').classList.toggle('active', yearly);
+  [['s','starter'],['p','pro'],['a','agency']].forEach(([k,plan]) => {
+    const p = prices[plan];
+    document.getElementById(k+'-price').textContent = '₹' + (yearly ? p.y : p.m);
+    document.getElementById(k+'-cycle').textContent = yearly ? 'per month, billed annually' : 'per month';
+    const old = document.getElementById(k+'-old');
+    old.textContent = yearly ? '₹'+p.m+'/mo' : '';
+    old.style.display = yearly ? 'block' : 'none';
+  });
+}
+
+async function buyPlan(plan) {
+  // Login check
+  const email = localStorage.getItem("userEmail");
+  if (!email || email === "guest@example.com") {
+    alert("Plan kharidne ke liye pehle login karein!");
+    window.location.href = "/";
+    return;
+  }
+
+  try {
+    const res = await fetch("/create-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(data.error || "Order create failed");
+      return;
+    }
+
+    const options = {
+      key: data.key,
+      amount: data.order.amount,
+      currency: data.order.currency,
+      name: "ReelScribe",
+      description: plan.charAt(0).toUpperCase() + plan.slice(1) + " Plan",
+      order_id: data.order.id,
+      prefill: { email },
+
+      handler: async function (response) {
+        try {
+          const verify = await fetch("/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...response,
+              plan,
+              email
+            })
+          });
+
+          const result = await verify.json();
+
+          if (result.success) {
+            alert("✅ Payment Successful! " + plan.toUpperCase() + " plan activate ho gaya!");
+            location.href = "/dashboard.html";
+          } else {
+            alert("❌ Payment verification failed. Support se contact karein.");
+          }
+        } catch (e) {
+          alert("❌ Verification error. Support se contact karein.");
+        }
+      },
+
+      modal: {
+        ondismiss: function() {
+          console.log("Payment modal closed");
+        }
+      },
+
+      theme: { color: "#7c3aed" }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong. Please try again.");
+  }
+}
+</script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</body>
+</html>
