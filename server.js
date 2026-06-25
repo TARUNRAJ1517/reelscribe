@@ -281,15 +281,21 @@ app.get("/auth/google/callback",
 
 app.post("/send-otp", async (req, res) => {
   try {
+    
+    console.log("===== SEND OTP HIT =====");
+console.log(req.body);
+    
     const { email } = req.body;
     if (!email) return res.status(400).json({ success: false, message: "Email required" });
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
+   console.log("Sending mail...");
     await transporter.sendMail({
       from: process.env.EMAIL_USER, to: email,
       subject: "ReelScribe OTP",
       html: `<h2>ReelScribe</h2><p>Your OTP is:</p><h1 style="color:#6d5dfc">${otp}</h1><p>Valid for 5 minutes.</p>`
     });
+    console.log("Mail sent");
     res.json({ success: true, message: "OTP Sent" });
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
