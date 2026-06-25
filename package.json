@@ -21,8 +21,8 @@
     "passport-google-oauth20": "^2.0.0",
     "razorpay": "^2.9.6",
     "youtube-transcript": "^1.2.1"
-    "dependencies": 
+    "dependencies": {
   "resend": "^4.0.0"
-
+    }
   }
 }
