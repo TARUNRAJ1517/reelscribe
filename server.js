@@ -208,11 +208,13 @@ app.post("/verify-payment", async (req, res) => {
     const {
       razorpay_order_id,
       razorpay_payment_id,
-      razorpay_signature
+      razorpay_signature,
+      plan,
+      email
     } = req.body;
 
+    // 1. Signature verify karo
     const body = razorpay_order_id + "|" + razorpay_payment_id;
-
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(body.toString())
@@ -225,12 +227,40 @@ app.post("/verify-payment", async (req, res) => {
       });
     }
 
-    // Abhi sirf payment verify kar rahe hain.
-    // Agle step me yahi user ka plan MongoDB me activate karega.
+    // 2. Valid plans check
+    const validPlans = ["starter", "pro", "agency"];
+    if (!plan || !validPlans.includes(plan)) {
+      return res.status(400).json({ success: false, error: "Invalid plan" });
+    }
+
+    // 3. User ka plan activate karo MongoDB mein
+    const planExpiry = new Date();
+    planExpiry.setMonth(planExpiry.getMonth() + 1); // 1 month validity
+
+    const user = await User.findOneAndUpdate(
+      { email },
+      {
+        plan,
+        planExpiresAt: planExpiry,
+        transcriptsUsedMonth: 0,
+        clipsUsedToday: 0,
+        clipsUsedMonth: 0,
+        lastTranscriptResetDate: new Date()
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    console.log(`✅ Plan activated: ${email} → ${plan} (expires: ${planExpiry})`);
 
     res.json({
       success: true,
-      message: "Payment verified successfully"
+      message: `${plan} plan activate ho gaya!`,
+      plan,
+      planExpiresAt: planExpiry
     });
 
   } catch (err) {
