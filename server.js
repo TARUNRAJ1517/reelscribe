@@ -494,11 +494,11 @@ app.post("/transcribe-url", async (req, res) => {
   }
 });
 
-app.get("/credits/:email", async (req, res) => {
+app.get("/user-plan/:email", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.email });
     if (!user) return res.status(404).json({ success: false });
-    res.json({ success: true, credits: user.credits });
+    res.json({ success: true, plan: user.plan || "free", planExpiresAt: user.planExpiresAt });
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
