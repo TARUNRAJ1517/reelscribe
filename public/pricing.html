@@ -3,229 +3,443 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Buy Credits – ReelScribe</title>
+<title>Pricing – ReelScribe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-*{ margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-body{ background:#0b0718; padding:20px; color:white; max-width:480px; margin:0 auto; min-height:100vh; }
-
-.topbar{ display:flex; align-items:center; justify-content:center; position:relative; margin-bottom:25px; }
-
-.backBtn{
-    position:absolute; left:0; width:42px; height:42px; border-radius:50%;
-    background:#121026; border:1px solid #2b224a; display:flex;
-    align-items:center; justify-content:center; cursor:pointer; font-size:20px; color:white;
+:root {
+  --bg: #05030d;
+  --s1: #0c0919;
+  --s2: #121024;
+  --border: #1c1830;
+  --border2: #261f40;
+  --purple: #7c3aed;
+  --purple-light: #a78bfa;
+  --pink: #db2777;
+  --text: #f1eeff;
+  --sub: #9689b8;
+  --muted: #4e4668;
+  --grad: linear-gradient(135deg, #7c3aed, #db2777);
+  --glow: 0 0 40px rgba(124,58,237,0.18);
 }
 
-.logo{ font-size:22px; font-weight:bold; background:linear-gradient(90deg,#8b5cf6,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
 
-.pageHeader{ text-align:center; margin-bottom:25px; }
+/* ── NAV ── */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(5,3,13,0.85);
+  backdrop-filter: blur(16px);
+}
+.nav-logo {
+  font-size: 16px; font-weight: 800; letter-spacing: -0.4px;
+  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.nav-back {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 500; color: var(--sub);
+  cursor: pointer; border: none; background: none;
+  font-family: inherit; transition: color .2s; padding: 0;
+}
+.nav-back svg { width: 14px; height: 14px; }
+.nav-back:hover { color: var(--text); }
 
-.pageHeader h2{ font-size:24px; margin-bottom:8px; background:linear-gradient(90deg,#8b5cf6,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+/* ── HERO ── */
+.hero {
+  text-align: center;
+  padding: 52px 24px 36px;
+}
+.eyebrow {
+  display: inline-block;
+  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--purple-light);
+  margin-bottom: 16px;
+}
+.hero h1 {
+  font-size: 32px; font-weight: 900; line-height: 1.1;
+  letter-spacing: -1px; margin-bottom: 14px;
+}
+.hero h1 em {
+  font-style: normal;
+  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero p {
+  font-size: 15px; color: var(--sub); line-height: 1.6;
+  max-width: 280px; margin: 0 auto;
+}
 
-.pageHeader p{ color:#8d8aa5; font-size:14px; }
+/* ── TOGGLE ── */
+.toggle-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; margin: 0 0 28px; font-size: 13px; font-weight: 500;
+}
+.toggle-label { color: var(--muted); transition: color .2s; }
+.toggle-label.active { color: var(--text); }
+.toggle-track {
+  width: 42px; height: 22px; border-radius: 11px;
+  background: var(--s2); border: 1px solid var(--border2);
+  position: relative; cursor: pointer; transition: background .25s, border-color .25s;
+  flex-shrink: 0;
+}
+.toggle-track.on { background: var(--purple); border-color: var(--purple); }
+.toggle-track::after {
+  content: ''; position: absolute;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: white; top: 2px; left: 2px;
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+.toggle-track.on::after { transform: translateX(20px); }
+.save-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.4px;
+  color: #16a34a; background: rgba(22,163,74,0.12);
+  border: 1px solid rgba(22,163,74,0.25);
+  padding: 2px 8px; border-radius: 100px;
+}
 
-.creditsInfo{ background:#1a1730; border:1px solid #2b224a; border-radius:16px; padding:14px 18px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; }
+/* ── WRAPPER ── */
+.wrap { max-width: 420px; margin: 0 auto; padding: 0 20px; }
 
-.creditsInfo span{ color:#8d8aa5; font-size:13px; }
-.creditsInfo strong{ color:#8b5cf6; font-size:16px; }
+/* ── FREE CARD ── */
+.free-card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.free-card-info strong { font-size: 13px; font-weight: 700; display: block; margin-bottom: 3px; }
+.free-card-info span { font-size: 12px; color: var(--muted); }
+.tag-current {
+  font-size: 11px; font-weight: 600; color: var(--purple-light);
+  background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.2);
+  padding: 4px 10px; border-radius: 8px; white-space: nowrap;
+}
 
-.plansGrid{ display:flex; flex-direction:column; gap:14px; margin-bottom:20px; }
+/* ── PLAN CARDS ── */
+.plans { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
 
-.planCard{ background:#121026; border:1.5px solid #2b224a; border-radius:20px; padding:20px; position:relative; transition:.2s; cursor:pointer; }
+.plan {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 20px; padding: 22px 20px 20px;
+  position: relative; transition: border-color .25s;
+}
+.plan:hover { border-color: var(--border2); }
+.plan.pro {
+  background: linear-gradient(160deg, #100b22 0%, #0d0920 100%);
+  border-color: rgba(124,58,237,0.5);
+  box-shadow: var(--glow);
+}
 
-.planCard:hover{ border-color:#8b5cf6; transform:scale(1.01); }
+.pro-badge {
+  position: absolute; top: -10px; left: 20px;
+  font-size: 9px; font-weight: 800; letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: var(--grad); color: white;
+  padding: 3px 12px; border-radius: 100px;
+}
 
-.planCard.popular{ border-color:#8b5cf6; background:#150d2e; }
+/* Plan header */
+.plan-head {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; margin-bottom: 18px;
+}
+.plan-icon-wrap {
+  width: 38px; height: 38px; border-radius: 11px;
+  background: var(--s2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.plan.pro .plan-icon-wrap {
+  background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.3);
+}
+.plan-icon-wrap svg { width: 18px; height: 18px; }
 
-.popularBadge{ position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:linear-gradient(90deg,#8b5cf6,#ec4899); color:white; font-size:11px; font-weight:bold; padding:4px 14px; border-radius:20px; white-space:nowrap; }
+.plan-title-group { flex: 1; padding-left: 12px; }
+.plan-name { font-size: 15px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 3px; }
+.plan-desc { font-size: 11px; color: var(--muted); font-weight: 500; }
 
-.planTop{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.plan-pricing { text-align: right; flex-shrink: 0; }
+.plan-old { font-size: 12px; color: var(--muted); text-decoration: line-through; display: none; height: 16px; }
+.plan-amount {
+  font-size: 26px; font-weight: 900; letter-spacing: -1px; line-height: 1;
+  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.plan-cycle { font-size: 10px; color: var(--muted); margin-top: 3px; font-weight: 500; }
 
-.planEmoji{ font-size:32px; }
+/* Divider */
+.plan-sep { height: 1px; background: var(--border); margin: 0 0 16px; }
 
-.planPrice{ text-align:right; }
+/* Features */
+.feat-list { list-style: none; margin-bottom: 18px; }
+.feat-list li {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: var(--sub); padding: 4.5px 0; font-weight: 500;
+}
+.plan.pro .feat-list li { color: #c4b8e8; }
+.check {
+  width: 16px; height: 16px; border-radius: 5px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2);
+}
+.check svg { width: 9px; height: 9px; color: #22c55e; }
+.check.v { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.3); }
+.check.v svg { color: var(--purple-light); }
 
-.planPrice .amount{ font-size:28px; font-weight:bold; background:linear-gradient(90deg,#8b5cf6,#ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+/* CTA buttons */
+.cta {
+  width: 100%; padding: 13px; border-radius: 12px; border: none;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  font-family: 'Inter', sans-serif; letter-spacing: -0.1px;
+  transition: opacity .2s, transform .15s;
+}
+.cta-fill { background: var(--grad); color: white; }
+.cta-fill:hover { opacity: 0.85; }
+.cta-outline {
+  background: transparent; color: var(--sub);
+  border: 1px solid var(--border2);
+}
+.cta-outline:hover { color: var(--text); border-color: rgba(124,58,237,0.4); }
 
-.planPrice .per{ font-size:12px; color:#8d8aa5; }
+/* ── BOTTOM NOTE ── */
+.note {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px 18px;
+  text-align: center; margin-bottom: 10px;
+}
+.note p { font-size: 12px; color: var(--muted); line-height: 1.8; }
+.note p strong { color: var(--sub); font-weight: 600; }
 
-.planName{ font-size:18px; font-weight:bold; margin-bottom:4px; }
+.support-btn {
+  width: 100%; padding: 13px; border-radius: 12px;
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--muted); font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: 'Inter', sans-serif; transition: .2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.support-btn svg { width: 15px; height: 15px; }
+.support-btn:hover { color: var(--text); border-color: rgba(124,58,237,0.4); }
 
-.planCredits{ font-size:13px; color:#8d8aa5; margin-bottom:12px; }
-
-.planFeatures{ list-style:none; margin-bottom:16px; }
-
-.planFeatures li{ font-size:13px; color:#ccc; padding:4px 0; }
-
-.planFeatures li::before{ content:"✅ "; }
-
-.buyBtn{ width:100%; padding:13px; border:none; border-radius:14px; background:linear-gradient(90deg,#8b5cf6,#ec4899); color:white; font-size:15px; font-weight:bold; cursor:pointer; transition:.2s; }
-
-.buyBtn:hover{ opacity:.9; }
-
-.note{ background:#1a1730; border:1px solid #2b224a; border-radius:14px; padding:14px; font-size:13px; color:#8d8aa5; text-align:center; line-height:1.7; }
-
-.note span{ color:#8b5cf6; font-weight:bold; }
-
-.contactBtn{ width:100%; padding:14px; border:1.5px solid #2b224a; border-radius:14px; background:transparent; color:#8d8aa5; font-size:14px; cursor:pointer; margin-top:12px; transition:.2s; }
-
-.contactBtn:hover{ border-color:#8b5cf6; color:white; }
-
-footer{ padding:30px 20px 20px; border-top:1px solid #1a1730; text-align:left; margin-top:40px; }
-.footerLegal{ font-size:11px; letter-spacing:2px; color:#3d3a52; margin-bottom:16px; }
-.footerLinks{ margin-bottom:24px; }
-.footerLinks a{ display:block; color:#8d8aa5; font-size:15px; text-decoration:none; margin-bottom:12px; transition:.2s; }
-.footerLinks a:hover{ color:white; }
-.footerDivider{ height:1px; background:#1a1730; margin-bottom:20px; }
-.footerCopy{ text-align:center; color:#3d3a52; font-size:13px; margin-bottom:8px; }
-.footerTagline{ text-align:center; color:#3d3a52; font-size:13px; }
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  margin-top: 40px; padding: 20px 20px 0;
+  max-width: 420px; margin-left: auto; margin-right: auto;
+}
+.foot-links { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 14px; }
+.foot-links a { font-size: 12px; color: var(--muted); text-decoration: none; transition: color .2s; }
+.foot-links a:hover { color: var(--sub); }
+.foot-copy { font-size: 11px; color: var(--muted); text-align: center; padding-bottom: 20px; }
 </style>
 </head>
 <body>
 
-<!-- Topbar -->
-<div class="topbar">
-    <div class="backBtn" onclick="window.history.back()">←</div>
-    <div class="logo">🚀 ReelScribe</div>
+<nav>
+  <button class="nav-back" onclick="window.history.back()">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M10 3L5 8l5 5"/>
+    </svg>
+    Back
+  </button>
+  <div class="nav-logo">ReelScribe</div>
+  <div style="width:52px"></div>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow">Pricing</div>
+  <h1>Simple, transparent<br><em>pricing.</em></h1>
+  <p>Everything you need to transcribe and clip your content — in one plan.</p>
 </div>
 
-<!-- Header -->
-<div class="pageHeader">
-    <h2>💰 Buy Credits</h2>
-    <p>⚡ Fast AI Transcription • Credits never expire</p>
+<div class="toggle-row">
+  <span class="toggle-label active" id="lbl-m">Monthly</span>
+  <div class="toggle-track" id="sw" onclick="toggleBilling()"></div>
+  <span class="toggle-label" id="lbl-y">Annually</span>
+  <span class="save-tag">Save 17%</span>
 </div>
 
-<!-- Current Credits — sirf logged in users ke liye -->
-<div class="creditsInfo" id="creditsBox" style="display:none;">
-    <span>Your Credits:</span>
-    <strong>💰 <span id="currentCredits">...</span> Credits</strong>
-</div>
+<div class="wrap">
 
-<!-- Plans -->
-<div class="plansGrid">
+  <!-- Free -->
+  <div class="free-card">
+    <div class="free-card-info">
+      <strong>Free</strong>
+      <span>5 transcripts · No clip generation</span>
+    </div>
+    <div class="tag-current">Current plan</div>
+  </div>
 
-    <div class="planCard" onclick="buyPlan('small')">
-        <div class="planTop">
-            <div class="planEmoji">🥉</div>
-            <div class="planPrice"><div class="amount">₹29</div><div class="per">one-time</div></div>
+  <!-- Plans -->
+  <div class="plans">
+
+    <!-- Starter -->
+    <div class="plan">
+      <div class="plan-head">
+        <div class="plan-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
         </div>
-        <div class="planName">Starter Pack</div>
-        <div class="planCredits">10 Credits = 5 Transcripts</div>
-        <ul class="planFeatures">
-            <li>5 videos transcript kar sakte ho</li>
-            <li>File upload + Instagram URL</li>
-            <li>Sabhi languages support</li>
-        </ul>
-        <button class="buyBtn">Buy for ₹29 →</button>
+        <div class="plan-title-group">
+          <div class="plan-name">Starter</div>
+          <div class="plan-desc">For individuals getting started</div>
+        </div>
+        <div class="plan-pricing">
+          <div class="plan-old" id="s-old"></div>
+          <div class="plan-amount" id="s-price">₹149</div>
+          <div class="plan-cycle" id="s-cycle">per month</div>
+        </div>
+      </div>
+      <div class="plan-sep"></div>
+      <ul class="feat-list">
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>30 transcripts / month</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>AI clip generation</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>3–5 clips per video</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>2 videos/day · 10 videos/month</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>All languages</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>Download all clips</li>
+      </ul>
+      <button class="cta cta-outline" onclick="buyPlan('starter')">Get Starter</button>
     </div>
 
-    <div class="planCard popular" onclick="buyPlan('medium')">
-        <div class="popularBadge">⭐ MOST POPULAR</div>
-        <div class="planTop">
-            <div class="planEmoji">🥈</div>
-            <div class="planPrice"><div class="amount">₹99</div><div class="per">one-time</div></div>
+    <!-- Pro -->
+    <div class="plan pro">
+      <div class="pro-badge">Most Popular</div>
+      <div class="plan-head">
+        <div class="plan-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
         </div>
-        <div class="planName">Pro Pack</div>
-        <div class="planCredits">50 Credits = 25 Transcripts</div>
-        <ul class="planFeatures">
-            <li>25 videos transcript kar sakte ho</li>
-            <li>File upload + Instagram URL</li>
-            <li>Sabhi languages support</li>
-            <li>₹2 per transcript sirf!</li>
-        </ul>
-        <button class="buyBtn">Buy for ₹99 →</button>
+        <div class="plan-title-group">
+          <div class="plan-name">Pro</div>
+          <div class="plan-desc">For active content creators</div>
+        </div>
+        <div class="plan-pricing">
+          <div class="plan-old" id="p-old"></div>
+          <div class="plan-amount" id="p-price">₹299</div>
+          <div class="plan-cycle" id="p-cycle">per month</div>
+        </div>
+      </div>
+      <div class="plan-sep"></div>
+      <ul class="feat-list">
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>60 transcripts / month</li>
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>AI clip generation</li>
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>5–12 clips per video</li>
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>5 videos/day · 15 videos/month</li>
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>All languages</li>
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>Download all clips</li>
+        <li><span class="check v"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>Priority processing</li>
+      </ul>
+      <button class="cta cta-fill" onclick="buyPlan('pro')">Get Pro</button>
     </div>
 
-    <div class="planCard" onclick="buyPlan('large')">
-        <div class="planTop">
-            <div class="planEmoji">🥇</div>
-            <div class="planPrice"><div class="amount">₹179</div><div class="per">one-time</div></div>
+    <!-- Agency -->
+    <div class="plan">
+      <div class="plan-head">
+        <div class="plan-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+          </svg>
         </div>
-        <div class="planName">Power Pack</div>
-        <div class="planCredits">100 Credits = 50 Transcripts</div>
-        <ul class="planFeatures">
-            <li>50 videos transcript kar sakte ho</li>
-            <li>File upload + Instagram URL</li>
-            <li>Sabhi languages support</li>
-            <li>Sabse sasta — ₹1.79 per transcript!</li>
-        </ul>
-        <button class="buyBtn">Buy for ₹179 →</button>
+        <div class="plan-title-group">
+          <div class="plan-name">Agency</div>
+          <div class="plan-desc">For teams and agencies</div>
+        </div>
+        <div class="plan-pricing">
+          <div class="plan-old" id="a-old"></div>
+          <div class="plan-amount" id="a-price">₹599</div>
+          <div class="plan-cycle" id="a-cycle">per month</div>
+        </div>
+      </div>
+      <div class="plan-sep"></div>
+      <ul class="feat-list">
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>150 transcripts / month</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>AI clip generation</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>5–12 clips per video</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>15 videos/day · 60 videos/month</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>All languages</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>Download all clips</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>Priority processing</li>
+        <li><span class="check"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg></span>Dedicated support</li>
+      </ul>
+      <button class="cta cta-outline" onclick="buyPlan('agency')">Get Agency</button>
     </div>
 
-</div>
+  </div>
 
-<div class="note">
-    <p>💳 Secure payment system coming soon.</p>
-    <p>For instant credits, contact us on Instagram.</p>
-    <p style="margin-top:6px;">⚡ Credits are added manually within minutes.</p>
-</div>
+  <!-- Note -->
+  <div class="note">
+    <p>Secure payment gateway is <strong>coming soon.</strong><br>
+    To activate your plan today, reach out via Instagram.<br>
+    Access is granted <strong>within minutes.</strong></p>
+  </div>
+  <button class="support-btn" onclick="contactAdmin()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+    Contact Support
+  </button>
 
-<button class="contactBtn" onclick="contactAdmin()">
-    📩 Admin se Contact Karein
-</button>
+</div>
 
 <footer>
-    <p class="footerLegal">LEGAL</p>
-    <div class="footerLinks">
-        <a href="/about.html">About</a>
-
-<a href="/contact.html">Contact</a>
-
-        <a href="/terms.html">Terms of Service</a>
-        <a href="/privacy.html">Privacy Policy</a>
-    </div>
-    <div class="footerDivider"></div>
-    <p class="footerCopy">© 2026 ReelScribe. All rights reserved.</p>
-    <p class="footerTagline">Transcribe · Repurpose · Scale</p>
+  <div class="foot-links">
+    <a href="/about.html">About</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+  <p class="foot-copy">© 2026 ReelScribe · Transcribe · Repurpose · Scale</p>
 </footer>
 
 <script>
+let yearly = false;
+const prices = {
+  starter: { m: 149, y: 124 },
+  pro:     { m: 299, y: 249 },
+  agency:  { m: 599, y: 499 }
+};
 
-// ✅ Guest bhi dekh sakta hai — no redirect!
-const email = localStorage.getItem("userEmail");
-const isLoggedIn = email && email !== "guest@example.com";
-
-// Sirf logged in hone pe credits dikhao
-if(isLoggedIn){
-    document.getElementById("creditsBox").style.display = "flex";
-    loadCredits();
+function toggleBilling() {
+  yearly = !yearly;
+  document.getElementById('sw').classList.toggle('on', yearly);
+  document.getElementById('lbl-m').classList.toggle('active', !yearly);
+  document.getElementById('lbl-y').classList.toggle('active', yearly);
+  [['s','starter'],['p','pro'],['a','agency']].forEach(([k,plan]) => {
+    const p = prices[plan];
+    document.getElementById(k+'-price').textContent = '₹' + (yearly ? p.y : p.m);
+    document.getElementById(k+'-cycle').textContent = yearly ? 'per month, billed annually' : 'per month';
+    const old = document.getElementById(k+'-old');
+    old.textContent = yearly ? '₹'+p.m+'/mo' : '';
+    old.style.display = yearly ? 'block' : 'none';
+  });
 }
 
-async function loadCredits(){
-    try{
-        const res = await fetch("/credits/" + encodeURIComponent(email));
-        const data = await res.json();
-        if(data.success){
-            document.getElementById("currentCredits").innerText = data.credits;
-        }
-    } catch(e){
-        document.getElementById("currentCredits").innerText = "?";
-    }
+function buyPlan(plan) {
+  const email = localStorage.getItem('userEmail') || 'Guest';
+  const name = { starter:'Starter', pro:'Pro', agency:'Agency' }[plan];
+  const p = prices[plan];
+  const price = yearly ? p.y : p.m;
+  const billing = yearly ? 'Annual' : 'Monthly';
+  const msg = `Hi! I'd like the ReelScribe ${name} Plan (${billing} · ₹${price}/mo). My email: ${email}`;
+  window.open('https://www.instagram.com/tarunraj1517/', '_blank');
+  navigator.clipboard.writeText(msg).catch(()=>{});
+  alert('Message copied!\n\n"' + msg + '"');
 }
 
-function buyPlan(plan){
-    const plans = {
-        small:  { name:"Starter Pack", credits:10,  price:29  },
-        medium: { name:"Pro Pack",     credits:50,  price:99  },
-        large:  { name:"Power Pack",   credits:100, price:179 }
-    };
-
-    const selected = plans[plan];
-    const userInfo = isLoggedIn ? email : "Guest User";
-    const msg = `Hi! Main ReelScribe ka ${selected.name} (${selected.credits} Credits - ₹${selected.price}) kharidna chahta hoon. Mera email: ${userInfo}`;
-
-    window.open("https://www.instagram.com/tarunraj1517/", "_blank");
-
-    navigator.clipboard.writeText(msg).then(()=>{
-        alert(`✅ Message copy ho gaya!\n\nInstagram pe DM karein:\n\n"${msg}"`);
-    }).catch(()=>{
-        alert(`Instagram pe DM karein:\n@tarunraj1517\n\nYeh message bhejein:\n"${msg}"`);
-    });
-}
-
-function contactAdmin(){ buyPlan("medium"); }
-
+function contactAdmin() { buyPlan('pro'); }
 </script>
 </body>
 </html>
