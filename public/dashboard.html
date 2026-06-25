@@ -1,455 +1,663 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ReelScribe Dashboard</title>
+<title>Dashboard – ReelScribe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-*{ margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
-
-body{
-    background:#0b0718;
-    color:white;
-    max-width:480px;
-    margin:0 auto;
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-}
-
-/* ── Overlay ── */
-.overlay{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.6);
-    backdrop-filter:blur(3px);
-    z-index:998;
-}
-.overlay.active{ display:block; }
-
-/* ── Drawer RIGHT ── */
-.drawer{
-    position:fixed;
-    top:0;
-    right:-320px;
-    width:75%;
-    max-width:280px;
-    height:100%;
-    background:#121026;
-    border-left:1px solid #2b224a;
-    padding:30px 20px 20px;
-    transition:.3s ease;
-    z-index:999;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    overflow-y:auto;
-}
-.drawer.active{ right:0; }
-
-.drawerAvatar{
-    width:55px; height:55px; border-radius:50%;
-    background:linear-gradient(135deg,#8b5cf6,#ec4899);
-    display:flex; align-items:center; justify-content:center;
-    font-size:26px; margin-bottom:8px;
-}
-.drawerName{ font-size:17px; font-weight:bold; color:white; }
-.drawerEmail{ font-size:12px; color:#8d8aa5; margin-bottom:5px; word-break:break-all; }
-.creditsBox{
-    background:#1a1730; border:1px solid #2b224a;
-    border-radius:12px; padding:12px 15px;
-    font-size:14px; color:#b8b8c5; margin-bottom:5px;
-}
-.drawer button{
-    width:100%; padding:13px; border:none; border-radius:12px;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    color:white; font-size:15px; font-weight:bold; cursor:pointer; margin-top:0;
+:root {
+  --bg: #09070f;
+  --card: #111020;
+  --card2: #17142a;
+  --border: #201c38;
+  --border2: #2c2650;
+  --purple: #8b5cf6;
+  --pink: #ec4899;
+  --text: #f0eaff;
+  --sub: #8a7fab;
+  --muted: #3d3660;
+  --grad: linear-gradient(135deg, #8b5cf6, #ec4899);
 }
 
-/* ── Header ── */
-.header{
-    position:sticky; top:0; z-index:997;
-    background:rgba(11,7,24,.95);
-    backdrop-filter:blur(12px);
-    border-bottom:1px solid #1a1730;
-    display:flex; justify-content:space-between;
-    align-items:center; padding:14px 20px;
-}
-.logo{
-    font-size:22px; font-weight:bold;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-    cursor:pointer;
-}
-.menuBtn{
-    background:none; border:none;
-    color:white; font-size:26px; cursor:pointer; line-height:1;
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  max-width: 480px; margin: 0 auto;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── Main grows to fill space ── */
-.main{
-    padding:15px;
-    flex:1;
+/* NAV */
+.nav {
+  position: sticky; top: 0; z-index: 999;
+  background: rgba(9,7,15,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px;
+}
+.nav-logo {
+  font-size: 18px; font-weight: 900; letter-spacing: -0.5px;
+  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.nav-plan-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; padding: 4px 10px;
+  border-radius: 100px; border: 1px solid var(--border2);
+  color: var(--sub); background: var(--card);
+}
+.nav-plan-badge.paid { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); color: var(--purple); }
+.nav-menu { background: none; border: none; color: var(--sub); font-size: 20px; cursor: pointer; }
+
+/* DRAWER */
+.drawer-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.7); z-index: 9998; backdrop-filter: blur(6px);
+}
+.drawer-overlay.active { display: block; }
+.drawer {
+  position: fixed; top: 0; right: -320px;
+  width: 78%; max-width: 290px; height: 100%;
+  background: #0e0c1c; border-left: 1px solid var(--border2);
+  padding: 0; transition: right .3s ease;
+  z-index: 9999; display: flex; flex-direction: column;
+}
+.drawer.active { right: 0; }
+.drawer-head {
+  padding: 28px 22px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.drawer-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--grad);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 900; color: white;
+  margin-bottom: 12px;
+}
+.drawer-name { font-size: 16px; font-weight: 800; margin-bottom: 3px; }
+.drawer-email { font-size: 12px; color: var(--muted); word-break: break-all; margin-bottom: 12px; }
+.drawer-plan-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 10px 14px;
+}
+.drawer-plan-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.drawer-plan-value { font-size: 13px; font-weight: 800; color: var(--purple); }
+.drawer-body { flex: 1; padding: 16px 22px; display: flex; flex-direction: column; gap: 8px; }
+.drawer-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 12px;
+  background: transparent; border: 1px solid transparent;
+  color: var(--sub); font-size: 14px; font-weight: 600;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: all .2s; text-decoration: none;
+}
+.drawer-link svg { width: 16px; height: 16px; flex-shrink: 0; }
+.drawer-link:hover { background: var(--card); border-color: var(--border); color: var(--text); }
+.drawer-link-danger { color: #f87171; }
+.drawer-link-danger:hover { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.2); color: #f87171; }
+.drawer-foot { padding: 16px 22px; border-top: 1px solid var(--border); }
+.drawer-upgrade {
+  width: 100%; padding: 13px; border: none; border-radius: 12px;
+  background: var(--grad); color: white; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif;
 }
 
-.container{
-    background:#121026; padding:15px;
-    border-radius:20px; border:1px solid #2b224a;
+/* SECTION LABEL */
+.sec-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--purple); margin-bottom: 14px;
+}
+.sec-label::before {
+  content: ''; display: block;
+  width: 24px; height: 2px; background: var(--purple); flex-shrink: 0;
 }
 
-.card{
-    background:#1a1730; border:1px solid #2b224a;
-    border-radius:16px; padding:15px; margin-bottom:12px;
-}
-.cardHeader{
-    display:flex; justify-content:space-between;
-    align-items:center; margin-bottom:10px;
-}
-.card h3{ font-size:16px; }
-.card p{ color:#8d8aa5; font-size:13px; margin-bottom:5px; }
+/* MAIN */
+.main { padding: 24px 20px; }
 
-.toggleBtn{
-    background:none; border:1px solid #2b224a;
-    border-radius:8px; color:#8d8aa5;
-    font-size:12px; padding:4px 10px; cursor:pointer;
+/* WELCOME STRIP */
+.welcome-strip {
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 18px; padding: 20px;
+  margin-bottom: 20px; position: relative; overflow: hidden;
 }
-.toggleBtn:hover{ border-color:#8b5cf6; color:white; }
+.welcome-strip::before {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,92,246,0.1), transparent 65%);
+  pointer-events: none;
+}
+.welcome-greeting { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+.welcome-name { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 14px; }
+.welcome-stats { display: flex; gap: 10px; }
+.welcome-stat {
+  flex: 1; background: var(--card2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px;
+}
+.welcome-stat-num { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; color: var(--purple); }
+.welcome-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
 
-.transcript{
-    white-space:pre-wrap; line-height:1.7;
-    max-height:400px; overflow:auto;
-    font-size:14px; color:#ddd;
+/* LATEST TRANSCRIPT */
+.transcript-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 20px; margin-bottom: 16px;
 }
-.noTranscript{
-    color:#8d8aa5; font-size:14px;
-    text-align:center; padding:20px 0;
+.transcript-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
 }
-.copyBtn{
-    width:100%; padding:13px; border:none; border-radius:12px;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    color:white; font-size:15px; font-weight:bold;
-    cursor:pointer; margin-top:12px; display:none;
+.transcript-card-title { font-size: 15px; font-weight: 800; }
+.transcript-card-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; padding: 4px 10px;
+  border-radius: 100px;
+  background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2);
+  color: var(--purple);
 }
-.mainBtn{
-    width:100%; padding:13px; border:none; border-radius:12px;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    color:white; font-size:15px; font-weight:bold;
-    cursor:pointer; margin-top:10px;
+.transcript-body {
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px;
+  max-height: 180px; overflow-y: auto;
+  font-size: 13px; color: var(--sub); line-height: 1.8;
+  white-space: pre-wrap; margin-bottom: 14px;
+}
+.transcript-body::-webkit-scrollbar { width: 4px; }
+.transcript-body::-webkit-scrollbar-track { background: transparent; }
+.transcript-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+.transcript-empty {
+  text-align: center; padding: 24px 0;
+  font-size: 13px; color: var(--muted);
+}
+.transcript-actions { display: flex; gap: 8px; }
+.btn-copy {
+  flex: 1; padding: 12px; border: none; border-radius: 11px;
+  background: var(--grad); color: white;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Inter', sans-serif; transition: opacity .2s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-copy svg { width: 14px; height: 14px; }
+.btn-copy:hover { opacity: 0.85; }
+.btn-new {
+  padding: 12px 16px; border-radius: 11px;
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--sub); font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: all .2s; white-space: nowrap;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-new svg { width: 14px; height: 14px; }
+.btn-new:hover { border-color: var(--purple); color: var(--text); }
+
+/* QUICK ACTIONS */
+.quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.quick-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px; cursor: pointer;
+  transition: border-color .2s;
+}
+.quick-card:hover { border-color: rgba(139,92,246,0.4); }
+.quick-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--card2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 10px;
+}
+.quick-icon svg { width: 16px; height: 16px; color: var(--purple); }
+.quick-title { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
+.quick-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* HISTORY */
+.history-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 20px; margin-bottom: 16px;
+}
+.history-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 0;
+}
+.history-title { font-size: 15px; font-weight: 800; }
+.history-toggle {
+  background: none; border: 1px solid var(--border2);
+  border-radius: 8px; color: var(--muted);
+  font-size: 11px; font-weight: 700; padding: 5px 10px;
+  cursor: pointer; font-family: 'Inter', sans-serif; transition: all .2s;
+}
+.history-toggle:hover { border-color: var(--purple); color: var(--text); }
+.history-list { margin-top: 14px; display: none; }
+.history-item {
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; margin-bottom: 8px;
+  cursor: pointer; transition: border-color .2s;
+}
+.history-item:last-child { margin-bottom: 0; }
+.history-item:hover { border-color: rgba(139,92,246,0.3); }
+.history-item-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.history-item-date { font-size: 10px; color: var(--muted); font-weight: 600; }
+.history-item-source {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; padding: 2px 8px;
+  border-radius: 100px; background: rgba(139,92,246,0.08);
+  border: 1px solid rgba(139,92,246,0.15); color: var(--purple);
+}
+.history-item-preview { font-size: 12px; color: var(--sub); line-height: 1.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.history-item-url { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-empty { text-align: center; padding: 20px 0; font-size: 13px; color: var(--muted); }
+
+/* UPGRADE BANNER */
+.upgrade-banner {
+  background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(236,72,153,0.08));
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 18px; padding: 22px 20px;
+  margin-bottom: 20px; text-align: center;
+}
+.upgrade-banner h3 { font-size: 18px; font-weight: 900; letter-spacing: -0.3px; margin-bottom: 6px; }
+.upgrade-banner p { font-size: 13px; color: var(--sub); margin-bottom: 16px; line-height: 1.6; }
+.upgrade-btn {
+  width: 100%; padding: 13px; border: none; border-radius: 12px;
+  background: var(--grad); color: white; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif;
 }
 
-#historyContent{ display:none; }
-
-.historyItem{
-    background:#0d0a1d; border:1px solid #2b224a;
-    border-radius:12px; padding:12px; margin-bottom:10px;
-    cursor:pointer; transition:.2s;
+/* FOOTER */
+footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
+.foot-logo {
+  font-size: 15px; font-weight: 900;
+  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
 }
-.historyItem:hover{ border-color:#8b5cf6; }
-.historyDate{ font-size:11px; color:#8d8aa5; margin-bottom:5px; }
-.historyPreview{ font-size:13px; color:#ccc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.historyUrl{ font-size:11px; color:#8b5cf6; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.noHistory{ text-align:center; color:#8d8aa5; font-size:13px; padding:15px 0; }
-.loading{ text-align:center; color:#8d8aa5; font-size:13px; padding:15px 0; }
+.foot-tag { font-size: 11px; color: var(--muted); margin-bottom: 16px; }
+.foot-links { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 16px; }
+.foot-links a { color: var(--muted); font-size: 12px; text-decoration: none; transition: color .2s; }
+.foot-links a:hover { color: var(--sub); }
+.foot-sep { height: 1px; background: var(--border); margin-bottom: 14px; }
+.foot-copy { font-size: 11px; color: var(--muted); text-align: center; }
 
-/* ── Footer always bottom ── */
-footer{
-    padding:30px 20px 20px;
-    border-top:1px solid #1a1730;
-    text-align:left;
-    margin-top:auto;
+/* PREVIEW BANNER */
+.preview-banner {
+  background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(236,72,153,0.1));
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 12px; padding: 14px; margin-top: 12px; text-align: center;
 }
-
-.footerLegal{
-    font-size:11px;
-    letter-spacing:2px;
-    color:#3d3a52;
-    margin-bottom:16px;
+.preview-banner p { font-size: 12px; color: var(--sub); margin-bottom: 10px; line-height: 1.6; }
+.preview-login-btn {
+  padding: 10px 20px; border: none; border-radius: 10px;
+  background: var(--grad); color: white; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif;
 }
-
-.footerLinks{
-    margin-bottom:24px;
-}
-
-.footerLinks a{
-    display:block;
-    color:#8d8aa5;
-    font-size:15px;
-    text-decoration:none;
-    margin-bottom:12px;
-    transition:.2s;
-}
-
-.footerLinks a:hover{ color:white; }
-
-.footerDivider{
-    height:1px;
-    background:#1a1730;
-    margin-bottom:20px;
-}
-
-.footerCopy{
-    text-align:center;
-    color:#3d3a52;
-    font-size:13px;
-    margin-bottom:8px;
-}
-
-.footerTagline{
-    text-align:center;
-    color:#3d3a52;
-    font-size:13px;
-}
-
 </style>
 </head>
 <body>
 
-<!-- Overlay -->
-<div class="overlay" id="overlay" onclick="toggleDrawer()"></div>
+<!-- Drawer Overlay -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
 
-<!-- Drawer RIGHT -->
-<div id="drawer" class="drawer">
-    <div class="drawerAvatar">👤</div>
-    <div class="drawerName" id="drawerName">User</div>
-    <div class="drawerEmail" id="drawerEmail">Loading...</div>
-    <div class="creditsBox">💰 Credits: <span id="credits">Loading...</span></div>
-    <button onclick="toggleDrawer()">✖ Close</button>
-    <button onclick="buyCredits()">💳 Buy Credits</button>
-    <button onclick="logout()">🚪 Logout</button>
+<!-- Drawer -->
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-avatar" id="drawerAvatar">U</div>
+    <div class="drawer-name" id="drawerName">User</div>
+    <div class="drawer-email" id="drawerEmail">Loading...</div>
+    <div class="drawer-plan-row">
+      <span class="drawer-plan-label">Current Plan</span>
+      <span class="drawer-plan-value" id="drawerPlan">Free</span>
+    </div>
+  </div>
+  <div class="drawer-body">
+    <a class="drawer-link" href="/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </a>
+    <a class="drawer-link" href="/pricing.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Pricing & Plans
+    </a>
+    <a class="drawer-link" href="/contact.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Support
+    </a>
+    <button class="drawer-link drawer-link-danger" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
+  </div>
+  <div class="drawer-foot">
+    <button class="drawer-upgrade" onclick="window.location.href='/pricing.html'">Upgrade Plan →</button>
+  </div>
 </div>
 
-<!-- Header -->
-<div class="header">
-    <div class="logo" onclick="window.location.href='/'">🚀 ReelScribe</div>
-    <button class="menuBtn" onclick="toggleDrawer()">☰</button>
-</div>
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">ReelScribe</div>
+  <div class="nav-right">
+    <div class="nav-plan-badge" id="navPlanBadge">Free</div>
+    <button class="nav-menu" onclick="openDrawer()">☰</button>
+  </div>
+</nav>
 
-<!-- Main -->
+<!-- MAIN -->
 <div class="main">
-<div class="container">
 
-    <div class="card">
-        <h3>📄 Latest Transcript</h3>
-        <div class="transcript" id="fullTranscript">
-            <div class="loading">⏳ Loading...</div>
-        </div>
-        <button class="copyBtn" id="copyBtn" onclick="copyTranscript()">📋 Copy Transcript</button>
+  <!-- Welcome -->
+  <div class="welcome-strip">
+    <div class="welcome-greeting">Welcome back</div>
+    <div class="welcome-name" id="welcomeName">Loading...</div>
+    <div class="welcome-stats">
+      <div class="welcome-stat">
+        <div class="welcome-stat-num" id="statCredits">—</div>
+        <div class="welcome-stat-label">Credits Left</div>
+      </div>
+      <div class="welcome-stat">
+        <div class="welcome-stat-num" id="statHistory">—</div>
+        <div class="welcome-stat-label">Transcripts</div>
+      </div>
+      <div class="welcome-stat">
+        <div class="welcome-stat-num" id="statPlan">Free</div>
+        <div class="welcome-stat-label">Plan</div>
+      </div>
     </div>
+  </div>
 
-    <div class="card">
-        <h3>🎥 New Transcript</h3>
-        <p>Upload a new video or paste Instagram URL</p>
-        <button class="mainBtn" onclick="newTranscript()">✨ Create New Transcript</button>
+  <!-- Latest Transcript -->
+  <div class="sec-label">Latest Transcript</div>
+  <div class="transcript-card">
+    <div class="transcript-card-head">
+      <div class="transcript-card-title">Your Transcript</div>
+      <div class="transcript-card-badge" id="transcriptBadge">Loading...</div>
     </div>
+    <div class="transcript-body" id="transcriptBody">
+      <div class="transcript-empty">⏳ Loading transcript...</div>
+    </div>
+    <div class="transcript-actions" id="transcriptActions" style="display:none">
+      <button class="btn-copy" onclick="copyTranscript()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy Transcript
+      </button>
+      <button class="btn-new" onclick="newTranscript()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New
+      </button>
+    </div>
+    <div id="previewBanner"></div>
+  </div>
 
-    <div class="card">
-        <div class="cardHeader">
-            <h3>📜 History</h3>
-            <button class="toggleBtn" id="historyToggle" onclick="toggleHistory()">Show ▼</button>
-        </div>
-        <div id="historyContent">
-            <div id="historyList">
-                <div class="loading">⏳ Loading...</div>
-            </div>
-        </div>
+  <!-- Quick Actions -->
+  <div class="sec-label">Quick Actions</div>
+  <div class="quick-actions">
+    <div class="quick-card" onclick="newTranscript()">
+      <div class="quick-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="quick-title">New Transcript</div>
+      <div class="quick-desc">Paste URL or upload a video file</div>
     </div>
+    <div class="quick-card" onclick="window.location.href='/?mode=clips'">
+      <div class="quick-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="quick-title">Cut Clips</div>
+      <div class="quick-desc">AI clips from YouTube video</div>
+    </div>
+    <div class="quick-card" onclick="window.location.href='/pricing.html'">
+      <div class="quick-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+      <div class="quick-title">Upgrade Plan</div>
+      <div class="quick-desc">Get more transcripts & clips</div>
+    </div>
+    <div class="quick-card" onclick="window.location.href='/contact.html'">
+      <div class="quick-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="quick-title">Support</div>
+      <div class="quick-desc">Contact us anytime</div>
+    </div>
+  </div>
+
+  <!-- Upgrade Banner (free users ke liye) -->
+  <div class="upgrade-banner" id="upgradeBanner" style="display:none">
+    <h3>Unlock More Power 🚀</h3>
+    <p>Get AI clip generation, 30+ transcripts/month, and priority processing — starting at just ₹149/mo.</p>
+    <button class="upgrade-btn" onclick="window.location.href='/pricing.html'">View Plans →</button>
+  </div>
+
+  <!-- History -->
+  <div class="sec-label">History</div>
+  <div class="history-card">
+    <div class="history-head">
+      <div class="history-title">Past Transcripts</div>
+      <button class="history-toggle" id="historyToggle" onclick="toggleHistory()">Show ▼</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <div class="history-empty">⏳ Loading...</div>
+    </div>
+  </div>
 
 </div>
-</div>
 
-<!-- Footer always at bottom -->
+<!-- FOOTER -->
 <footer>
-    <p class="footerLegal">LEGAL</p>
-    <div class="footerLinks">
-        <a href="/about.html">About</a>
-        <a href="/contact.html">Contact</a>
-        <a href="/terms.html">Terms of Service</a>
-        <a href="/privacy.html">Privacy Policy</a>
-    </div>
-    <div class="footerDivider"></div>
-    <p class="footerCopy">© 2026 ReelScribe. All rights reserved.</p>
-    <p class="footerTagline">Transcribe · Repurpose · Scale</p>
+  <div class="foot-logo">ReelScribe</div>
+  <div class="foot-tag">Transcribe · Repurpose · Scale</div>
+  <div class="foot-links">
+    <a href="/about.html">About</a>
+    <a href="/pricing.html">Pricing</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+  <div class="foot-sep"></div>
+  <p class="foot-copy">© 2026 ReelScribe. All rights reserved.</p>
 </footer>
 
 <script>
-
 const params = new URLSearchParams(window.location.search);
 const googleEmail = params.get("email");
-if(googleEmail){ localStorage.setItem("userEmail", googleEmail); }
+if (googleEmail) localStorage.setItem("userEmail", googleEmail);
 
 const email = localStorage.getItem("userEmail") || "";
-const isGuest = !email;
+const isGuest = !email || email === "guest@example.com";
 
-if(!isGuest){
-    document.getElementById("drawerEmail").innerText = email;
-    document.getElementById("drawerName").innerText = email.split("@")[0];
-} else {
-    document.getElementById("drawerEmail").innerText = "Guest User";
-    document.getElementById("drawerName").innerText = "Guest";
-}
+// Set user info
+const nameStr = isGuest ? "Guest" : email.split("@")[0];
+const avatarStr = nameStr.charAt(0).toUpperCase();
+document.getElementById("welcomeName").innerText = isGuest ? "Guest User" : nameStr;
+document.getElementById("drawerName").innerText = nameStr;
+document.getElementById("drawerEmail").innerText = isGuest ? "Not logged in" : email;
+document.getElementById("drawerAvatar").innerText = avatarStr;
 
-let historyLoaded = false;
 let historyOpen = false;
+let historyLoaded = false;
 
-function toggleHistory(){
-    historyOpen = !historyOpen;
-    const content = document.getElementById("historyContent");
-    const btn = document.getElementById("historyToggle");
-    if(historyOpen){
-        content.style.display = "block";
-        btn.innerText = "Hide ▲";
-        if(!historyLoaded){ loadHistory(); historyLoaded = true; }
+function openDrawer() {
+  document.getElementById("drawer").classList.add("active");
+  document.getElementById("drawerOverlay").classList.add("active");
+}
+function closeDrawer() {
+  document.getElementById("drawer").classList.remove("active");
+  document.getElementById("drawerOverlay").classList.remove("active");
+}
+
+async function loadCredits() {
+  if (isGuest) {
+    document.getElementById("statCredits").innerText = "0";
+    document.getElementById("statPlan").innerText = "Free";
+    document.getElementById("drawerPlan").innerText = "Free";
+    document.getElementById("upgradeBanner").style.display = "block";
+    return;
+  }
+  try {
+    const res = await fetch("/credits/" + encodeURIComponent(email));
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById("statCredits").innerText = data.credits;
+    }
+  } catch (e) { console.log(e); }
+}
+
+async function loadUserPlan() {
+  if (isGuest) return;
+  try {
+    const res = await fetch("/user-plan/" + encodeURIComponent(email));
+    const data = await res.json();
+    if (data.success && data.plan) {
+      const plan = data.plan.charAt(0).toUpperCase() + data.plan.slice(1);
+      document.getElementById("statPlan").innerText = plan;
+      document.getElementById("drawerPlan").innerText = plan;
+      const badge = document.getElementById("navPlanBadge");
+      badge.innerText = plan;
+      if (data.plan !== "free") {
+        badge.classList.add("paid");
+      } else {
+        document.getElementById("upgradeBanner").style.display = "block";
+      }
+    }
+  } catch (e) {
+    document.getElementById("upgradeBanner").style.display = "block";
+  }
+}
+
+async function loadLatestTranscript() {
+  const body = document.getElementById("transcriptBody");
+  const actions = document.getElementById("transcriptActions");
+  const badge = document.getElementById("transcriptBadge");
+  const previewBanner = document.getElementById("previewBanner");
+
+  if (isGuest) {
+    const guestT = localStorage.getItem("latestTranscript");
+    const isPreview = localStorage.getItem("isPreview") === "true";
+    if (guestT) {
+      body.innerText = guestT;
+      actions.style.display = "flex";
+      badge.innerText = isPreview ? "Preview" : "Latest";
+      if (isPreview) {
+        previewBanner.innerHTML = `
+          <div class="preview-banner">
+            <p>⚠️ Yeh sirf <strong>100 words ka preview</strong> hai. Full transcript ke liye login karein!</p>
+            <button class="preview-login-btn" onclick="window.location.href='/'">Login Karo — Free Hai!</button>
+          </div>`;
+      }
     } else {
-        content.style.display = "none";
-        btn.innerText = "Show ▼";
+      body.innerHTML = '<div class="transcript-empty">📭 Koi transcript nahi hai.<br>Naya banao!</div>';
+      badge.innerText = "Empty";
     }
+    return;
+  }
+
+  try {
+    const res = await fetch("/history/" + encodeURIComponent(email));
+    const data = await res.json();
+    if (data.success && data.data && data.data.length > 0) {
+      const latest = data.data[0];
+      body.innerText = latest.transcript;
+      actions.style.display = "flex";
+      badge.innerText = "Latest";
+      document.getElementById("statHistory").innerText = data.data.length;
+      localStorage.setItem("latestTranscript", latest.transcript);
+    } else {
+      body.innerHTML = '<div class="transcript-empty">📭 Koi transcript nahi hai abhi.<br>Naya banao!</div>';
+      badge.innerText = "Empty";
+      document.getElementById("statHistory").innerText = "0";
+    }
+  } catch (e) {
+    body.innerHTML = '<div class="transcript-empty">❌ Load nahi hua</div>';
+    badge.innerText = "Error";
+  }
 }
 
-async function savePendingTranscript(){
-    const transcript = localStorage.getItem("latestTranscript");
-    if(!transcript) return;
-    try{
-        await fetch("/save-transcript",{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                email,
-                transcript
-            })
+async function loadHistory() {
+  const list = document.getElementById("historyList");
+  if (isGuest) {
+    list.innerHTML = '<div class="history-empty">Login karo history dekhne ke liye</div>';
+    return;
+  }
+  try {
+    const res = await fetch("/history/" + encodeURIComponent(email));
+    const data = await res.json();
+    if (data.success && data.data && data.data.length > 0) {
+      list.innerHTML = "";
+      data.data.forEach(item => {
+        const date = new Date(item.createdAt).toLocaleDateString("en-IN", {
+          day: "numeric", month: "short", year: "numeric",
+          hour: "2-digit", minute: "2-digit"
         });
-        localStorage.removeItem("latestTranscript");
-    }catch(err){
-        console.log(err);
+        const source = item.reelUrl?.includes("youtube") ? "YouTube" :
+                       item.reelUrl?.includes("instagram") ? "Instagram" : "File";
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.innerHTML = `
+          <div class="history-item-top">
+            <div class="history-item-date">${date}</div>
+            <div class="history-item-source">${source}</div>
+          </div>
+          <div class="history-item-preview">${item.transcript.substring(0, 90)}...</div>
+          <div class="history-item-url">${item.reelUrl?.substring(0, 50) || "File upload"}</div>
+        `;
+        div.onclick = () => {
+          document.getElementById("transcriptBody").innerText = item.transcript;
+          document.getElementById("transcriptActions").style.display = "flex";
+          localStorage.setItem("latestTranscript", item.transcript);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        };
+        list.appendChild(div);
+      });
+    } else {
+      list.innerHTML = '<div class="history-empty">📭 Koi history nahi hai</div>';
     }
+  } catch (e) {
+    list.innerHTML = '<div class="history-empty">❌ History load nahi hui</div>';
+  }
 }
 
-async function loadCredits(){
-    if(isGuest) return;
-    try{
-        const res = await fetch("/credits/" + encodeURIComponent(email));
-        const data = await res.json();
-        if(data.success){ document.getElementById("credits").innerText = data.credits; }
-    } catch(e){ console.log(e); }
+function toggleHistory() {
+  historyOpen = !historyOpen;
+  const list = document.getElementById("historyList");
+  const btn = document.getElementById("historyToggle");
+  list.style.display = historyOpen ? "block" : "none";
+  btn.innerText = historyOpen ? "Hide ▲" : "Show ▼";
+  if (historyOpen && !historyLoaded) {
+    loadHistory();
+    historyLoaded = true;
+  }
 }
 
-async function loadLatestTranscript(){
-    const transcriptDiv = document.getElementById("fullTranscript");
-    const copyBtn = document.getElementById("copyBtn");
-
-    // Guest user — localStorage se dikhao
-    if(isGuest){
-        const guestTranscript = localStorage.getItem("latestTranscript");
-        const isPreview = localStorage.getItem("isPreview") === "true";
-        if(guestTranscript){
-            transcriptDiv.innerText = guestTranscript;
-            copyBtn.style.display = "block";
-            if(isPreview){
-                // Preview banner inject karo
-                const banner = document.createElement("div");
-                banner.style.cssText = "background:linear-gradient(135deg,#6d5dfc,#b06ab3);border-radius:12px;padding:16px 20px;margin-top:16px;text-align:center;";
-                banner.innerHTML = `
-                    <p style="font-size:13px;color:#fff;margin-bottom:10px;">⚠️ Yeh sirf <b>100 words ka preview</b> hai.<br>Full transcript ke liye login karein!</p>
-                    <button onclick="window.location.href='/'" style="background:#fff;color:#6d5dfc;border:none;padding:10px 24px;border-radius:8px;font-weight:bold;cursor:pointer;font-size:14px;">🔐 Login Karo — Free Hai!</button>
-                `;
-                transcriptDiv.after(banner);
-            }
-        } else {
-            transcriptDiv.innerHTML = '<div class="noTranscript">📭 Koi transcript nahi hai.<br>Naya banao!</div>';
-            copyBtn.style.display = "none";
-        }
-        return;
-    }
-
-    // Logged in user — server se fetch karo
-    try{
-        const res = await fetch("/history/" + encodeURIComponent(email));
-        const data = await res.json();
-        if(data.success && data.data && data.data.length > 0){
-            const latest = data.data[0];
-            transcriptDiv.innerText = latest.transcript;
-            localStorage.setItem("latestTranscript", latest.transcript);
-            copyBtn.style.display = "block";
-        } else {
-            transcriptDiv.innerHTML = '<div class="noTranscript">📭 Koi transcript nahi hai abhi.<br>Naya banao!</div>';
-            copyBtn.style.display = "none";
-        }
-    } catch(e){
-        transcriptDiv.innerHTML = '<div class="noTranscript">❌ Load nahi hua</div>';
-    }
+function copyTranscript() {
+  const text = document.getElementById("transcriptBody").innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector(".btn-copy");
+    btn.innerText = "✅ Copied!";
+    setTimeout(() => { btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Transcript`; }, 2000);
+  }).catch(() => { alert("Copy failed, manually select karo."); });
 }
 
-async function loadHistory(){
-    try{
-        const res = await fetch("/history/" + encodeURIComponent(email));
-        const data = await res.json();
-        const historyList = document.getElementById("historyList");
-        if(data.success && data.data && data.data.length > 0){
-            historyList.innerHTML = "";
-            data.data.forEach((item) => {
-                const date = new Date(item.createdAt).toLocaleDateString("en-IN", {
-                    day:"numeric", month:"short", year:"numeric",
-                    hour:"2-digit", minute:"2-digit"
-                });
-                const div = document.createElement("div");
-                div.className = "historyItem";
-                div.innerHTML = `
-                    <div class="historyDate">📅 ${date}</div>
-                    <div class="historyPreview">${item.transcript.substring(0, 80)}...</div>
-                    <div class="historyUrl">${item.reelUrl.substring(0, 50)}</div>
-                `;
-                div.onclick = () => {
-                    document.getElementById("fullTranscript").innerText = item.transcript;
-                    document.getElementById("copyBtn").style.display = "block";
-                    localStorage.setItem("latestTranscript", item.transcript);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                };
-                historyList.appendChild(div);
-            });
-        } else {
-            historyList.innerHTML = '<div class="noHistory">📭 Koi history nahi hai</div>';
-        }
-    } catch(e){
-        document.getElementById("historyList").innerHTML = '<div class="noHistory">❌ History load nahi hui</div>';
-    }
+function newTranscript() {
+  localStorage.removeItem("latestTranscript");
+  window.location.href = "/";
 }
 
-function copyTranscript(){
-    const text = document.getElementById("fullTranscript").innerText;
-    navigator.clipboard.writeText(text).then(()=>{
-        alert("✅ Transcript copied!");
-    }).catch(()=>{
-        alert("Copy failed, manually select karo.");
-    });
+function logout() {
+  localStorage.removeItem("userEmail");
+  localStorage.removeItem("latestTranscript");
+  window.location.href = "/";
 }
 
-function toggleDrawer(){
-    document.getElementById("drawer").classList.toggle("active");
-    document.getElementById("overlay").classList.toggle("active");
-}
-
-function newTranscript(){
-    localStorage.removeItem("latestTranscript");
-    window.location.href = "/";
-}
-
-function buyCredits(){ window.location.href = "/pricing.html"; }
-
-function logout(){
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("latestTranscript");
-    window.location.href = "/";
-}
-
+// Init
 (async () => {
-    await savePendingTranscript();
-    loadCredits();
-    loadLatestTranscript();
+  loadCredits();
+  loadUserPlan();
+  loadLatestTranscript();
 })();
-
 </script>
 </body>
 </html>
