@@ -18,6 +18,9 @@ const { YoutubeTranscript } = require("youtube-transcript");
 const Reel = require("./models/Reel");
 const User = require("./models/User");
 const GuestUsage = require("./models/GuestUsage");
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
+
 
 const app = express();
 app.use(cors({
@@ -40,6 +43,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
+});
+
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
@@ -152,6 +160,87 @@ async function checkGuestLimit(req) {
 
   return { allowed: true, previewsUsed: guest.previewCount };
 }
+
+// ── CREATE RAZORPAY ORDER ──
+app.post("/create-order", async (req, res) => {
+  try {
+    const { plan } = req.body;
+
+    const plans = {
+      starter: 149,
+      pro: 299,
+      agency: 599
+    };
+
+    if (!plans[plan]) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid plan"
+      });
+    }
+
+    const options = {
+      amount: plans[plan] * 100, // paise
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`
+    };
+
+    const order = await razorpay.orders.create(options);
+
+    res.json({
+      success: true,
+      order,
+      key: process.env.RAZORPAY_KEY_ID
+    });
+
+  } catch (err) {
+    console.error("Create Order Error:", err);
+    res.status(500).json({
+      success: false,
+      error: "Order create failed"
+    });
+  }
+});
+
+// ── VERIFY RAZORPAY PAYMENT ──
+app.post("/verify-payment", async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature
+    } = req.body;
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(body.toString())
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid payment signature"
+      });
+    }
+
+    // Abhi sirf payment verify kar rahe hain.
+    // Agle step me yahi user ka plan MongoDB me activate karega.
+
+    res.json({
+      success: true,
+      message: "Payment verified successfully"
+    });
+
+  } catch (err) {
+    console.error("Verify Payment Error:", err);
+    res.status(500).json({
+      success: false,
+      error: "Payment verification failed"
+    });
+  }
+});
 
 app.get("/test", (req, res) => res.send("TEST ROUTE WORKING"));
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
