@@ -7,7 +7,6 @@ const path = require("path");
 const fs = require("fs");
 const cors = require("cors");
 const Groq = require("groq-sdk");
-const nodemailer = require("nodemailer");
 const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
@@ -15,6 +14,9 @@ const axios = require("axios");
 const https = require("https");
 const { YoutubeTranscript } = require("youtube-transcript");
 
+const { Resend } = require("resend");
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 const Reel = require("./models/Reel");
 const User = require("./models/User");
 const GuestUsage = require("./models/GuestUsage");
@@ -74,16 +76,6 @@ passport.use(new GoogleStrategy({
     return done(null, user);
   } catch (err) { return done(err, null); }
 }));
-
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com", port: 587, secure: false,
-  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
-});
-
-transporter.verify((error) => {
-  if (error) console.log("SMTP ERROR:", error);
-  else console.log("SMTP READY");
-});
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
@@ -281,38 +273,106 @@ app.get("/auth/google/callback",
 
 app.post("/send-otp", async (req, res) => {
   try {
-    
-    console.log("===== SEND OTP HIT =====");
-console.log(req.body);
-    
     const { email } = req.body;
-    if (!email) return res.status(400).json({ success: false, message: "Email required" });
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email required"
+      });
+    }
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    otpStore[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
-   console.log("Sending mail...");
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER, to: email,
-      subject: "ReelScribe OTP",
-      html: `<h2>ReelScribe</h2><p>Your OTP is:</p><h1 style="color:#6d5dfc">${otp}</h1><p>Valid for 5 minutes.</p>`
+
+    otpStore[email] = {
+      otp,
+      expiresAt: Date.now() + 5 * 60 * 1000
+    };
+
+    console.log("Sending OTP to:", email);
+
+    await resend.emails.send({
+      from: "ReelScribe <onboarding@resend.dev>",
+      to: email,
+      subject: "Your ReelScribe OTP",
+      html: `
+        <h2>ReelScribe</h2>
+        <p>Your OTP is</p>
+        <h1>${otp}</h1>
+        <p>Valid for 5 minutes.</p>
+      `
     });
-    console.log("Mail sent");
-    res.json({ success: true, message: "OTP Sent" });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+
+    console.log("OTP sent");
+
+    res.json({
+      success: true
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
 });
 
 app.post("/verify-otp", async (req, res) => {
   try {
     const { email, otp } = req.body;
+
     const record = otpStore[email];
-    if (!record) return res.status(400).json({ success: false, message: "OTP not found. Resend karein." });
-    if (Date.now() > record.expiresAt) { delete otpStore[email]; return res.status(400).json({ success: false, message: "OTP expired." }); }
-    if (record.otp !== otp) return res.status(400).json({ success: false, message: "Invalid OTP" });
+
+    if (!record) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP not found"
+      });
+    }
+
+    if (Date.now() > record.expiresAt) {
+      delete otpStore[email];
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired"
+      });
+    }
+
+    if (record.otp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP"
+      });
+    }
+
     delete otpStore[email];
+
     let user = await User.findOne({ email });
-    if (!user) user = await User.create({ name: email.split("@")[0], email, credits: 5 });
-    res.json({ success: true, user });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+
+    if (!user) {
+      user = await User.create({
+        name: email.split("@")[0],
+        email,
+        credits: 5
+      });
+    }
+
+    res.json({
+      success: true,
+      user
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
 });
+
 
 // ── TRANSCRIBE FILE ──
 app.post("/transcribe", upload.single("video"), async (req, res) => {
