@@ -427,19 +427,64 @@ function toggleBilling() {
   });
 }
 
-function buyPlan(plan) {
-  const email = localStorage.getItem('userEmail') || 'Guest';
-  const name = { starter:'Starter', pro:'Pro', agency:'Agency' }[plan];
-  const p = prices[plan];
-  const price = yearly ? p.y : p.m;
-  const billing = yearly ? 'Annual' : 'Monthly';
-  const msg = `Hi! I'd like the ReelScribe ${name} Plan (${billing} · ₹${price}/mo). My email: ${email}`;
-  window.open('https://www.instagram.com/tarunraj1517/', '_blank');
-  navigator.clipboard.writeText(msg).catch(()=>{});
-  alert('Message copied!\n\n"' + msg + '"');
-}
+async function buyPlan(plan) {
+  try {
+    const res = await fetch("/create-order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ plan })
+    });
 
-function contactAdmin() { buyPlan('pro'); }
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(data.error || "Order create failed");
+      return;
+    }
+
+    const options = {
+      key: data.key,
+      amount: data.order.amount,
+      currency: data.order.currency,
+      name: "ReelScribe",
+      description: plan + " Plan",
+      order_id: data.order.id,
+
+      handler: async function (response) {
+
+        const verify = await fetch("/verify-payment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(response)
+        });
+
+        const result = await verify.json();
+
+        if (result.success) {
+          alert("✅ Payment Successful!");
+          location.href = "/dashboard.html";
+        } else {
+          alert("Payment verification failed.");
+        }
+      },
+
+      theme: {
+        color: "#7c3aed"
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong.");
+  }
+}
 </script>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </body>
