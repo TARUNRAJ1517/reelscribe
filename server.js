@@ -101,16 +101,25 @@ function adminAuth(req, res, next) {
 
 async function getInstagramVideoUrl(instagramUrl) {
   try {
-    const response = await axios.get("https://instagram-reels-downloader-api.p.rapidapi.com/download", {
-      params: { url: instagramUrl },
-      headers: {
-        "x-rapidapi-key": process.env.RAPID_API_KEY,
-        "x-rapidapi-host": "instagram-reels-downloader-api.p.rapidapi.com"
+    const response = await axios.get(
+      "https://instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com/",
+      {
+        params: {
+          Userinfo: instagramUrl
+        },
+        headers: {
+          "x-rapidapi-key": process.env.RAPID_API_KEY,
+          "x-rapidapi-host":
+            "instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com"
+        }
       }
-    });
-    const data = response.data;
-    if (data.success && data.data?.medias?.length > 0) return data.data.medias[0].url;
-    throw new Error("Video URL nahi mila API response mein");
+    );
+
+    console.log("RapidAPI Response:", response.data);
+
+    // Response ke hisaab se yeh line badalni padegi
+    return response.data.url || response.data.video || response.data.download_url;
+
   } catch (err) {
     console.error("RapidAPI Error:", err.response?.data || err.message);
     throw err;
