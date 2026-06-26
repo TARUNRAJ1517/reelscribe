@@ -15,9 +15,7 @@ const https = require("https");
 const { YoutubeTranscript } = require("youtube-transcript");
 
 const { uploadToS3 } = require("./services/s3Service");
-
 const ffmpeg = require("./services/ffmpegService");
-
 const { Resend } = require("resend");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -27,8 +25,17 @@ const GuestUsage = require("./models/GuestUsage");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 
-
 const app = express();
+
+// ── UPLOADS FOLDER AUTO-CREATE ──
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log("✅ uploads folder created");
+} else {
+  console.log("✅ uploads folder already exists");
+}
+
 app.use(cors({
   origin: [
     "https://reelscribe.site",
@@ -53,7 +60,6 @@ const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET
 });
-
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
@@ -146,7 +152,6 @@ async function checkGuestLimit(req) {
     guest = await GuestUsage.create({ ip, previewCount: 0 });
   }
 
-  // 3 previews already used → force login
   if (guest.previewCount >= 3) {
     return { allowed: false, previewsUsed: guest.previewCount };
   }
@@ -157,75 +162,47 @@ async function checkGuestLimit(req) {
   return { allowed: true, previewsUsed: guest.previewCount };
 }
 
+// ── TEST S3 UPLOAD ──
 app.post("/test-s3-upload", upload.single("video"), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        error: "Video required"
-      });
+      return res.status(400).json({ success: false, error: "Video required" });
     }
 
     const key = `videos/${Date.now()}-${req.file.originalname}`;
-
     const url = await uploadToS3(req.file.path, key);
-
     fs.unlinkSync(req.file.path);
 
-    res.json({
-      success: true,
-      url
-    });
-
+    res.json({ success: true, url });
   } catch (err) {
     console.error(err);
-
-    res.status(500).json({
-      success: false,
-      error: err.message
-    });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
-
 
 // ── CREATE RAZORPAY ORDER ──
 app.post("/create-order", async (req, res) => {
   try {
     const { plan } = req.body;
 
-    const plans = {
-      starter: 149,
-      pro: 299,
-      agency: 599
-    };
+    const plans = { starter: 149, pro: 299, agency: 599 };
 
     if (!plans[plan]) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid plan"
-      });
+      return res.status(400).json({ success: false, error: "Invalid plan" });
     }
 
     const options = {
-      amount: plans[plan] * 100, // paise
+      amount: plans[plan] * 100,
       currency: "INR",
       receipt: `receipt_${Date.now()}`
     };
 
     const order = await razorpay.orders.create(options);
 
-    res.json({
-      success: true,
-      order,
-      key: process.env.RAZORPAY_KEY_ID
-    });
-
+    res.json({ success: true, order, key: process.env.RAZORPAY_KEY_ID });
   } catch (err) {
     console.error("Create Order Error:", err);
-    res.status(500).json({
-      success: false,
-      error: "Order create failed"
-    });
+    res.status(500).json({ success: false, error: "Order create failed" });
   }
 });
 
@@ -240,7 +217,6 @@ app.post("/verify-payment", async (req, res) => {
       email
     } = req.body;
 
-    // 1. Signature verify karo
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -248,21 +224,16 @@ app.post("/verify-payment", async (req, res) => {
       .digest("hex");
 
     if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid payment signature"
-      });
+      return res.status(400).json({ success: false, error: "Invalid payment signature" });
     }
 
-    // 2. Valid plans check
     const validPlans = ["starter", "pro", "agency"];
     if (!plan || !validPlans.includes(plan)) {
       return res.status(400).json({ success: false, error: "Invalid plan" });
     }
 
-    // 3. User ka plan activate karo MongoDB mein
     const planExpiry = new Date();
-    planExpiry.setMonth(planExpiry.getMonth() + 1); // 1 month validity
+    planExpiry.setMonth(planExpiry.getMonth() + 1);
 
     const user = await User.findOneAndUpdate(
       { email },
@@ -289,13 +260,9 @@ app.post("/verify-payment", async (req, res) => {
       plan,
       planExpiresAt: planExpiry
     });
-
   } catch (err) {
     console.error("Verify Payment Error:", err);
-    res.status(500).json({
-      success: false,
-      error: "Payment verification failed"
-    });
+    res.status(500).json({ success: false, error: "Payment verification failed" });
   }
 });
 
@@ -306,15 +273,13 @@ app.get("/auth/google/callback",
   (req, res) => res.redirect("/dashboard.html?email=" + encodeURIComponent(req.user.email))
 );
 
+// ── SEND OTP ──
 app.post("/send-otp", async (req, res) => {
   try {
     const { email } = req.body;
 
     if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: "Email required"
-      });
+      return res.status(400).json({ success: false, message: "Email required" });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -355,47 +320,30 @@ app.post("/send-otp", async (req, res) => {
     });
 
     console.log("OTP sent");
-
-    res.json({
-      success: true
-    });
-
+    res.json({ success: true });
   } catch (err) {
     console.error(err);
-
-    res.status(500).json({
-      success: false,
-      message: err.message
-    });
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
+// ── VERIFY OTP ──
 app.post("/verify-otp", async (req, res) => {
   try {
     const { email, otp } = req.body;
-
     const record = otpStore[email];
 
     if (!record) {
-      return res.status(400).json({
-        success: false,
-        message: "OTP not found"
-      });
+      return res.status(400).json({ success: false, message: "OTP not found" });
     }
 
     if (Date.now() > record.expiresAt) {
       delete otpStore[email];
-      return res.status(400).json({
-        success: false,
-        message: "OTP expired"
-      });
+      return res.status(400).json({ success: false, message: "OTP expired" });
     }
 
     if (record.otp !== otp) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid OTP"
-      });
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
 
     delete otpStore[email];
@@ -410,26 +358,26 @@ app.post("/verify-otp", async (req, res) => {
       });
     }
 
-    res.json({
-      success: true,
-      user
-    });
-
+    res.json({ success: true, user });
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      success: false,
-      message: err.message
-    });
+    res.status(500).json({ success: false, message: err.message });
   }
 });
-
 
 // ── TRANSCRIBE FILE ──
 app.post("/transcribe", upload.single("video"), async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ success: false, error: "Email required" });
+
+    // ── FILE CHECK ──
+    if (!req.file) {
+      console.error("❌ req.file is undefined — Multer ne file receive nahi ki");
+      return res.status(400).json({ success: false, error: "File nahi mili. Upload dobara try karo." });
+    }
+
+    console.log("✅ File received:", req.file.originalname, `(${(req.file.size / 1024 / 1024).toFixed(2)} MB)`);
 
     const user = await User.findOne({ email });
     const isGuest = !user;
@@ -447,22 +395,23 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
       }
     }
 
-    // Logged in user ke liye credits check
     if (!isGuest && user.credits < 2) {
       if (req.file?.path) fs.unlinkSync(req.file.path);
       return res.status(400).json({ success: false, error: "Credits khatam ho gaye! Admin se contact karein." });
     }
 
     const filePath = req.file.path;
+
+    console.log("⏳ Groq transcription shuru...");
     const transcription = await groq.audio.transcriptions.create({
       file: fs.createReadStream(filePath),
       model: "whisper-large-v3-turbo"
     });
+    console.log("✅ Transcription complete");
 
     const fullTranscript = transcription.text;
 
     if (!isGuest) {
-      // Logged in: full transcript, save history, deduct credits
       user.credits -= 2;
       await user.save();
       await Reel.create({ userEmail: email, reelUrl: req.file.originalname, transcript: fullTranscript });
@@ -470,7 +419,6 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
 
     fs.unlinkSync(filePath);
 
-    // Guest ko sirf 100 words ka preview
     const words = fullTranscript.split(/\s+/);
     const previewTranscript = words.slice(0, 100).join(" ");
     const isPreview = isGuest && words.length > 100;
@@ -485,6 +433,7 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
     });
 
   } catch (error) {
+    console.error("❌ TRANSCRIBE ERROR:", error.message);
     if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
     res.status(500).json({ success: false, error: error.message });
   }
@@ -518,12 +467,10 @@ app.post("/transcribe-url", async (req, res) => {
     }
   }
 
-  // Logged in user ke credits check
   if (!isGuest && user.credits < 2) {
     return res.status(400).json({ success: false, error: "Credits khatam ho gaye! Admin se contact karein." });
   }
 
-  // Helper: guest ke liye 100 word preview banana
   function buildResponse(fullTranscript, source) {
     const words = fullTranscript.split(/\s+/);
     const isPreview = isGuest && words.length > 100;
@@ -560,7 +507,6 @@ app.post("/transcribe-url", async (req, res) => {
       }
 
       return res.json(buildResponse(transcript, "youtube-captions"));
-
     } catch (error) {
       console.error("YouTube Transcript Error:", error.message);
       let errorMsg = "YouTube transcript fetch nahi hua.";
@@ -599,7 +545,6 @@ app.post("/transcribe-url", async (req, res) => {
     fs.unlinkSync(outputPath);
 
     return res.json(buildResponse(transcription.text, "groq-whisper"));
-
   } catch (error) {
     if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
     console.error("Instagram Transcribe Error:", error.message);
@@ -620,10 +565,7 @@ app.get("/user-plan/:email", async (req, res) => {
 });
 
 app.get("/ffmpeg-test", (req, res) => {
-  res.json({
-    success: true,
-    message: "FFmpeg is working 🚀"
-  });
+  res.json({ success: true, message: "FFmpeg is working 🚀" });
 });
 
 app.get("/history/:email", async (req, res) => {
