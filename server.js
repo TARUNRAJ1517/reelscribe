@@ -14,6 +14,8 @@ const axios = require("axios");
 const https = require("https");
 const { YoutubeTranscript } = require("youtube-transcript");
 
+const ffmpeg = require("./services/ffmpegService");
+
 const { Resend } = require("resend");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -582,6 +584,13 @@ app.get("/user-plan/:email", async (req, res) => {
     if (!user) return res.status(404).json({ success: false });
     res.json({ success: true, plan: user.plan || "free", planExpiresAt: user.planExpiresAt });
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+});
+
+app.get("/ffmpeg-test", (req, res) => {
+  res.json({
+    success: true,
+    message: "FFmpeg is working 🚀"
+  });
 });
 
 app.get("/history/:email", async (req, res) => {
