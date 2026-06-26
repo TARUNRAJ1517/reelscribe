@@ -14,6 +14,8 @@ const axios = require("axios");
 const https = require("https");
 const { YoutubeTranscript } = require("youtube-transcript");
 
+const { uploadToS3 } = require("./services/s3Service");
+
 const ffmpeg = require("./services/ffmpegService");
 
 const { Resend } = require("resend");
@@ -154,6 +156,37 @@ async function checkGuestLimit(req) {
 
   return { allowed: true, previewsUsed: guest.previewCount };
 }
+
+app.post("/test-s3-upload", upload.single("video"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: "Video required"
+      });
+    }
+
+    const key = `videos/${Date.now()}-${req.file.originalname}`;
+
+    const url = await uploadToS3(req.file.path, key);
+
+    fs.unlinkSync(req.file.path);
+
+    res.json({
+      success: true,
+      url
+    });
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
+
 
 // ── CREATE RAZORPAY ORDER ──
 app.post("/create-order", async (req, res) => {
