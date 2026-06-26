@@ -371,7 +371,6 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ success: false, error: "Email required" });
 
-    // ── FILE CHECK ──
     if (!req.file) {
       console.error("❌ req.file is undefined — Multer ne file receive nahi ki");
       return res.status(400).json({ success: false, error: "File nahi mili. Upload dobara try karo." });
@@ -553,6 +552,49 @@ app.post("/transcribe-url", async (req, res) => {
     else if (error.message.includes("Video URL nahi mila")) errorMsg = "Reel nahi mili. Sahi public URL daalo.";
     else if (error.response?.status === 429) errorMsg = "RapidAPI limit khatam ho gayi. Thodi der baad try karo.";
     return res.status(500).json({ success: false, error: errorMsg });
+  }
+});
+
+// ── CUT CLIPS ──
+app.post("/cut-clips", async (req, res) => {
+  const { ytUrl, email, fcmToken } = req.body;
+
+  if (!ytUrl) return res.status(400).json({ success: false, error: "YouTube URL required" });
+
+  if (!email) {
+    return res.status(401).json({ success: false, loginRequired: true, error: "Login required" });
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(401).json({ success: false, loginRequired: true, error: "User not found" });
+  }
+
+  try {
+    console.log("⏳ EC2 pe clip processing bhej raha hoon...");
+    const response = await axios.post("http://13.206.252.122:4000/process-clip", {
+      ytUrl,
+      userId: user._id.toString(),
+      userEmail: email,
+      fcmToken: fcmToken || null
+    }, { timeout: 300000 });
+
+    console.log("✅ Clips ready:", response.data.clips?.length);
+    res.json(response.data);
+  } catch (error) {
+    console.error("Cut clips error:", error.message);
+    res.status(500).json({ success: false, error: "Clip processing failed: " + error.message });
+  }
+});
+
+// ── CLIP DOWNLOADED ──
+app.post("/clip-downloaded", async (req, res) => {
+  try {
+    const { s3Key } = req.body;
+    await axios.post("http://13.206.252.122:4000/clip-downloaded", { s3Key });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
