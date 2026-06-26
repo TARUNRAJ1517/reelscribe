@@ -8,36 +8,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
 :root {
-  --bg: #09070f;
-  --card: #111020;
-  --card2: #17142a;
-  --border: #201c38;
-  --border2: #2c2650;
-  --purple: #8b5cf6;
-  --pink: #ec4899;
-  --text: #f0eaff;
-  --sub: #8a7fab;
-  --muted: #3d3660;
+  --bg: #09070f; --card: #111020; --card2: #17142a;
+  --border: #201c38; --border2: #2c2650;
+  --purple: #8b5cf6; --pink: #ec4899;
+  --text: #f0eaff; --sub: #8a7fab; --muted: #3d3660;
   --grad: linear-gradient(135deg, #8b5cf6, #ec4899);
 }
-
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  max-width: 480px; margin: 0 auto;
-  min-height: 100vh;
-  display: flex; flex-direction: column;
+  background: var(--bg); color: var(--text);
+  font-family: 'Inter', sans-serif; max-width: 480px; margin: 0 auto;
+  min-height: 100vh; display: flex; flex-direction: column;
   -webkit-font-smoothing: antialiased;
 }
-
-/* NAV */
 .nav {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 22px;
-  border-bottom: 1px solid var(--border);
+  padding: 14px 22px; border-bottom: 1px solid var(--border);
 }
 .nav-logo {
   font-size: 18px; font-weight: 900; letter-spacing: -0.5px;
@@ -49,166 +35,126 @@ body {
   background: none; border: none; cursor: pointer;
   font-family: 'Inter', sans-serif; transition: color .2s;
 }
-.nav-back:hover { color: var(--text); }
 .nav-back svg { width: 14px; height: 14px; }
+.nav-back:hover { color: var(--text); }
 
-/* MAIN */
 .main {
   flex: 1; display: flex; flex-direction: column;
-  justify-content: center; padding: 32px 22px 40px;
+  justify-content: center; padding: 24px 22px 32px;
   position: relative; overflow: hidden;
 }
 .main::before {
-  content: '';
-  position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+  content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
   width: 400px; height: 400px; border-radius: 50%;
   background: radial-gradient(circle, rgba(139,92,246,0.08), transparent 65%);
   pointer-events: none;
 }
-
-/* TABS */
 .tabs {
   display: flex; background: var(--card);
   border: 1px solid var(--border2); border-radius: 12px;
-  padding: 3px; margin-bottom: 28px;
+  padding: 3px; margin-bottom: 22px;
 }
 .tab-btn {
-  flex: 1; padding: 9px; border-radius: 9px; border: none;
+  flex: 1; padding: 8px; border-radius: 9px; border: none;
   background: transparent; color: var(--muted);
   font-size: 13px; font-weight: 700; cursor: pointer;
   font-family: 'Inter', sans-serif; transition: all .2s;
 }
 .tab-btn.active { background: var(--grad); color: white; }
 
-/* HEADING */
-.login-heading { margin-bottom: 28px; }
-.login-h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 6px; }
+.login-heading { margin-bottom: 20px; }
+.login-h1 { font-size: 26px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 4px; }
 .login-h1 span { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.login-sub { font-size: 14px; color: var(--sub); line-height: 1.6; }
+.login-sub { font-size: 13px; color: var(--sub); line-height: 1.5; }
 
-/* GOOGLE BTN */
 .google-btn {
-  width: 100%; padding: 14px; border-radius: 13px;
-  background: white; color: #1a1a2e;
-  border: none; font-size: 14px; font-weight: 700;
-  cursor: pointer; font-family: 'Inter', sans-serif;
+  width: 100%; padding: 13px; border-radius: 13px;
+  background: white; color: #1a1a2e; border: none;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  font-family: 'Inter', sans-serif;
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  transition: opacity .2s; margin-bottom: 20px;
+  transition: opacity .2s; margin-bottom: 16px;
 }
-.google-btn:hover { opacity: 0.92; }
 .google-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+.google-btn:hover { opacity: 0.92; }
 
-/* DIVIDER */
-.divider {
-  display: flex; align-items: center; gap: 12px;
-  margin-bottom: 20px;
-}
+.divider { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
 .divider-line { flex: 1; height: 1px; background: var(--border); }
 .divider-text { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
 
-/* FORM */
-.field { margin-bottom: 14px; }
+.field { margin-bottom: 12px; }
 .field-label {
   font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
   text-transform: uppercase; color: var(--muted);
-  margin-bottom: 7px; display: block;
+  margin-bottom: 6px; display: block;
 }
 .field-wrap {
   display: flex; align-items: center;
   background: var(--card); border: 1px solid var(--border2);
-  border-radius: 12px; overflow: hidden;
-  transition: border-color .2s;
+  border-radius: 12px; overflow: hidden; transition: border-color .2s;
 }
 .field-wrap:focus-within { border-color: var(--purple); }
-.field-icon {
-  padding: 0 12px; color: var(--muted);
-  display: flex; align-items: center; flex-shrink: 0;
-}
+.field-icon { padding: 0 12px; color: var(--muted); display: flex; align-items: center; flex-shrink: 0; }
 .field-icon svg { width: 16px; height: 16px; }
 .field-input {
-  flex: 1; padding: 14px 12px 14px 0;
+  flex: 1; padding: 13px 12px 13px 0;
   background: transparent; border: none; outline: none;
-  color: var(--text); font-size: 14px;
-  font-family: 'Inter', sans-serif;
+  color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif;
 }
 .field-input::placeholder { color: var(--muted); }
 
-/* OTP ROW */
 .otp-row { display: flex; gap: 8px; }
 .otp-row .field-wrap { flex: 1; }
 .otp-send-btn {
-  padding: 0 16px; border: none; border-radius: 12px;
+  padding: 0 14px; border: none; border-radius: 12px;
   background: var(--grad); color: white;
-  font-size: 12px; font-weight: 700;
-  cursor: pointer; font-family: 'Inter', sans-serif;
-  white-space: nowrap; transition: opacity .2s;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  font-family: 'Inter', sans-serif; white-space: nowrap; transition: opacity .2s;
 }
 .otp-send-btn:hover { opacity: 0.85; }
 .otp-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* OTP BOXES */
-.otp-boxes { display: flex; gap: 8px; margin-bottom: 14px; }
+/* ── SMALL OTP BOXES ── */
+.otp-boxes { display: flex; gap: 6px; margin-bottom: 12px; }
 .otp-box {
-  flex: 1; height: 52px; background: var(--card);
-  border: 1px solid var(--border2); border-radius: 12px;
-  text-align: center; font-size: 20px; font-weight: 800;
+  flex: 1; height: 44px; background: var(--card);
+  border: 1px solid var(--border2); border-radius: 10px;
+  text-align: center; font-size: 18px; font-weight: 800;
   color: var(--text); outline: none; font-family: 'Inter', sans-serif;
   transition: border-color .2s;
 }
 .otp-box:focus { border-color: var(--purple); }
 
-/* SUBMIT BTN */
 .submit-btn {
-  width: 100%; padding: 15px; border: none; border-radius: 13px;
+  width: 100%; padding: 13px; border: none; border-radius: 13px;
   background: var(--grad); color: white;
-  font-size: 15px; font-weight: 800;
-  cursor: pointer; font-family: 'Inter', sans-serif;
-  letter-spacing: -0.2px; transition: opacity .2s;
-  margin-top: 4px;
+  font-size: 15px; font-weight: 800; cursor: pointer;
+  font-family: 'Inter', sans-serif; letter-spacing: -0.2px;
+  transition: opacity .2s; margin-top: 4px;
 }
 .submit-btn:hover { opacity: 0.85; }
-.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* STATUS MSG */
 .status-msg {
   text-align: center; font-size: 13px; font-weight: 600;
-  padding: 10px; border-radius: 10px; margin-top: 12px;
-  display: none;
+  padding: 10px; border-radius: 10px; margin-top: 10px; display: none;
 }
 .status-msg.success { background: rgba(34,197,94,0.1); color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
 .status-msg.error { background: rgba(248,113,113,0.1); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
 
-/* BOTTOM TEXT */
-.bottom-text {
-  text-align: center; font-size: 13px; color: var(--muted);
-  margin-top: 20px; line-height: 1.7;
-}
-.bottom-text a, .bottom-text span {
-  color: var(--purple); font-weight: 600;
-  cursor: pointer; text-decoration: none;
-}
+.bottom-text { text-align: center; font-size: 13px; color: var(--muted); margin-top: 16px; line-height: 1.7; }
+.bottom-text span { color: var(--purple); font-weight: 600; cursor: pointer; }
 
-/* TIMER */
-.resend-row {
-  text-align: center; font-size: 12px; color: var(--muted);
-  margin-top: 10px; display: none;
-}
+.resend-row { text-align: center; font-size: 12px; color: var(--muted); margin-top: 8px; display: none; }
 .resend-row span { color: var(--purple); font-weight: 600; cursor: pointer; }
 
-/* FOOTER */
-footer {
-  padding: 20px 22px;
-  border-top: 1px solid var(--border);
-  text-align: center;
-}
+footer { padding: 16px 22px; border-top: 1px solid var(--border); text-align: center; }
 footer p { font-size: 11px; color: var(--muted); }
-footer a { color: var(--muted); text-decoration: none; margin: 0 8px; transition: color .2s; }
+footer a { color: var(--muted); text-decoration: none; margin: 0 8px; }
 footer a:hover { color: var(--sub); }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav class="nav">
   <button class="nav-back" onclick="window.location.href='/'">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3L5 8l5 5"/></svg>
@@ -218,35 +164,26 @@ footer a:hover { color: var(--sub); }
   <div style="width:52px"></div>
 </nav>
 
-<!-- MAIN -->
 <div class="main">
-
-  <!-- Tabs -->
   <div class="tabs">
     <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
     <button class="tab-btn" id="tabSignup" onclick="switchTab('signup')">Create Account</button>
   </div>
 
-  <!-- ── LOGIN VIEW ── -->
+  <!-- LOGIN -->
   <div id="loginView">
     <div class="login-heading">
       <div class="login-h1">Welcome <span>Back.</span></div>
       <p class="login-sub">Sign in to access your transcripts and clips.</p>
     </div>
 
-    <!-- Google -->
     <button class="google-btn" onclick="googleLogin()">
       <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Continue with Google
     </button>
 
-    <div class="divider">
-      <div class="divider-line"></div>
-      <div class="divider-text">or</div>
-      <div class="divider-line"></div>
-    </div>
+    <div class="divider"><div class="divider-line"></div><div class="divider-text">or</div><div class="divider-line"></div></div>
 
-    <!-- Email OTP login -->
     <div id="loginStep1">
       <div class="field">
         <label class="field-label">Email Address</label>
@@ -262,7 +199,7 @@ footer a:hover { color: var(--sub); }
     </div>
 
     <div id="loginStep2" style="display:none">
-      <p style="font-size:13px;color:var(--sub);margin-bottom:14px;">📧 OTP bheja gaya <strong id="loginEmailShow" style="color:var(--text)"></strong> par</p>
+      <p style="font-size:12px;color:var(--sub);margin-bottom:10px;">📧 OTP bheja gaya <strong id="loginEmailShow" style="color:var(--text)"></strong> par</p>
       <div class="field">
         <label class="field-label">Enter OTP</label>
         <div class="otp-boxes">
@@ -271,41 +208,31 @@ footer a:hover { color: var(--sub); }
           <input class="otp-box" type="tel" maxlength="1" id="o3" oninput="otpNext(this,'o4')" onkeydown="otpBack(event,this,'o2')">
           <input class="otp-box" type="tel" maxlength="1" id="o4" oninput="otpNext(this,'o5')" onkeydown="otpBack(event,this,'o3')">
           <input class="otp-box" type="tel" maxlength="1" id="o5" oninput="otpNext(this,'o6')" onkeydown="otpBack(event,this,'o4')">
-          <input class="otp-box" type="tel" maxlength="1" id="o6" onkeydown="otpBack(event,this,'o5')" oninput="autoVerify()">
+          <input class="otp-box" type="tel" maxlength="1" id="o6" onkeydown="otpBack(event,this,'o5')">
         </div>
       </div>
       <button class="submit-btn" onclick="verifyLoginOtp()">Sign In →</button>
-      <div class="resend-row" id="loginResend">
-        OTP nahi aaya? <span onclick="sendLoginOtp()">Resend karo</span>
-      </div>
+      <div class="resend-row" id="loginResend">OTP nahi aaya? <span onclick="sendLoginOtp()">Resend karo</span></div>
       <div class="status-msg" id="loginStep2Status"></div>
     </div>
 
-    <div class="bottom-text">
-      Account nahi hai? <span onclick="switchTab('signup')">Create Account →</span>
-    </div>
+    <div class="bottom-text">Account nahi hai? <span onclick="switchTab('signup')">Create Account →</span></div>
   </div>
 
-  <!-- ── SIGNUP VIEW ── -->
+  <!-- SIGNUP -->
   <div id="signupView" style="display:none">
     <div class="login-heading">
       <div class="login-h1">Create <span>Account.</span></div>
       <p class="login-sub">Free forever · No credit card required.</p>
     </div>
 
-    <!-- Google -->
     <button class="google-btn" onclick="googleLogin()">
       <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Continue with Google
     </button>
 
-    <div class="divider">
-      <div class="divider-line"></div>
-      <div class="divider-text">or</div>
-      <div class="divider-line"></div>
-    </div>
+    <div class="divider"><div class="divider-line"></div><div class="divider-text">or</div><div class="divider-line"></div></div>
 
-    <!-- Signup Email OTP -->
     <div id="signupStep1">
       <div class="field">
         <label class="field-label">Email Address</label>
@@ -321,7 +248,7 @@ footer a:hover { color: var(--sub); }
     </div>
 
     <div id="signupStep2" style="display:none">
-      <p style="font-size:13px;color:var(--sub);margin-bottom:14px;">📧 OTP bheja gaya <strong id="signupEmailShow" style="color:var(--text)"></strong> par</p>
+      <p style="font-size:12px;color:var(--sub);margin-bottom:10px;">📧 OTP bheja gaya <strong id="signupEmailShow" style="color:var(--text)"></strong> par</p>
       <div class="field">
         <label class="field-label">Enter OTP</label>
         <div class="otp-boxes">
@@ -330,31 +257,25 @@ footer a:hover { color: var(--sub); }
           <input class="otp-box" type="tel" maxlength="1" id="s3" oninput="otpNextS(this,'s4')" onkeydown="otpBackS(event,this,'s2')">
           <input class="otp-box" type="tel" maxlength="1" id="s4" oninput="otpNextS(this,'s5')" onkeydown="otpBackS(event,this,'s3')">
           <input class="otp-box" type="tel" maxlength="1" id="s5" oninput="otpNextS(this,'s6')" onkeydown="otpBackS(event,this,'s4')">
-          <input class="otp-box" type="tel" maxlength="1" id="s6" onkeydown="otpBackS(event,this,'s5')" oninput="autoVerifyS()">
+          <input class="otp-box" type="tel" maxlength="1" id="s6" onkeydown="otpBackS(event,this,'s5')">
         </div>
       </div>
       <button class="submit-btn" onclick="verifySignupOtp()">Create Account →</button>
-      <div class="resend-row" id="signupResend">
-        OTP nahi aaya? <span onclick="sendSignupOtp()">Resend karo</span>
-      </div>
+      <div class="resend-row" id="signupResend">OTP nahi aaya? <span onclick="sendSignupOtp()">Resend karo</span></div>
       <div class="status-msg" id="signupStep2Status"></div>
     </div>
 
-    <div class="bottom-text">
-      Pehle se account hai? <span onclick="switchTab('login')">Sign In →</span>
-    </div>
+    <div class="bottom-text">Pehle se account hai? <span onclick="switchTab('login')">Sign In →</span></div>
   </div>
 
-  <div class="bottom-text" style="margin-top:24px;font-size:11px;">
+  <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:16px;">
     Continue karne se aap hamare <a href="/terms.html" style="color:var(--muted);text-decoration:underline">Terms</a> aur <a href="/privacy.html" style="color:var(--muted);text-decoration:underline">Privacy Policy</a> se agree karte ho.
   </div>
-
 </div>
 
-<!-- FOOTER -->
 <footer>
   <p><a href="/about.html">About</a><a href="/contact.html">Contact</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a></p>
-  <p style="margin-top:10px">© 2026 ReelScribe</p>
+  <p style="margin-top:8px">© 2026 ReelScribe</p>
 </footer>
 
 <script>
@@ -365,50 +286,24 @@ function switchTab(tab) {
   document.getElementById('tabLogin').classList.toggle('active', isLogin);
   document.getElementById('tabSignup').classList.toggle('active', !isLogin);
 }
-
 function googleLogin() { window.location.href = '/auth/google'; }
-
 function showStatus(id, msg, type) {
   const el = document.getElementById(id);
-  el.innerText = msg; el.className = 'status-msg ' + type;
-  el.style.display = 'block';
+  el.innerText = msg; el.className = 'status-msg ' + type; el.style.display = 'block';
 }
 
-// OTP box navigation — Login
-function otpNext(current, nextId) {
-  if (current.value.length === 1) document.getElementById(nextId)?.focus();
-}
-function otpBack(e, current, prevId) {
-  if (e.key === 'Backspace' && !current.value) document.getElementById(prevId)?.focus();
-}
-function autoVerify() {
-  const otp = ['o1','o2','o3','o4','o5','o6'].map(id => document.getElementById(id).value).join('');
-  if (otp.length === 6) verifyLoginOtp();
-}
+function otpNext(current, nextId) { if (current.value.length === 1) document.getElementById(nextId)?.focus(); }
+function otpBack(e, current, prevId) { if (e.key === 'Backspace' && !current.value) document.getElementById(prevId)?.focus(); }
+function otpNextS(current, nextId) { if (current.value.length === 1) document.getElementById(nextId)?.focus(); }
+function otpBackS(e, current, prevId) { if (e.key === 'Backspace' && !current.value) document.getElementById(prevId)?.focus(); }
 
-// OTP box navigation — Signup
-function otpNextS(current, nextId) {
-  if (current.value.length === 1) document.getElementById(nextId)?.focus();
-}
-function otpBackS(e, current, prevId) {
-  if (e.key === 'Backspace' && !current.value) document.getElementById(prevId)?.focus();
-}
-function autoVerifyS() {
-  const otp = ['s1','s2','s3','s4','s5','s6'].map(id => document.getElementById(id).value).join('');
-  if (otp.length === 6) verifySignupOtp();
-}
-
-// ── LOGIN OTP ──
 async function sendLoginOtp() {
   const email = document.getElementById('loginEmail').value.trim();
   if (!email || !email.includes('@')) { showStatus('loginStep1Status', '❌ Sahi email daalo', 'error'); return; }
   const btn = document.getElementById('loginSendOtp');
   btn.disabled = true; btn.innerText = 'Bhej raha hoon...';
   try {
-    const res = await fetch('/send-otp', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ email })
-    });
+    const res = await fetch('/send-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
     const data = await res.json();
     if (data.success) {
       document.getElementById('loginStep1').style.display = 'none';
@@ -420,10 +315,7 @@ async function sendLoginOtp() {
       showStatus('loginStep1Status', '❌ ' + (data.message || 'OTP send nahi hua'), 'error');
       btn.disabled = false; btn.innerText = 'Send OTP';
     }
-  } catch (e) {
-    showStatus('loginStep1Status', '❌ Server error, try again', 'error');
-    btn.disabled = false; btn.innerText = 'Send OTP';
-  }
+  } catch (e) { showStatus('loginStep1Status', '❌ Server error, try again', 'error'); btn.disabled = false; btn.innerText = 'Send OTP'; }
 }
 
 async function verifyLoginOtp() {
@@ -431,34 +323,25 @@ async function verifyLoginOtp() {
   const otp = ['o1','o2','o3','o4','o5','o6'].map(id => document.getElementById(id).value).join('');
   if (otp.length < 6) { showStatus('loginStep2Status', '❌ 6 digit OTP daalo', 'error'); return; }
   try {
-    const res = await fetch('/verify-otp', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ email, otp })
-    });
+    const res = await fetch('/verify-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, otp }) });
     const data = await res.json();
     if (data.success) {
       localStorage.setItem('userEmail', email);
-      showStatus('loginStep2Status', '✅ Login successful! Redirect ho raha hoon...', 'success');
+      showStatus('loginStep2Status', '✅ Login successful!', 'success');
       setTimeout(() => { window.location.href = '/dashboard.html'; }, 1000);
     } else {
       showStatus('loginStep2Status', '❌ ' + (data.message || 'Invalid OTP'), 'error');
     }
-  } catch (e) {
-    showStatus('loginStep2Status', '❌ Server error, try again', 'error');
-  }
+  } catch (e) { showStatus('loginStep2Status', '❌ Server error, try again', 'error'); }
 }
 
-// ── SIGNUP OTP ──
 async function sendSignupOtp() {
   const email = document.getElementById('signupEmail').value.trim();
   if (!email || !email.includes('@')) { showStatus('signupStep1Status', '❌ Sahi email daalo', 'error'); return; }
   const btn = document.getElementById('signupSendOtp');
   btn.disabled = true; btn.innerText = 'Bhej raha hoon...';
   try {
-    const res = await fetch('/send-otp', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ email })
-    });
+    const res = await fetch('/send-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
     const data = await res.json();
     if (data.success) {
       document.getElementById('signupStep1').style.display = 'none';
@@ -470,10 +353,7 @@ async function sendSignupOtp() {
       showStatus('signupStep1Status', '❌ ' + (data.message || 'OTP send nahi hua'), 'error');
       btn.disabled = false; btn.innerText = 'Send OTP';
     }
-  } catch (e) {
-    showStatus('signupStep1Status', '❌ Server error, try again', 'error');
-    btn.disabled = false; btn.innerText = 'Send OTP';
-  }
+  } catch (e) { showStatus('signupStep1Status', '❌ Server error, try again', 'error'); btn.disabled = false; btn.innerText = 'Send OTP'; }
 }
 
 async function verifySignupOtp() {
@@ -481,24 +361,18 @@ async function verifySignupOtp() {
   const otp = ['s1','s2','s3','s4','s5','s6'].map(id => document.getElementById(id).value).join('');
   if (otp.length < 6) { showStatus('signupStep2Status', '❌ 6 digit OTP daalo', 'error'); return; }
   try {
-    const res = await fetch('/verify-otp', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ email, otp })
-    });
+    const res = await fetch('/verify-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, otp }) });
     const data = await res.json();
     if (data.success) {
       localStorage.setItem('userEmail', email);
-      showStatus('signupStep2Status', '✅ Account ban gaya! Redirect ho raha hoon...', 'success');
+      showStatus('signupStep2Status', '✅ Account ban gaya!', 'success');
       setTimeout(() => { window.location.href = '/dashboard.html'; }, 1000);
     } else {
       showStatus('signupStep2Status', '❌ ' + (data.message || 'Invalid OTP'), 'error');
     }
-  } catch (e) {
-    showStatus('signupStep2Status', '❌ Server error, try again', 'error');
-  }
+  } catch (e) { showStatus('signupStep2Status', '❌ Server error, try again', 'error'); }
 }
 
-// URL se tab check
 const urlTab = new URLSearchParams(window.location.search).get('tab');
 if (urlTab === 'signup') switchTab('signup');
 </script>
