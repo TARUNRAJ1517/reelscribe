@@ -102,10 +102,10 @@ function adminAuth(req, res, next) {
 async function getInstagramVideoUrl(instagramUrl) {
   try {
     const response = await axios.get(
-      "https://instagram-downloader-scraper-reels-igtv-posts-stories.p.rapidapi.com/",
+      "https://instagram-downloader-scraper-reels-igtv-posts-stories.p.rapidapi.com/scraper",
       {
         params: {
-          Userinfo: instagramUrl
+          url: instagramUrl
         },
         headers: {
           "x-rapidapi-key": process.env.RAPID_API_KEY,
@@ -117,9 +117,8 @@ async function getInstagramVideoUrl(instagramUrl) {
 
     console.log("RapidAPI Response:", response.data);
 
-    // Response ke hisaab se yeh line badalni padegi
-    return response.data.url || response.data.video || response.data.download_url;
-
+    // Yahan response ka structure check karna hoga
+    return response.data;
   } catch (err) {
     console.error("RapidAPI Error:", err.response?.data || err.message);
     throw err;
