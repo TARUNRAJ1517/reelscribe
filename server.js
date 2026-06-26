@@ -117,8 +117,14 @@ async function getInstagramVideoUrl(instagramUrl) {
 
     console.log("RapidAPI Response:", response.data);
 
-    // Yahan response ka structure check karna hoga
-    return response.data;
+    if (
+      response.data?.data?.length > 0 &&
+      response.data.data[0].media
+    ) {
+      return response.data.data[0].media;
+    }
+
+    throw new Error("Video URL nahi mila");
   } catch (err) {
     console.error("RapidAPI Error:", err.response?.data || err.message);
     throw err;
@@ -554,7 +560,7 @@ app.post("/transcribe-url", async (req, res) => {
     return res.json(buildResponse(transcription.text, "groq-whisper"));
   } catch (error) {
     if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
-    console.error("Instagram Transcribe Error:", error.message);
+    console.error("Instagram Transcribe Error:", error);
     let errorMsg = "URL se video nahi mil saka.";
     if (error.message.includes("private")) errorMsg = "Yeh video private hai! Public reel ka URL daalo.";
     else if (error.message.includes("Video URL nahi mila")) errorMsg = "Reel nahi mili. Sahi public URL daalo.";
