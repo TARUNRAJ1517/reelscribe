@@ -296,11 +296,27 @@ app.post("/send-otp", async (req, res) => {
       to: email,
       subject: "Your ReelScribe OTP",
       html: `
-        <h2>ReelScribe</h2>
-        <p>Your OTP is</p>
-        <h1>${otp}</h1>
-        <p>Valid for 5 minutes.</p>
-      `
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#09070f;font-family:'Inter',Arial,sans-serif;">
+<div style="max-width:480px;margin:0 auto;padding:32px 20px;">
+  <div style="background:linear-gradient(135deg,#8b5cf6,#ec4899);border-radius:16px;padding:32px 24px;text-align:center;">
+    <h1 style="color:white;font-size:24px;font-weight:900;margin:0 0 8px;letter-spacing:-0.5px;">ReelScribe</h1>
+    <p style="color:rgba(255,255,255,0.8);font-size:14px;margin:0 0 28px;">Transcribe · Repurpose · Scale</p>
+    <div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:24px;margin-bottom:24px;">
+      <p style="color:rgba(255,255,255,0.8);font-size:14px;margin:0 0 12px;">Your One-Time Password</p>
+      <div style="background:white;border-radius:10px;padding:16px;display:inline-block;">
+        <span style="font-size:36px;font-weight:900;letter-spacing:8px;color:#8b5cf6;">${otp}</span>
+      </div>
+      <p style="color:rgba(255,255,255,0.6);font-size:12px;margin:12px 0 0;">Valid for 5 minutes only</p>
+    </div>
+    <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:0;">If you didn't request this OTP, ignore this email.</p>
+  </div>
+  <p style="color:#3d3660;font-size:11px;text-align:center;margin-top:16px;">© 2026 ReelScribe. All rights reserved.</p>
+</div>
+</body>
+</html>
+`
     });
 
     console.log("OTP sent");
