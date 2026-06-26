@@ -953,7 +953,7 @@ async function transcribeFile(file){
   const fd = new FormData();
   fd.append("email", email); fd.append("video", file);
   try {
-    const res = await fetch("/test-s3-upload", { method: "POST", body: fd });
+    const res = await fetch("/transcribe", { method: "POST", body: fd });
     const data = await res.json();
     handleResult(data);
   } catch(e){
