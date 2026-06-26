@@ -102,7 +102,7 @@ function adminAuth(req, res, next) {
 async function getInstagramVideoUrl(instagramUrl) {
   try {
     const response = await axios.get(
-      "https://instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com/",
+      "https://instagram-downloader-scraper-reels-igtv-posts-stories.p.rapidapi.com/",
       {
         params: {
           Userinfo: instagramUrl
@@ -110,7 +110,7 @@ async function getInstagramVideoUrl(instagramUrl) {
         headers: {
           "x-rapidapi-key": process.env.RAPID_API_KEY,
           "x-rapidapi-host":
-            "instagram-downloader-download-instagram-videos-stories1.p.rapidapi.com"
+            "instagram-downloader-scraper-reels-igtv-posts-stories.p.rapidapi.com"
         }
       }
     );
