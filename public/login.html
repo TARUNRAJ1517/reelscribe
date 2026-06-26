@@ -202,13 +202,9 @@ footer a:hover { color: var(--sub); }
       <p style="font-size:12px;color:var(--sub);margin-bottom:10px;">📧 OTP bheja gaya <strong id="loginEmailShow" style="color:var(--text)"></strong> par</p>
       <div class="field">
         <label class="field-label">Enter OTP</label>
-        <div class="otp-boxes">
-          <input class="otp-box" type="tel" maxlength="1" id="o1" oninput="otpNext(this,'o2')">
-          <input class="otp-box" type="tel" maxlength="1" id="o2" oninput="otpNext(this,'o3')" onkeydown="otpBack(event,this,'o1')">
-          <input class="otp-box" type="tel" maxlength="1" id="o3" oninput="otpNext(this,'o4')" onkeydown="otpBack(event,this,'o2')">
-          <input class="otp-box" type="tel" maxlength="1" id="o4" oninput="otpNext(this,'o5')" onkeydown="otpBack(event,this,'o3')">
-          <input class="otp-box" type="tel" maxlength="1" id="o5" oninput="otpNext(this,'o6')" onkeydown="otpBack(event,this,'o4')">
-          <input class="otp-box" type="tel" maxlength="1" id="o6" onkeydown="otpBack(event,this,'o5')">
+        <div class="field-wrap">
+          <div class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8"/></svg></div>
+          <input class="field-input" type="tel" id="o1" maxlength="6" placeholder="6 digit OTP daalo" style="letter-spacing:4px;font-size:18px;font-weight:800;">
         </div>
       </div>
       <button class="submit-btn" onclick="verifyLoginOtp()">Sign In →</button>
@@ -251,13 +247,9 @@ footer a:hover { color: var(--sub); }
       <p style="font-size:12px;color:var(--sub);margin-bottom:10px;">📧 OTP bheja gaya <strong id="signupEmailShow" style="color:var(--text)"></strong> par</p>
       <div class="field">
         <label class="field-label">Enter OTP</label>
-        <div class="otp-boxes">
-          <input class="otp-box" type="tel" maxlength="1" id="s1" oninput="otpNextS(this,'s2')">
-          <input class="otp-box" type="tel" maxlength="1" id="s2" oninput="otpNextS(this,'s3')" onkeydown="otpBackS(event,this,'s1')">
-          <input class="otp-box" type="tel" maxlength="1" id="s3" oninput="otpNextS(this,'s4')" onkeydown="otpBackS(event,this,'s2')">
-          <input class="otp-box" type="tel" maxlength="1" id="s4" oninput="otpNextS(this,'s5')" onkeydown="otpBackS(event,this,'s3')">
-          <input class="otp-box" type="tel" maxlength="1" id="s5" oninput="otpNextS(this,'s6')" onkeydown="otpBackS(event,this,'s4')">
-          <input class="otp-box" type="tel" maxlength="1" id="s6" onkeydown="otpBackS(event,this,'s5')">
+        <div class="field-wrap">
+          <div class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8"/></svg></div>
+          <input class="field-input" type="tel" id="s1" maxlength="6" placeholder="6 digit OTP daalo" style="letter-spacing:4px;font-size:18px;font-weight:800;">
         </div>
       </div>
       <button class="submit-btn" onclick="verifySignupOtp()">Create Account →</button>
@@ -320,7 +312,7 @@ async function sendLoginOtp() {
 
 async function verifyLoginOtp() {
   const email = document.getElementById('loginEmail').value.trim();
-  const otp = ['o1','o2','o3','o4','o5','o6'].map(id => document.getElementById(id).value).join('');
+  const otp = document.getElementById('o1').value.trim();
   if (otp.length < 6) { showStatus('loginStep2Status', '❌ 6 digit OTP daalo', 'error'); return; }
   try {
     const res = await fetch('/verify-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, otp }) });
@@ -358,7 +350,7 @@ async function sendSignupOtp() {
 
 async function verifySignupOtp() {
   const email = document.getElementById('signupEmail').value.trim();
-  const otp = ['s1','s2','s3','s4','s5','s6'].map(id => document.getElementById(id).value).join('');
+  const otp = document.getElementById('s1').value.trim();
   if (otp.length < 6) { showStatus('signupStep2Status', '❌ 6 digit OTP daalo', 'error'); return; }
   try {
     const res = await fetch('/verify-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, otp }) });
