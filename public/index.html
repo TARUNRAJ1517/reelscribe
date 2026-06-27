@@ -86,7 +86,7 @@ body {
   background: var(--grad); cursor: pointer; font-family: 'Inter', sans-serif;
 }
 
-/* HERO (shared) */
+/* HERO */
 .hero {
   padding: 48px 22px 36px;
   position: relative; overflow: hidden;
@@ -133,7 +133,6 @@ body {
 }
 .hero-sub strong { color: var(--text); }
 
-/* URL Input Bar */
 .hero-input-wrap {
   display: flex; background: var(--card);
   border: 1px solid var(--border2); border-radius: 14px; overflow: hidden;
@@ -163,7 +162,6 @@ body {
 .hero-upload:hover { border-color: var(--purple); color: var(--text); }
 .hero-upload svg { width: 15px; height: 15px; }
 
-/* Trust pills */
 .trust-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
 .trust-pill {
   display: flex; align-items: center; gap: 5px;
@@ -171,7 +169,6 @@ body {
 }
 .trust-pill svg { width: 12px; height: 12px; color: var(--purple); }
 
-/* Feature tags */
 .feature-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
 .feature-tag {
   display: flex; align-items: center; gap: 6px;
@@ -181,7 +178,6 @@ body {
 }
 .feature-tag svg { width: 12px; height: 12px; }
 
-/* Preview result box */
 #previewBox {
   display: none; margin-top: 14px;
   background: var(--card); border: 1px solid var(--border2);
@@ -205,7 +201,76 @@ body {
   cursor: pointer; font-family: 'Inter', sans-serif;
 }
 
-/* SECTION LABEL */
+/* CLIPS RESULT BOX */
+#clipsResultBox {
+  display: none; margin: 0 22px 24px;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 20px;
+}
+#clipsResultBox h3 {
+  font-size: 16px; font-weight: 800; margin-bottom: 4px;
+}
+#clipsResultBox p {
+  font-size: 12px; color: var(--sub); margin-bottom: 16px;
+}
+.clip-card {
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px; margin-bottom: 10px;
+}
+.clip-card:last-child { margin-bottom: 0; }
+.clip-title {
+  font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text);
+}
+.clip-reason {
+  font-size: 12px; color: var(--sub); margin-bottom: 12px; line-height: 1.5;
+}
+.clip-meta {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.clip-duration {
+  font-size: 11px; color: var(--muted); font-weight: 600;
+}
+.clip-download-btn {
+  padding: 8px 16px; border: none; border-radius: 8px;
+  background: var(--grad); color: white; font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif; text-decoration: none;
+  display: inline-block;
+}
+.clip-delete-warn {
+  font-size: 11px; color: var(--muted); text-align: center;
+  margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);
+}
+
+/* PROCESSING STATE */
+.processing-box {
+  text-align: center; padding: 24px 16px;
+}
+.processing-spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid var(--border2);
+  border-top-color: var(--pink);
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.processing-title { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+.processing-sub { font-size: 12px; color: var(--sub); line-height: 1.6; }
+
+/* LOGIN WALL FOR CLIPS */
+#clipLoginWall {
+  display: none; margin: 0 22px 24px;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 28px 20px; text-align: center;
+}
+#clipLoginWall h3 { font-size: 18px; font-weight: 900; margin-bottom: 8px; }
+#clipLoginWall p { font-size: 13px; color: var(--sub); margin-bottom: 20px; }
+.clip-login-btn {
+  width: 100%; padding: 14px; border: none; border-radius: 12px;
+  background: var(--grad); color: white; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+}
+
+/* SEC LABEL */
 .sec-label {
   display: flex; align-items: center; gap: 8px;
   font-size: 10px; font-weight: 700; letter-spacing: 2px;
@@ -351,10 +416,9 @@ body {
 }
 .cta-btn:hover { opacity: 0.85; }
 
-/* CLIP PAGE SPECIFIC */
 #clipPage { display: none; }
 
-/* Plans comparison on clip page */
+/* Plans */
 .plans-section { padding: 0 22px 36px; }
 .plans-grid { display: flex; flex-direction: column; gap: 10px; }
 .plan-card {
@@ -390,9 +454,7 @@ body {
   cursor: pointer; font-family: 'Inter', sans-serif; transition: all .2s;
 }
 .plan-cta:hover { border-color: var(--purple); color: var(--text); }
-.plan-cta-primary {
-  background: var(--grad); color: white; border: none;
-}
+.plan-cta-primary { background: var(--grad); color: white; border: none; }
 .plan-cta-primary:hover { opacity: 0.9; color: white; }
 
 /* Testimonials */
@@ -414,7 +476,6 @@ body {
 .testi-name { font-size: 13px; font-weight: 700; }
 .testi-handle { font-size: 11px; color: var(--muted); }
 
-/* FOOTER */
 footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
 .foot-logo {
   font-size: 16px; font-weight: 900; letter-spacing: -0.4px;
@@ -456,19 +517,13 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
   </div>
 </div>
 
-<!-- ════════════════════════ -->
 <!-- TRANSCRIPT PAGE -->
-<!-- ════════════════════════ -->
 <div id="transcriptPage">
-
   <div class="hero">
     <div class="hero-label"><span class="hero-dot"></span> AI Powered · Free to Start</div>
     <div class="hero-h1">TURN ANY VIDEO<br>INTO A</div>
     <div class="hero-h1-ghost">VIRAL <span class="hero-h1-accent">SCRIPT.</span></div>
-    <p class="hero-sub">
-      ReelScribe <strong>instantly extracts transcripts</strong> from any video.
-      Study hooks, discover scripts, and create better content — in seconds.
-    </p>
+    <p class="hero-sub">ReelScribe <strong>instantly extracts transcripts</strong> from any video. Study hooks, discover scripts, and create better content — in seconds.</p>
 
     <div class="hero-input-wrap">
       <svg style="width:16px;height:16px;color:#3d3660;margin:auto 0 auto 14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
@@ -487,13 +542,6 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
       <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>No editing needed</span>
       <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>50+ Languages</span>
       <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Free to start</span>
-    </div>
-
-    <div class="feature-tags">
-      <div class="feature-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>AI Transcript</div>
-      <div class="feature-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>50+ Languages</div>
-      <div class="feature-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>Any Platform</div>
-      <div class="feature-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/></svg>File Upload</div>
     </div>
 
     <div id="previewBox">
@@ -515,33 +563,21 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
     </div>
   </div>
 
-  <!-- Ticker -->
   <div class="ticker-wrap">
     <div class="ticker">
-      <span class="ticker-item">AI TRANSCRIPT</span>
-      <span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">50+ LANGUAGES</span>
-      <span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">YOUTUBE · INSTAGRAM · TIKTOK</span>
-      <span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">FREE TO START</span>
-      <span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">NO EDITING NEEDED</span>
-      <span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">AI TRANSCRIPT</span>
-      <span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">50+ LANGUAGES</span>
-      <span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">YOUTUBE · INSTAGRAM · TIKTOK</span>
-      <span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">FREE TO START</span>
-      <span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">NO EDITING NEEDED</span>
-      <span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">AI TRANSCRIPT</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">50+ LANGUAGES</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">YOUTUBE · INSTAGRAM · TIKTOK</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">FREE TO START</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">NO EDITING NEEDED</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">AI TRANSCRIPT</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">50+ LANGUAGES</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">YOUTUBE · INSTAGRAM · TIKTOK</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">FREE TO START</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">NO EDITING NEEDED</span><span class="ticker-item"><span>✦</span></span>
     </div>
   </div>
 
-  <!-- Stats -->
   <div class="stats-section">
     <div class="sec-label">Numbers</div>
     <div class="stats-grid">
@@ -553,7 +589,6 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
     </div>
   </div>
 
-  <!-- Features -->
   <div class="features-section">
     <div class="sec-label">Everything You Need</div>
     <div class="feat-heading">Two Engines.</div>
@@ -561,7 +596,7 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
     <p class="feat-sub">Transcribe any video instantly. Cut viral clips automatically. All in one place.</p>
     <div class="feat-cards">
       <div class="feat-card">
-        <div class="feat-card-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>AI Transcript</div>
+        <div class="feat-card-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>AI Transcript</div>
         <h3>Extract Any Script</h3>
         <p>Paste a link or upload a file. ReelScribe transcribes speech with high accuracy — study viral hooks, discover what works, repurpose content.</p>
         <div class="feat-stats">
@@ -570,46 +605,43 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
         </div>
       </div>
       <div class="feat-card">
-        <div class="feat-card-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>AI Clipping · Coming Soon</div>
+        <div class="feat-card-label feat-card-label-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>AI Clipping · Live</div>
         <h3>Cut Clips Automatically</h3>
         <p>Paste a YouTube link. AI finds the best moments and cuts 5–12 ready-to-post vertical clips. No timeline editing required.</p>
         <div class="feat-stats">
-          <div><div class="feat-stat-num">5–12</div><div class="feat-stat-label">Clips Per Video</div></div>
-          <div><div class="feat-stat-num">480p</div><div class="feat-stat-label">Optimized Quality</div></div>
+          <div><div class="feat-stat-num feat-stat-num-pink">5–12</div><div class="feat-stat-label">Clips Per Video</div></div>
+          <div><div class="feat-stat-num feat-stat-num-pink">Auto</div><div class="feat-stat-label">Delete After 24h</div></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- How it works -->
   <div class="how-section">
     <div class="sec-label">Process</div>
     <div class="how-heading">How ReelScribe Works</div>
     <div class="how-heading-ghost">Paste To Published.</div>
-    <p class="how-sub">No timeline scrubbing. No manual editing. Paste once, get your transcript instantly.</p>
     <div class="steps">
       <div class="step">
         <div class="step-num-label">01</div>
         <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
         <h4>Paste or Upload</h4>
-        <p>Drop any public video URL — YouTube, Instagram, TikTok, X — or upload a file directly from your device.</p>
+        <p>Drop any public video URL or upload a file directly from your device.</p>
       </div>
       <div class="step">
         <div class="step-num-label">02</div>
         <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
         <h4>AI Processes</h4>
-        <p>Our AI engine automatically extracts and transcribes all speech in seconds — no manual steps, no waiting.</p>
+        <p>Our AI engine automatically extracts and transcribes all speech in seconds.</p>
       </div>
       <div class="step">
         <div class="step-num-label">03</div>
         <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
         <h4>Get Your Transcript</h4>
-        <p>Receive a clean, accurate transcript — ready to read, copy, or use to repurpose content.</p>
+        <p>Receive a clean, accurate transcript — ready to copy or repurpose.</p>
       </div>
     </div>
   </div>
 
-  <!-- Platforms -->
   <div class="platforms-section">
     <div class="sec-label">Supported Platforms</div>
     <div class="platforms-row">
@@ -618,32 +650,23 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
       <div class="p-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" alt="TikTok"></div>
       <div class="p-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" alt="X"></div>
       <div class="p-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" alt="Facebook"></div>
-      <div class="p-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/files.svg" alt="File"></div>
     </div>
   </div>
 
-  <!-- CTA -->
   <div class="cta-section">
     <div class="cta-h">Start Free Today</div>
     <p class="cta-p">5 free transcripts. No credit card. No signup required to try.</p>
     <button class="cta-btn" onclick="document.getElementById('videoUrl').focus(); window.scrollTo({top:0,behavior:'smooth'})">Try ReelScribe Free →</button>
   </div>
-
 </div>
 
-<!-- ════════════════════════ -->
 <!-- CLIP PAGE -->
-<!-- ════════════════════════ -->
 <div id="clipPage">
-
-  <!-- Hero -->
   <div class="hero clip-hero-glow">
-    <div class="hero-label"><span class="hero-dot hero-dot-pink"></span> Paid Plans · Launch Soon</div>
+    <div class="hero-label"><span class="hero-dot hero-dot-pink"></span> AI Powered · Login Required</div>
     <div class="hero-h1">TURN LONG VIDEOS</div>
     <div class="hero-h1-ghost">INTO <span class="hero-h1-accent">VIRAL CLIPS.</span></div>
-    <p class="hero-sub">
-      Paste any YouTube link. AI scans the transcript, finds the <strong>best viral moments</strong>, and cuts 5–12 ready-to-post reels — automatically.
-    </p>
+    <p class="hero-sub">Paste any YouTube link. AI scans the transcript, finds the <strong>best viral moments</strong>, and cuts 5–12 ready-to-post reels — automatically.</p>
 
     <div class="hero-input-wrap">
       <svg style="width:16px;height:16px;color:#3d3660;margin:auto 0 auto 14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
@@ -654,222 +677,117 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
     <div class="trust-pills">
       <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>YouTube supported</span>
       <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5–12 clips per video</span>
-      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Auto deleted after download</span>
-      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Email when ready</span>
-    </div>
-
-    <div class="feature-tags" style="margin-top:18px">
-      <div class="feature-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>AI Best Moments</div>
-      <div class="feature-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Instant Download</div>
-      <div class="feature-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>Vertical Format</div>
-      <div class="feature-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.69a16 16 0 0 0 6 6l.97-.97a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.03z"/></svg>Email Alert</div>
+      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Auto deleted after 24h</span>
+      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Download then 5min delete</span>
     </div>
   </div>
 
-  <!-- Ticker (pink accent) -->
+  <!-- Login wall for guests -->
+  <div id="clipLoginWall">
+    <h3>🔒 Login Required</h3>
+    <p>Clip generation is for logged-in users only. Login to generate your viral clips!</p>
+    <button class="clip-login-btn" onclick="window.location.href='/auth/google'">Continue with Google →</button>
+    <div style="margin-top:10px;">
+      <button class="clip-login-btn" style="background:var(--card2);border:1px solid var(--border2);color:var(--sub);" onclick="window.location.href='/login.html'">Login with Email →</button>
+    </div>
+  </div>
+
+  <!-- Clips result box -->
+  <div id="clipsResultBox">
+    <h3>🎬 Your Clips Are Ready!</h3>
+    <p id="clipsCount">— clips generated</p>
+    <div id="clipsList"></div>
+    <div class="clip-delete-warn">⏰ Clips auto-delete in 24 hours. Downloaded clips delete in 5 minutes.</div>
+  </div>
+
   <div class="ticker-wrap">
     <div class="ticker">
-      <span class="ticker-item ticker-item-pink">AI CLIPPING</span>
-      <span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">5–12 CLIPS PER VIDEO</span>
-      <span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">YOUTUBE · REELS · SHORTS</span>
-      <span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">AI BEST MOMENTS</span>
-      <span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">AUTO DELETE · SECURE</span>
-      <span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">AI CLIPPING</span>
-      <span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">5–12 CLIPS PER VIDEO</span>
-      <span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">YOUTUBE · REELS · SHORTS</span>
-      <span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">AI BEST MOMENTS</span>
-      <span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">AUTO DELETE · SECURE</span>
-      <span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
+      <span class="ticker-item ticker-item-pink">AI CLIPPING</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
+      <span class="ticker-item ticker-item-pink">5–12 CLIPS PER VIDEO</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
+      <span class="ticker-item ticker-item-pink">YOUTUBE · REELS · SHORTS</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
+      <span class="ticker-item ticker-item-pink">AI BEST MOMENTS</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
+      <span class="ticker-item ticker-item-pink">AUTO DELETE · SECURE</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
+      <span class="ticker-item ticker-item-pink">AI CLIPPING</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
+      <span class="ticker-item ticker-item-pink">5–12 CLIPS PER VIDEO</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
+      <span class="ticker-item ticker-item-pink">AUTO DELETE · SECURE</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
     </div>
   </div>
 
-  <!-- Clip Stats -->
   <div class="stats-section">
     <div class="sec-label sec-label-pink">Impact</div>
     <div class="stats-grid">
       <div class="stat-box"><div class="stat-num">5–12<span class="accent-pink">✦</span></div><div class="stat-label">Clips Per Video</div></div>
       <div class="stat-box"><div class="stat-num">480<span class="accent-pink">p</span></div><div class="stat-label">Optimized Quality</div></div>
-      <div class="stat-box"><div class="stat-num">2–3<span class="accent-pink">m</span></div><div class="stat-label">Avg Processing Time</div></div>
-      <div class="stat-box"><div class="stat-num">15<span class="accent-pink">m</span></div><div class="stat-label">Auto Delete Timer</div></div>
+      <div class="stat-box"><div class="stat-num">2–5<span class="accent-pink">m</span></div><div class="stat-label">Avg Processing Time</div></div>
+      <div class="stat-box"><div class="stat-num">24<span class="accent-pink">h</span></div><div class="stat-label">Auto Delete Timer</div></div>
       <div class="stat-5th"><div class="stat-num">₹149<span class="accent-pink">/mo</span></div><div class="stat-label">Start with Starter — 5x cheaper than KlipRok</div></div>
     </div>
   </div>
 
-  <!-- How Clipping Works -->
   <div class="how-section">
     <div class="sec-label sec-label-pink">Process</div>
     <div class="how-heading">How Clip Generation Works</div>
     <div class="how-heading-ghost">Link To Download.</div>
-    <p class="how-sub">No editing. No timeline scrubbing. Paste a YouTube link and AI does everything.</p>
     <div class="steps">
       <div class="step">
         <div class="step-num-label">01</div>
         <div class="step-icon step-icon-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
         <h4>Paste YouTube Link</h4>
-        <p>Any public video — podcast, interview, tutorial, vlog. AI handles the rest regardless of length.</p>
+        <p>Any public video — podcast, interview, tutorial, vlog.</p>
       </div>
       <div class="step">
         <div class="step-num-label">02</div>
         <div class="step-icon step-icon-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
         <h4>AI Finds Best Moments</h4>
-        <p>AI reads the full transcript and scores every segment — picking the highest hook-strength, most viral moments automatically.</p>
+        <p>AI reads the full transcript and picks the highest hook-strength, most viral moments.</p>
       </div>
       <div class="step">
         <div class="step-num-label">03</div>
-        <div class="step-icon step-icon-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div>
-        <h4>Clips Are Cut & Ready</h4>
-        <p>5–12 vertical clips generated at 480p. Email alert when done. Download in one tap — files auto-deleted after 15 minutes.</p>
+        <div class="step-icon step-icon-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+        <h4>Download Your Clips</h4>
+        <p>5–12 clips ready to download. Main video deleted instantly. Clips auto-delete in 24 hours.</p>
       </div>
     </div>
   </div>
 
-  <!-- Clip Features -->
-  <div class="features-section">
-    <div class="sec-label sec-label-pink">Why It Works</div>
-    <div class="feat-heading">Built for</div>
-    <div class="feat-heading-ghost">Creators.</div>
-    <p class="feat-sub">Every decision in the clipping engine was made to save time and maximize reach.</p>
-    <div class="feat-cards">
-      <div class="feat-card">
-        <div class="feat-card-label feat-card-label-pink">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          AI Scoring
-        </div>
-        <h3>Hook-Strength Ranking</h3>
-        <p>AI doesn't just cut randomly. It reads the transcript and scores every segment on virality — so you get the clips most likely to stop the scroll.</p>
-        <div class="feat-stats">
-          <div><div class="feat-stat-num feat-stat-num-pink">5–12</div><div class="feat-stat-label">Clips Generated</div></div>
-          <div><div class="feat-stat-num feat-stat-num-pink">AI</div><div class="feat-stat-label">Scored Ranking</div></div>
-        </div>
-      </div>
-      <div class="feat-card">
-        <div class="feat-card-label feat-card-label-pink">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Privacy First
-        </div>
-        <h3>Auto-Delete System</h3>
-        <p>Your video is downloaded and deleted immediately after clipping. Clips auto-delete 15 minutes after you close the page. Nothing stays on our servers.</p>
-        <div class="feat-stats">
-          <div><div class="feat-stat-num feat-stat-num-pink">0s</div><div class="feat-stat-label">Video Kept After Cut</div></div>
-          <div><div class="feat-stat-num feat-stat-num-pink">15m</div><div class="feat-stat-label">Clip Auto-Delete</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Plans -->
   <div class="plans-section">
     <div class="sec-label sec-label-pink">Pricing</div>
     <div class="feat-heading">Simple Plans.</div>
     <div class="feat-heading-ghost">No Surprises.</div>
-    <p class="feat-sub">5x cheaper than KlipRok. Start small and scale when you're ready.</p>
     <div class="plans-grid">
-
       <div class="plan-card">
         <div class="plan-name">Starter</div>
         <div class="plan-price">₹149 <span>/month</span></div>
-        <div class="plan-desc">Perfect for trying out AI clipping without a big commitment.</div>
+        <div class="plan-desc">Perfect for trying out AI clipping.</div>
         <div class="plan-features">
           <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>30 transcripts/month</div>
-          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>AI Clipping — 3–5 clips/video</div>
-          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>2 clip videos/day · 10/month</div>
-          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Email alert when ready</div>
+          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>3–5 clips/video</div>
+          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>10 videos/month</div>
         </div>
         <button class="plan-cta" onclick="window.location.href='/pricing.html'">Get Starter →</button>
       </div>
-
       <div class="plan-card plan-card-popular">
         <div class="plan-badge">Most Popular</div>
         <div class="plan-name">Pro</div>
         <div class="plan-price">₹299 <span>/month</span></div>
-        <div class="plan-desc">For regular creators who need more clips and longer videos.</div>
+        <div class="plan-desc">For regular creators who need more clips.</div>
         <div class="plan-features">
           <div class="plan-feat plan-feat-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>60 transcripts/month</div>
-          <div class="plan-feat plan-feat-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>AI Clipping — 5–12 clips/video</div>
-          <div class="plan-feat plan-feat-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5 clip videos/day · 15/month</div>
-          <div class="plan-feat plan-feat-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Email alert + progress updates</div>
-          <div class="plan-feat plan-feat-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Priority processing queue</div>
+          <div class="plan-feat plan-feat-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5–12 clips/video</div>
+          <div class="plan-feat plan-feat-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>15 videos/month</div>
         </div>
         <button class="plan-cta plan-cta-primary" onclick="window.location.href='/pricing.html'">Get Pro →</button>
       </div>
-
-      <div class="plan-card">
-        <div class="plan-name">Agency</div>
-        <div class="plan-price">₹599 <span>/month</span></div>
-        <div class="plan-desc">For teams and agencies managing multiple creators.</div>
-        <div class="plan-features">
-          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>150 transcripts/month</div>
-          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>AI Clipping — 5–12 clips/video</div>
-          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>15 clip videos/day · 60/month</div>
-          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Highest priority queue</div>
-        </div>
-        <button class="plan-cta" onclick="window.location.href='/pricing.html'">Get Agency →</button>
-      </div>
-
     </div>
   </div>
 
-  <!-- Testimonials -->
-  <div class="testimonials-section">
-    <div class="sec-label sec-label-pink">Creators Love It</div>
-    <div class="feat-heading">Real Results.</div>
-    <div class="feat-heading-ghost">Real Creators.</div>
-    <div class="testi-cards">
-      <div class="testi-card">
-        <div class="testi-stars testi-stars-pink">★★★★★</div>
-        <p class="testi-text">"I uploaded a 45-minute podcast and got 10 clips in under 5 minutes. The AI actually picked the best moments — not just random cuts. Game changer."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">RK</div>
-          <div>
-            <div class="testi-name">Rahul K.</div>
-            <div class="testi-handle">Content Creator · 180K followers</div>
-          </div>
-        </div>
-      </div>
-      <div class="testi-card">
-        <div class="testi-stars testi-stars-pink">★★★★★</div>
-        <p class="testi-text">"KlipRok was ₹799/month and didn't work half the time. ReelScribe at ₹299 does the same job — honestly better for Indian content."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">PS</div>
-          <div>
-            <div class="testi-name">Priya S.</div>
-            <div class="testi-handle">YouTube Creator · 92K subscribers</div>
-          </div>
-        </div>
-      </div>
-      <div class="testi-card">
-        <div class="testi-stars testi-stars-pink">★★★★★</div>
-        <p class="testi-text">"The auto-delete is a huge deal for me. I manage client content and the last thing I want is their videos sitting on some server. ReelScribe deletes everything instantly."</p>
-        <div class="testi-author">
-          <div class="testi-avatar">AM</div>
-          <div>
-            <div class="testi-name">Arjun M.</div>
-            <div class="testi-handle">Social Media Agency · Mumbai</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CTA -->
   <div class="cta-section cta-section-pink">
     <div class="cta-h">Ready to Cut Your First Clips?</div>
     <p class="cta-p">Start at ₹149/month. No hidden fees. Cancel anytime.</p>
     <button class="cta-btn" onclick="window.location.href='/pricing.html'">View Plans & Get Started →</button>
   </div>
-
 </div>
 
-<!-- FOOTER -->
 <footer>
   <div class="foot-logo">ReelScribe</div>
   <div class="foot-tag">Transcribe · Repurpose · Scale</div>
@@ -889,8 +807,7 @@ const params = new URLSearchParams(window.location.search);
 const gEmail = params.get("email");
 if(gEmail) localStorage.setItem("userEmail", gEmail);
 const userEmail = localStorage.getItem("userEmail");
-const isLoggedIn = userEmail && userEmail !== "guest@example.com";
-const isPaid = false;
+const isLoggedIn = !!(userEmail && userEmail !== "guest@example.com");
 
 if(isLoggedIn){
   document.getElementById("menuDash").style.display = "block";
@@ -904,6 +821,12 @@ function switchMode(m){
   document.getElementById('clipPage').style.display = isT ? 'none' : 'block';
   document.getElementById('btnT').classList.toggle('active', isT);
   document.getElementById('btnC').classList.toggle('active', !isT);
+
+  // Show login wall if not logged in on clips tab
+  if(!isT){
+    document.getElementById('clipLoginWall').style.display = isLoggedIn ? 'none' : 'block';
+    document.getElementById('clipsResultBox').style.display = 'none';
+  }
 }
 if(location.search.includes('mode=clips')) switchMode('clips');
 
@@ -981,14 +904,86 @@ function handleResult(data){
   }
 }
 
-function generateClips(){
+async function generateClips(){
   const url = document.getElementById("clipUrl").value.trim();
   if(!url){ alert("Please paste a YouTube URL!"); return; }
-  if(!isPaid){
-    window.location.href = '/pricing.html';
+
+  if(!isLoggedIn){
+    document.getElementById('clipLoginWall').style.display = 'block';
     return;
   }
-  alert("Processing your clips! You'll get an email when ready.");
+
+  const resultBox = document.getElementById("clipsResultBox");
+  const clipsList = document.getElementById("clipsList");
+
+  // Show processing state
+  resultBox.style.display = "block";
+  document.getElementById('clipLoginWall').style.display = 'none';
+  resultBox.querySelector('h3').innerText = "⏳ Processing...";
+  document.getElementById('clipsCount').innerText = "This may take 2–5 minutes. Please wait...";
+  clipsList.innerHTML = `
+    <div class="processing-box">
+      <div class="processing-spinner"></div>
+      <div class="processing-title">AI is finding viral moments</div>
+      <div class="processing-sub">Downloading video → Transcribing → Finding best clips → Cutting & uploading<br><br>Don't close this tab!</div>
+    </div>`;
+
+  // Scroll to result
+  resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  try {
+    const fcmToken = localStorage.getItem('fcmToken') || null;
+    const res = await fetch("/cut-clips", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ytUrl: url, email: userEmail, fcmToken })
+    });
+
+    const data = await res.json();
+
+    if(data.loginRequired){
+      document.getElementById('clipLoginWall').style.display = 'block';
+      resultBox.style.display = 'none';
+      return;
+    }
+
+    if(!data.success){
+      resultBox.querySelector('h3').innerText = "❌ Error";
+      document.getElementById('clipsCount').innerText = data.error || "Something went wrong";
+      clipsList.innerHTML = '';
+      return;
+    }
+
+    const clips = data.clips || [];
+    resultBox.querySelector('h3').innerText = "🎬 Your Clips Are Ready!";
+    document.getElementById('clipsCount').innerText = `${clips.length} clips generated from your video`;
+
+    clipsList.innerHTML = clips.map((clip, i) => `
+      <div class="clip-card">
+        <div class="clip-title">${clip.title || 'Clip ' + (i+1)}</div>
+        <div class="clip-reason">${clip.reason || ''}</div>
+        <div class="clip-meta">
+          <span class="clip-duration">⏱ ${clip.duration}s</span>
+          <a class="clip-download-btn" href="${clip.url}" download="clip_${i+1}.mp4" onclick="notifyDownload('${clip.s3Key}')">Download ↓</a>
+        </div>
+      </div>
+    `).join('');
+
+  } catch(e){
+    resultBox.querySelector('h3').innerText = "❌ Error";
+    document.getElementById('clipsCount').innerText = "Server error. Please try again.";
+    clipsList.innerHTML = '';
+  }
+}
+
+async function notifyDownload(s3Key){
+  try {
+    await fetch('/clip-downloaded', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ s3Key })
+    });
+  } catch(e){}
 }
 </script>
 </body>
