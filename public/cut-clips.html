@@ -9,16 +9,10 @@
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
-  --bg: #09070f;
-  --card: #111020;
-  --card2: #17142a;
-  --border: #201c38;
-  --border2: #2c2650;
-  --purple: #8b5cf6;
-  --pink: #ec4899;
-  --text: #f0eaff;
-  --sub: #8a7fab;
-  --muted: #3d3660;
+  --bg: #09070f; --card: #111020; --card2: #17142a;
+  --border: #201c38; --border2: #2c2650;
+  --purple: #8b5cf6; --pink: #ec4899; --text: #f0eaff;
+  --sub: #8a7fab; --muted: #3d3660;
   --grad: linear-gradient(135deg, #8b5cf6, #ec4899);
 }
 html { scroll-behavior: smooth; }
@@ -46,15 +40,11 @@ body {
   background: none; border: 1px solid var(--border2); border-radius: 10px;
   color: var(--sub); font-size: 12px; font-weight: 700; padding: 6px 14px;
   cursor: pointer; font-family: 'Inter', sans-serif; transition: all .2s;
-  display: flex; align-items: center; gap: 5px;
 }
 .nav-back:hover { border-color: var(--purple); color: var(--text); }
 
 /* HERO */
-.hero {
-  padding: 32px 20px 0;
-  position: relative; overflow: hidden;
-}
+.hero { padding: 32px 20px 0; position: relative; overflow: hidden; }
 .hero::before {
   content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
   width: 320px; height: 320px; border-radius: 50%;
@@ -70,45 +60,68 @@ body {
 }
 .hero-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pink); animation: blink 2s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-.hero-h1 {
-  font-size: 38px; font-weight: 900; line-height: 1.0;
-  letter-spacing: -2px; text-transform: uppercase; margin-bottom: 5px;
-}
+.hero-h1 { font-size: 38px; font-weight: 900; line-height: 1.0; letter-spacing: -2px; text-transform: uppercase; margin-bottom: 5px; }
 .hero-h1-ghost {
   font-size: 38px; font-weight: 900; line-height: 1.0;
   letter-spacing: -2px; text-transform: uppercase; margin-bottom: 18px;
   color: transparent; -webkit-text-stroke: 1px var(--border2);
 }
-.hero-accent {
-  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
+.hero-accent { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .hero-sub { font-size: 13px; color: var(--sub); line-height: 1.7; margin-bottom: 28px; }
 .hero-sub strong { color: var(--text); }
 
-/* INPUT AREA */
-.input-area { padding: 0 20px; margin-bottom: 10px; }
-.url-bar {
-  display: flex; align-items: center; gap: 0;
+/* PLAN BADGE */
+.plan-badge {
+  margin: 0 20px 16px;
   background: var(--card); border: 1px solid var(--border2);
-  border-radius: 16px; overflow: hidden; margin-bottom: 10px;
-  transition: border-color .2s;
+  border-radius: 14px; padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
 }
-.url-bar:focus-within { border-color: var(--purple); }
-.url-bar-icon { padding: 0 12px; color: var(--muted); flex-shrink: 0; display: flex; align-items: center; }
-.url-bar-icon svg { width: 16px; height: 16px; }
-.url-input {
-  flex: 1; padding: 15px 0; background: none; border: none; outline: none;
-  color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif; font-weight: 500;
+.plan-badge-left { display: flex; align-items: center; gap: 10px; }
+.plan-badge-icon {
+  width: 32px; height: 32px; border-radius: 10px;
+  background: var(--grad); display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
 }
-.url-input::placeholder { color: var(--muted); }
-.paste-btn {
-  padding: 10px 14px; margin: 5px; border: none; border-radius: 10px;
-  background: var(--border2); color: var(--sub);
-  font-size: 11px; font-weight: 700; cursor: pointer;
-  font-family: 'Inter', sans-serif; transition: all .2s; white-space: nowrap;
+.plan-badge-name { font-size: 13px; font-weight: 800; }
+.plan-badge-sub { font-size: 10px; color: var(--sub); margin-top: 1px; }
+.plan-badge-usage { font-size: 11px; font-weight: 700; color: var(--muted); text-align: right; }
+.plan-badge-usage span { color: var(--purple); }
+
+/* UPLOAD AREA */
+.input-area { padding: 0 20px; margin-bottom: 10px; }
+
+.upload-zone {
+  border: 2px dashed var(--border2); border-radius: 20px;
+  padding: 32px 20px; text-align: center; cursor: pointer;
+  transition: all .25s; background: var(--card); margin-bottom: 12px;
+  position: relative;
 }
-.paste-btn:hover { background: var(--border); color: var(--text); }
+.upload-zone:hover, .upload-zone.drag { border-color: var(--purple); background: rgba(139,92,246,0.04); }
+.upload-zone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.upload-icon { font-size: 36px; margin-bottom: 10px; }
+.upload-title { font-size: 15px; font-weight: 800; margin-bottom: 5px; }
+.upload-sub { font-size: 12px; color: var(--sub); line-height: 1.6; }
+.upload-limit { font-size: 10px; color: var(--muted); margin-top: 8px; font-weight: 700; }
+
+.file-selected {
+  display: none; background: rgba(139,92,246,0.06);
+  border: 1px solid rgba(139,92,246,0.3); border-radius: 16px;
+  padding: 14px 16px; margin-bottom: 12px;
+  align-items: center; gap: 12px;
+}
+.file-selected.show { display: flex; }
+.file-icon { font-size: 28px; flex-shrink: 0; }
+.file-info { flex: 1; min-width: 0; }
+.file-name { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-size { font-size: 11px; color: var(--sub); margin-top: 2px; }
+.file-remove {
+  background: none; border: 1px solid var(--border2); border-radius: 8px;
+  color: var(--muted); font-size: 11px; font-weight: 700; padding: 5px 10px;
+  cursor: pointer; font-family: 'Inter', sans-serif; flex-shrink: 0;
+}
 
 .generate-btn {
   width: 100%; padding: 17px; border: none; border-radius: 14px;
@@ -120,7 +133,17 @@ body {
 .generate-btn:hover { opacity: 0.88; }
 .generate-btn:active { transform: scale(0.98); }
 .generate-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-.generate-btn svg { width: 17px; height: 17px; }
+
+/* UPLOAD PROGRESS */
+.upload-progress { display: none; margin-bottom: 12px; }
+.upload-progress.show { display: block; }
+.progress-bar-wrap {
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 12px; padding: 14px 16px;
+}
+.progress-label { font-size: 12px; font-weight: 700; margin-bottom: 8px; display: flex; justify-content: space-between; }
+.progress-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--grad); border-radius: 3px; width: 0%; transition: width .3s; }
 
 /* CHIPS */
 .chips { display: flex; gap: 7px; margin-top: 12px; flex-wrap: wrap; padding: 0 20px; margin-bottom: 24px; }
@@ -130,7 +153,6 @@ body {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 100px; padding: 5px 10px;
 }
-.chip svg { width: 10px; height: 10px; }
 
 /* LOGIN PROMPT */
 .login-prompt {
@@ -148,24 +170,19 @@ body {
 }
 
 /* PROCESSING */
-.processing-wrap {
-  margin: 0 20px 20px; display: none;
-}
+.processing-wrap { margin: 0 20px 20px; display: none; }
 .processing-wrap.active { display: block; }
 .processing-top {
   background: var(--card); border: 1px solid var(--border2);
   border-radius: 20px; padding: 28px 20px 24px; text-align: center; margin-bottom: 12px;
 }
-.spinner-ring {
-  width: 60px; height: 60px; margin: 0 auto 16px; position: relative;
-}
+.spinner-ring { width: 60px; height: 60px; margin: 0 auto 16px; }
 .spinner-ring svg { width: 60px; height: 60px; animation: spin 2s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinner-ring-bg { stroke: var(--border2); }
 .spinner-ring-fill { stroke: url(#spinGrad); stroke-dasharray: 130; stroke-dashoffset: 40; stroke-linecap: round; }
 .proc-title { font-size: 17px; font-weight: 900; letter-spacing: -0.4px; margin-bottom: 5px; }
 .proc-sub { font-size: 12px; color: var(--muted); line-height: 1.6; }
-
 .steps-card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 8px;
@@ -178,8 +195,6 @@ body {
 }
 .step-row.active { border-color: rgba(139,92,246,0.35); color: var(--text); background: rgba(139,92,246,0.06); }
 .step-row.done { border-color: rgba(34,197,94,0.2); color: #4ade80; background: rgba(34,197,94,0.04); }
-.step-icon { width: 20px; height: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-.step-icon svg { width: 14px; height: 14px; }
 .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); transition: all .5s; }
 .step-row.active .step-dot { background: var(--purple); animation: dotblink 1s ease-in-out infinite; }
 .step-row.done .step-dot { background: #22c55e; animation: none; }
@@ -203,10 +218,7 @@ body {
 /* RESULTS */
 .results-wrap { margin: 0 20px; display: none; }
 .results-wrap.active { display: block; }
-.results-top {
-  display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
-}
-.results-meta {}
+.results-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .results-eyebrow {
   font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
   color: var(--pink); display: flex; align-items: center; gap: 6px; margin-bottom: 3px;
@@ -221,13 +233,20 @@ body {
 }
 .new-btn:hover { border-color: var(--purple); color: var(--text); }
 
+/* EXPIRY NOTICE */
+.expiry-notice {
+  background: rgba(236,72,153,0.06); border: 1px solid rgba(236,72,153,0.2);
+  border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;
+  font-size: 11px; color: var(--sub); display: flex; align-items: center; gap: 8px;
+}
+.expiry-notice strong { color: var(--pink); }
+
 /* CLIP CARD */
 .clip-card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 18px; margin-bottom: 10px; overflow: hidden;
-  transition: border-color .25s, transform .2s;
+  border-radius: 18px; margin-bottom: 10px; overflow: hidden; transition: border-color .25s;
 }
-.clip-card:hover { border-color: rgba(236,72,153,0.3); transform: translateY(-1px); }
+.clip-card:hover { border-color: rgba(236,72,153,0.3); }
 .clip-top { display: flex; align-items: flex-start; gap: 12px; padding: 16px 16px 10px; }
 .clip-index {
   width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
@@ -235,54 +254,31 @@ body {
   justify-content: center; font-size: 13px; font-weight: 900; color: white;
 }
 .clip-info { flex: 1; min-width: 0; }
-.clip-title {
-  font-size: 14px; font-weight: 800; margin-bottom: 4px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.clip-reason {
-  font-size: 11px; color: var(--sub); line-height: 1.5;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
+.clip-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.clip-reason { font-size: 11px; color: var(--sub); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .clip-dur {
   flex-shrink: 0; font-size: 10px; font-weight: 800;
   background: var(--card2); border: 1px solid var(--border2);
   color: var(--muted); border-radius: 8px; padding: 5px 9px;
 }
-.clip-bottom {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 16px 14px;
-}
+.clip-bottom { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 14px; }
 .clip-time { font-size: 10px; color: var(--muted); font-weight: 600; }
 .clip-dl {
   display: flex; align-items: center; gap: 6px;
   padding: 10px 18px; border: none; border-radius: 10px;
   background: var(--grad); color: white; font-size: 12px; font-weight: 700;
-  cursor: pointer; font-family: 'Inter', sans-serif; text-decoration: none;
-  transition: opacity .2s;
+  cursor: pointer; font-family: 'Inter', sans-serif; text-decoration: none; transition: opacity .2s;
 }
 .clip-dl:hover { opacity: 0.85; }
-.clip-dl svg { width: 13px; height: 13px; }
-.clip-dl.done {
-  background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); color: #4ade80;
-}
+.clip-dl.done { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); color: #4ade80; }
 
-/* HOW */
+/* HOW IT WORKS */
 .how-wrap { margin: 24px 20px 0; }
-.how-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 18px; overflow: hidden;
-}
-.how-header {
-  padding: 16px 18px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 8px;
-}
-.how-header-icon { font-size: 16px; }
+.how-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
+.how-header { padding: 16px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
 .how-header-title { font-size: 13px; font-weight: 800; color: var(--sub); }
 .how-steps { padding: 6px 0; }
-.how-step {
-  display: flex; align-items: flex-start; gap: 14px;
-  padding: 14px 18px; border-bottom: 1px solid var(--border);
-}
+.how-step { display: flex; align-items: flex-start; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
 .how-step:last-child { border-bottom: none; }
 .how-num {
   width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0;
@@ -293,25 +289,8 @@ body {
 .how-text { font-size: 12px; color: var(--sub); line-height: 1.65; padding-top: 3px; }
 .how-text strong { color: var(--text); font-weight: 700; }
 
-/* PLATFORM STRIP */
-.platform-strip {
-  margin: 20px 20px 0;
-  background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-  padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;
-}
-.platform-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-.platform-icons { display: flex; gap: 10px; align-items: center; }
-.platform-icon {
-  font-size: 18px; opacity: 0.6; transition: opacity .2s;
-}
-.platform-icon:hover { opacity: 1; }
-
-/* FOOTER */
 footer { border-top: 1px solid var(--border); padding: 24px 20px 28px; margin-top: 32px; }
-.foot-logo {
-  font-size: 15px; font-weight: 900; margin-bottom: 3px;
-  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
+.foot-logo { font-size: 15px; font-weight: 900; margin-bottom: 3px; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .foot-copy { font-size: 11px; color: var(--muted); }
 </style>
 </head>
@@ -328,51 +307,83 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 28px; margin-to
   <div class="hero-label"><span class="hero-dot"></span> AI Clip Cutter</div>
   <div class="hero-h1">CUT VIRAL</div>
   <div class="hero-h1-ghost">CLIPS <span class="hero-accent">INSTANTLY.</span></div>
-  <p class="hero-sub">Paste a YouTube link — AI finds the <strong>best moments</strong>, cuts them, and hands them to you ready to post.</p>
+  <p class="hero-sub">Video upload karo — AI <strong>best moments</strong> dhundega, clips katega, ready to post.</p>
+</div>
+
+<!-- PLAN BADGE -->
+<div class="plan-badge" id="planBadge" style="display:none">
+  <div class="plan-badge-left">
+    <div class="plan-badge-icon">⚡</div>
+    <div>
+      <div class="plan-badge-name" id="planName">Pro Plan</div>
+      <div class="plan-badge-sub">Clips feature active</div>
+    </div>
+  </div>
+  <div class="plan-badge-usage" id="planUsage"></div>
 </div>
 
 <!-- INPUT AREA -->
 <div class="input-area" id="inputArea">
-  <div class="url-bar">
-    <div class="url-bar-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/>
-        <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="currentColor" stroke="none"/>
-      </svg>
-    </div>
-    <input class="url-input" id="ytUrl" type="url"
-      placeholder="youtube.com/watch?v=..."
-      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-    <button class="paste-btn" onclick="pasteUrl()">Paste</button>
+
+  <!-- Upload Zone -->
+  <div class="upload-zone" id="uploadZone" onclick="triggerFileInput()">
+    <input type="file" id="videoFile" accept="video/*" onchange="onFileSelected(this)">
+    <div class="upload-icon">🎬</div>
+    <div class="upload-title">Video Upload Karo</div>
+    <div class="upload-sub">YouTube se download karke yahan upload karo<br>MP4, MOV, AVI supported</div>
+    <div class="upload-limit" id="uploadLimit">Max file size: loading...</div>
   </div>
-  <button class="generate-btn" id="generateBtn" onclick="generateClips()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+
+  <!-- File Selected Preview -->
+  <div class="file-selected" id="fileSelected">
+    <div class="file-icon">🎥</div>
+    <div class="file-info">
+      <div class="file-name" id="fileName">video.mp4</div>
+      <div class="file-size" id="fileSize">0 MB</div>
+    </div>
+    <button class="file-remove" onclick="removeFile()">Remove</button>
+  </div>
+
+  <!-- Upload Progress -->
+  <div class="upload-progress" id="uploadProgress">
+    <div class="progress-bar-wrap">
+      <div class="progress-label">
+        <span>Uploading...</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="generate-btn" id="generateBtn" onclick="generateClips()" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:17px;height:17px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
     Generate Clips
   </button>
 </div>
 
 <!-- CHIPS -->
 <div class="chips" id="chipsRow">
-  <div class="chip">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-    5–15 clips
-  </div>
-  <div class="chip">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    30–90s each
-  </div>
-  <div class="chip">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-5.22"/></svg>
-    Deleted in 24h
-  </div>
+  <div class="chip">⚡ 5–10 clips</div>
+  <div class="chip">⏱ 30–90s each</div>
+  <div class="chip">🗑 24hr mein delete</div>
 </div>
 
 <!-- LOGIN PROMPT -->
 <div class="login-prompt" id="loginPrompt" style="display:none">
   <div class="login-prompt-icon">🔒</div>
   <h3>Login Required</h3>
-  <p>Create a free account to start generating viral clips from any YouTube video.</p>
+  <p>Clips feature ke liye login karo aur paid plan lo.</p>
   <button class="login-go-btn" onclick="window.location.href='/login.html'">Login / Sign Up →</button>
+</div>
+
+<!-- PLAN UPGRADE PROMPT -->
+<div class="login-prompt" id="upgradePrompt" style="display:none">
+  <div class="login-prompt-icon">🚀</div>
+  <h3>Plan Upgrade Karo</h3>
+  <p>Clips feature sirf Starter, Pro aur Agency plan mein available hai.</p>
+  <button class="login-go-btn" onclick="window.location.href='/pricing.html'">Plans Dekho →</button>
 </div>
 
 <!-- PROCESSING -->
@@ -390,33 +401,36 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 28px; margin-to
         <circle class="spinner-ring-fill" cx="30" cy="30" r="24" stroke-width="3" fill="none" transform="rotate(-90 30 30)"/>
       </svg>
     </div>
-    <div class="proc-title">Processing your video…</div>
-    <div class="proc-sub">This takes 2–5 minutes.<br>Keep this tab open.</div>
+    <div class="proc-title" id="procTitle">Video upload ho rahi hai…</div>
+    <div class="proc-sub">2–5 minute lag sakte hain.<br>Tab band mat karo.</div>
   </div>
   <div class="steps-card">
-    <div class="step-row active" id="step1"><div class="step-dot"></div> Downloading video from YouTube</div>
-    <div class="step-row" id="step2"><div class="step-dot"></div> Extracting audio track</div>
-    <div class="step-row" id="step3"><div class="step-dot"></div> Transcribing with Whisper AI</div>
-    <div class="step-row" id="step4"><div class="step-dot"></div> Finding best viral moments</div>
-    <div class="step-row" id="step5"><div class="step-dot"></div> Cutting &amp; uploading clips</div>
+    <div class="step-row active" id="step1"><div class="step-dot"></div> Video upload ho rahi hai</div>
+    <div class="step-row" id="step2"><div class="step-dot"></div> Audio extract ho raha hai</div>
+    <div class="step-row" id="step3"><div class="step-dot"></div> Whisper AI se transcription</div>
+    <div class="step-row" id="step4"><div class="step-dot"></div> Best viral moments dhundh raha hai</div>
+    <div class="step-row" id="step5"><div class="step-dot"></div> Clips cut & upload ho rahi hain</div>
   </div>
 </div>
 
 <!-- ERROR -->
 <div class="error-wrap" id="errorWrap">
   <div class="err-icon">⚠️</div>
-  <p id="errorMsg">Something went wrong. Please try again.</p>
+  <p id="errorMsg">Kuch galat hua. Dobara try karo.</p>
   <button class="retry-btn" onclick="resetPage()">Try Again</button>
 </div>
 
 <!-- RESULTS -->
 <div class="results-wrap" id="resultsWrap">
   <div class="results-top">
-    <div class="results-meta">
+    <div>
       <div class="results-eyebrow">Ready to download</div>
       <div class="results-count" id="resultsCount">0 <span>clips found</span></div>
     </div>
     <button class="new-btn" onclick="resetPage()">+ New Video</button>
+  </div>
+  <div class="expiry-notice">
+    ⏰ Ye clips <strong>24 ghante mein delete</strong> ho jaayengi. Abhi download karo!
   </div>
   <div id="clipsContainer"></div>
 </div>
@@ -425,38 +439,27 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 28px; margin-to
 <div class="how-wrap" id="howWrap">
   <div class="how-card">
     <div class="how-header">
-      <span class="how-header-icon">⚡</span>
-      <span class="how-header-title">How Cut Clips works</span>
+      <span>⚡</span>
+      <span class="how-header-title">Kaise kaam karta hai</span>
     </div>
     <div class="how-steps">
       <div class="how-step">
         <div class="how-num">1</div>
-        <div class="how-text"><strong>Paste any YouTube link</strong> — podcasts, interviews, and long-form videos work best.</div>
+        <div class="how-text"><strong>YouTube se video download karo</strong> — apne phone ya PC pe. Phir yahan upload karo.</div>
       </div>
       <div class="how-step">
         <div class="how-num">2</div>
-        <div class="how-text"><strong>AI reads the transcript</strong> and identifies the most engaging, emotional, or funny moments.</div>
+        <div class="how-text"><strong>AI transcript padhta hai</strong> — sabse engaging, emotional ya funny moments dhundta hai.</div>
       </div>
       <div class="how-step">
         <div class="how-num">3</div>
-        <div class="how-text"><strong>Clips are cut and uploaded</strong> — download them straight to your phone.</div>
+        <div class="how-text"><strong>Clips cut aur upload hoti hain</strong> — seedha download karo phone pe.</div>
       </div>
       <div class="how-step">
         <div class="how-num">4</div>
-        <div class="how-text"><strong>Auto-deleted in 24 hours</strong> — save what you need before they expire.</div>
+        <div class="how-text"><strong>24 ghante mein auto-delete</strong> — jo chahiye download kar lo pehle.</div>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- PLATFORM STRIP -->
-<div class="platform-strip" id="platformStrip">
-  <span class="platform-label">Post directly to</span>
-  <div class="platform-icons">
-    <span class="platform-icon" title="Instagram">📸</span>
-    <span class="platform-icon" title="TikTok">🎵</span>
-    <span class="platform-icon" title="YouTube Shorts">▶️</span>
-    <span class="platform-icon" title="Twitter/X">🐦</span>
   </div>
 </div>
 
@@ -466,108 +469,210 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 28px; margin-to
 </footer>
 
 <script>
-// ── AUTH ──
-const email = localStorage.getItem("userEmail") || "";
+const email   = localStorage.getItem("userEmail") || "";
 const isGuest = !email || email === "guest@example.com";
 
-if (isGuest) {
-  document.getElementById("loginPrompt").style.display = "block";
-  document.getElementById("generateBtn").disabled = true;
-  document.getElementById("ytUrl").disabled = true;
+let selectedFile  = null;
+let ec2UploadUrl  = null;
+let userMaxMB     = 100;
+let userPlan      = "free";
+
+// ── INIT ──
+async function init() {
+  if (isGuest) {
+    document.getElementById("loginPrompt").style.display = "block";
+    document.getElementById("inputArea").style.display   = "none";
+    document.getElementById("chipsRow").style.display    = "none";
+    return;
+  }
+
+  try {
+    const res  = await fetch(`/user-plan/${encodeURIComponent(email)}`);
+    const data = await res.json();
+
+    if (!data.success) return;
+
+    userPlan = data.plan || "free";
+
+    if (userPlan === "free") {
+      document.getElementById("upgradePrompt").style.display = "block";
+      document.getElementById("inputArea").style.display     = "none";
+      document.getElementById("chipsRow").style.display      = "none";
+      return;
+    }
+
+    // Show plan badge
+    const badge = document.getElementById("planBadge");
+    badge.style.display = "flex";
+    document.getElementById("planName").textContent =
+      userPlan.charAt(0).toUpperCase() + userPlan.slice(1) + " Plan";
+
+    const u = data.usage || {};
+    document.getElementById("planUsage").innerHTML =
+      `Clips: <span>${u.clipDay || 0}/${u.clipDayLimit || 0}</span> today`;
+
+    // Get EC2 upload URL
+    const clipRes  = await fetch("/cut-clips", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ email, fcmToken: null }),
+    });
+    const clipData = await clipRes.json();
+
+    if (!clipData.success) {
+      showError(clipData.error || "Setup failed");
+      return;
+    }
+
+    ec2UploadUrl = clipData.uploadUrl;
+    userMaxMB    = clipData.maxMB || 500;
+
+    document.getElementById("uploadLimit").textContent =
+      `Max file size: ${userMaxMB >= 1024 ? (userMaxMB/1024).toFixed(0) + "GB" : userMaxMB + "MB"} (${userPlan} plan)`;
+
+  } catch (e) {
+    console.error("Init error:", e);
+  }
 }
 
-// ── PASTE ──
-async function pasteUrl() {
-  try {
-    const text = await navigator.clipboard.readText();
-    document.getElementById("ytUrl").value = text;
-  } catch {
-    document.getElementById("ytUrl").focus();
+// ── FILE INPUT ──
+function triggerFileInput() {
+  document.getElementById("videoFile").click();
+}
+
+function onFileSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const sizeMB = file.size / 1024 / 1024;
+
+  if (sizeMB > userMaxMB) {
+    alert(`File bahut badi hai! ${userPlan} plan mein max ${userMaxMB}MB allowed hai.\nAapki file: ${sizeMB.toFixed(0)}MB`);
+    input.value = "";
+    return;
   }
+
+  selectedFile = file;
+
+  document.getElementById("uploadZone").style.display  = "none";
+  document.getElementById("fileSelected").classList.add("show");
+  document.getElementById("fileName").textContent = file.name;
+  document.getElementById("fileSize").textContent = sizeMB.toFixed(1) + " MB";
+  document.getElementById("generateBtn").disabled = false;
+}
+
+function removeFile() {
+  selectedFile = null;
+  document.getElementById("videoFile").value = "";
+  document.getElementById("uploadZone").style.display = "block";
+  document.getElementById("fileSelected").classList.remove("show");
+  document.getElementById("generateBtn").disabled = true;
 }
 
 // ── STEPS ──
 function resetSteps() {
   for (let i = 1; i <= 5; i++) {
     const el = document.getElementById("step" + i);
-    el.classList.remove("active","done");
+    el.classList.remove("active", "done");
   }
   document.getElementById("step1").classList.add("active");
 }
 
-function advanceSteps() {
-  const delays = [0, 18000, 45000, 75000, 115000];
-  delays.forEach((d, i) => {
-    setTimeout(() => {
-      for (let j = 1; j <= i; j++) {
-        const el = document.getElementById("step" + j);
-        el.classList.remove("active"); el.classList.add("done");
-      }
-      const cur = document.getElementById("step" + (i + 1));
-      if (cur) { cur.classList.remove("done"); cur.classList.add("active"); }
-    }, d);
-  });
+function setStep(n) {
+  for (let i = 1; i < n; i++) {
+    document.getElementById("step" + i).classList.remove("active");
+    document.getElementById("step" + i).classList.add("done");
+  }
+  const cur = document.getElementById("step" + n);
+  if (cur) { cur.classList.remove("done"); cur.classList.add("active"); }
 }
 
 // ── GENERATE ──
 async function generateClips() {
-  const ytUrl = document.getElementById("ytUrl").value.trim();
-  if (!ytUrl) { document.getElementById("ytUrl").focus(); return; }
-  if (!ytUrl.includes("youtube.com") && !ytUrl.includes("youtu.be")) {
-    alert("Please enter a valid YouTube URL."); return;
-  }
-  if (isGuest) { window.location.href = "/login.html"; return; }
+  if (!selectedFile) { alert("Pehle video select karo!"); return; }
+  if (!ec2UploadUrl) { alert("Setup incomplete. Page reload karo."); return; }
 
   // Hide input, show processing
-  document.getElementById("inputArea").style.display = "none";
-  document.getElementById("chipsRow").style.display = "none";
-  document.getElementById("howWrap").style.display = "none";
-  document.getElementById("platformStrip").style.display = "none";
+  document.getElementById("inputArea").style.display  = "none";
+  document.getElementById("chipsRow").style.display   = "none";
+  document.getElementById("howWrap").style.display    = "none";
+  document.getElementById("planBadge").style.display  = "none";
   document.getElementById("processingWrap").classList.add("active");
   document.getElementById("errorWrap").classList.remove("active");
   document.getElementById("resultsWrap").classList.remove("active");
-
   resetSteps();
-  advanceSteps();
 
   try {
-    const res = await fetch("/cut-clips", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ytUrl, email, fcmToken: null })
+    // ── STEP 1: Upload to EC2 directly ──
+    setStep(1);
+    document.getElementById("procTitle").textContent = "Video upload ho rahi hai…";
+
+    const formData = new FormData();
+    formData.append("video",     selectedFile);
+    formData.append("userEmail", email);
+    formData.append("fcmToken",  "");
+
+    // XHR for upload progress
+    const result = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          document.getElementById("progressPct").textContent = pct + "%";
+          document.getElementById("progressFill").style.width = pct + "%";
+          if (pct === 100) {
+            setStep(2);
+            document.getElementById("procTitle").textContent = "Processing ho raha hai…";
+            // Simulate remaining steps
+            setTimeout(() => setStep(3), 10000);
+            setTimeout(() => setStep(4), 35000);
+            setTimeout(() => setStep(5), 60000);
+          }
+        }
+      };
+
+      xhr.onload = () => {
+        try { resolve(JSON.parse(xhr.responseText)); }
+        catch { reject(new Error("Server response invalid")); }
+      };
+
+      xhr.onerror = () => reject(new Error("Network error — EC2 se connect nahi hua"));
+      xhr.ontimeout = () => reject(new Error("Timeout — video bahut badi hai ya server slow hai"));
+
+      xhr.timeout = 600000; // 10 min timeout
+      xhr.open("POST", ec2UploadUrl);
+      xhr.send(formData);
     });
 
-    const data = await res.json();
     document.getElementById("processingWrap").classList.remove("active");
 
-    if (!res.ok || !data.success) {
-      showError(data.error || "Processing failed. Please try again.");
+    if (!result.success) {
+      showError(result.error || "Processing failed. Dobara try karo.");
       return;
     }
-    showResults(data.clips);
+
+    showResults(result.clips);
 
   } catch (err) {
     document.getElementById("processingWrap").classList.remove("active");
-    showError("Network error — " + (err.message || "check your connection and try again."));
+    showError(err.message || "Kuch galat hua. Dobara try karo.");
   }
 }
 
 // ── ERROR ──
 function showError(msg) {
-  document.getElementById("errorMsg").innerText = msg;
+  document.getElementById("errorMsg").textContent = msg;
   document.getElementById("errorWrap").classList.add("active");
-  document.getElementById("inputArea").style.display = "block";
-  document.getElementById("chipsRow").style.display = "flex";
-  document.getElementById("howWrap").style.display = "block";
-  document.getElementById("platformStrip").style.display = "flex";
+  document.getElementById("inputArea").style.display  = "block";
+  document.getElementById("chipsRow").style.display   = "flex";
+  document.getElementById("howWrap").style.display    = "block";
+  document.getElementById("planBadge").style.display  = "flex";
 }
 
 // ── RESULTS ──
 function showResults(clips) {
-  if (!clips || clips.length === 0) {
-    showError("No clips found. Try a longer video with more speech.");
-    return;
-  }
+  if (!clips?.length) { showError("Koi clip nahi bani. Longer video try karo."); return; }
 
   document.getElementById("resultsCount").innerHTML = `${clips.length} <span>clips found</span>`;
   document.getElementById("resultsWrap").classList.add("active");
@@ -576,12 +681,9 @@ function showResults(clips) {
   container.innerHTML = "";
 
   clips.forEach((clip, i) => {
-    const dur = clip.duration || 0;
+    const dur  = clip.duration || 0;
     const mins = Math.floor(dur / 60), secs = dur % 60;
     const durStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
-
-    const s = clip.start || 0, e = clip.end || dur;
-    const fmt = t => `${Math.floor(t/60)}:${String(Math.round(t%60)).padStart(2,"0")}`;
 
     const card = document.createElement("div");
     card.className = "clip-card";
@@ -596,38 +698,30 @@ function showResults(clips) {
         <div class="clip-dur">${durStr}</div>
       </div>
       <div class="clip-bottom">
-        <div class="clip-time">⏱ ${fmt(s)} → ${fmt(e)}</div>
+        <div class="clip-time">⏱ ${durStr}</div>
         <a class="clip-dl" href="${clip.url}" download="clip-${i+1}.mp4" target="_blank"
-           onclick="onDownload('${clip.s3Key||""}',${i})">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Download
+           onclick="onDownload('${clip.s3Key||""}', ${i})">
+          ⬇ Download
         </a>
       </div>`;
     container.appendChild(card);
   });
 
-  setTimeout(() => {
-    document.getElementById("resultsWrap").scrollIntoView({ behavior: "smooth", block: "start" });
-  }, 200);
+  setTimeout(() => document.getElementById("resultsWrap").scrollIntoView({ behavior: "smooth" }), 200);
 }
 
 // ── DOWNLOAD ──
 async function onDownload(s3Key, i) {
   setTimeout(() => {
     const btn = document.querySelector(`#cc-${i} .clip-dl`);
-    if (btn) {
-      btn.classList.add("done");
-      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:13px;height:13px"><polyline points="20 6 9 17 4 12"/></svg> Saved`;
-    }
+    if (btn) { btn.classList.add("done"); btn.textContent = "✓ Saved"; }
   }, 600);
+
   if (s3Key) {
     try {
       await fetch("/clip-downloaded", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ s3Key })
+        body: JSON.stringify({ s3Key }),
       });
     } catch {}
   }
@@ -635,18 +729,26 @@ async function onDownload(s3Key, i) {
 
 // ── RESET ──
 function resetPage() {
-  document.getElementById("inputArea").style.display = "block";
-  document.getElementById("chipsRow").style.display = "flex";
-  document.getElementById("howWrap").style.display = "block";
-  document.getElementById("platformStrip").style.display = "flex";
+  selectedFile = null;
+  document.getElementById("videoFile").value = "";
+  document.getElementById("uploadZone").style.display = "block";
+  document.getElementById("fileSelected").classList.remove("show");
+  document.getElementById("generateBtn").disabled = true;
+  document.getElementById("progressFill").style.width = "0%";
+  document.getElementById("progressPct").textContent = "0%";
+  document.getElementById("inputArea").style.display  = "block";
+  document.getElementById("chipsRow").style.display   = "flex";
+  document.getElementById("howWrap").style.display    = "block";
+  document.getElementById("planBadge").style.display  = "flex";
   document.getElementById("processingWrap").classList.remove("active");
   document.getElementById("errorWrap").classList.remove("active");
   document.getElementById("resultsWrap").classList.remove("active");
   document.getElementById("clipsContainer").innerHTML = "";
-  document.getElementById("ytUrl").value = "";
   resetSteps();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
+init();
 </script>
 </body>
 </html>
