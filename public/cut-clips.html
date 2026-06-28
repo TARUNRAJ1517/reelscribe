@@ -641,7 +641,7 @@ async function generateClips() {
       xhr.ontimeout = () => reject(new Error("Timeout — video bahut badi hai ya server slow hai"));
 
       xhr.timeout = 600000; // 10 min timeout
-      xhr.open("POST", ec2UploadUrl);
+      xhr.open("POST", "/proxy-upload");
       xhr.send(formData);
     });
 
