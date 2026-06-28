@@ -25,6 +25,7 @@ const User        = require("./models/User");
 const GuestUsage  = require("./models/GuestUsage");
 const Razorpay    = require("razorpay");
 const crypto      = require("crypto");
+const FormData    = require("form-data"); // FIX: needed for multipart forward to EC2
 
 const resend  = new Resend(process.env.RESEND_API_KEY);
 const app     = express();
@@ -34,12 +35,43 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-const multer = require('multer');
-const uploadProxy = multer({ dest: '/tmp/', limits: { fileSize: 2 * 1024 * 1024 * 1024 } });
+// FIX: EC2_URL / INTERNAL_KEY moved up — must exist before any route uses them
+const EC2_URL       = process.env.EC2_URL;         // e.g. http://13.206.252.122:4000
+const INTERNAL_KEY  = process.env.INTERNAL_SECRET; // shared secret with EC2
+
+// ── Plan limits (same as EC2) ──
+const PLAN_LIMITS = {
+  free:    { transcriptDay: 2,  transcriptMonth: 5,  clipDay: 0,  clipMonth: 0,  maxMB: 100  },
+  starter: { transcriptDay: 5,  transcriptMonth: 20, clipDay: 3,  clipMonth: 15, maxMB: 500  },
+  pro:     { transcriptDay: 10, transcriptMonth: 50, clipDay: 8,  clipMonth: 40, maxMB: 1024 },
+  agency:  { transcriptDay: 20, transcriptMonth: 100,clipDay: 15, clipMonth: 80, maxMB: 2048 },
+};
+
+// ════════════════════════════════
+//  MIDDLEWARE — must be registered before any route
+//  FIX: cors() + express.json() were previously defined AFTER
+//  /proxy-upload, so that route never got CORS headers
+// ════════════════════════════════
+app.use(cors({
+  origin: ["https://reelscribe.site", "https://www.reelscribe.site"],
+  credentials: true,
+}));
+app.use(express.json());
+app.use(express.static("public"));
+app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: false }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+// ════════════════════════════════
+//  PROXY UPLOAD ROUTE — forwards large video uploads to EC2
+//  FIX: duplicate `const multer = require('multer')` removed —
+//  reusing the single top-level `multer` import instead.
+// ════════════════════════════════
+const uploadProxy = multer({ dest: "/tmp/", limits: { fileSize: 2 * 1024 * 1024 * 1024 } });
 
 app.post("/proxy-upload", uploadProxy.single("video"), async (req, res) => {
   const { userEmail, fcmToken } = req.body;
-  
+
   const formData = new FormData();
   formData.append("video", fs.createReadStream(req.file.path), req.file.originalname);
   formData.append("userEmail", userEmail);
@@ -59,28 +91,6 @@ app.post("/proxy-upload", uploadProxy.single("video"), async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
-
-const EC2_URL       = process.env.EC2_URL;         // e.g. http://13.206.252.122:4000
-const INTERNAL_KEY  = process.env.INTERNAL_SECRET; // shared secret with EC2
-
-// ── Plan limits (same as EC2) ──
-const PLAN_LIMITS = {
-  free:    { transcriptDay: 2,  transcriptMonth: 5,  clipDay: 0,  clipMonth: 0,  maxMB: 100  },
-  starter: { transcriptDay: 5,  transcriptMonth: 20, clipDay: 3,  clipMonth: 15, maxMB: 500  },
-  pro:     { transcriptDay: 10, transcriptMonth: 50, clipDay: 8,  clipMonth: 40, maxMB: 1024 },
-  agency:  { transcriptDay: 20, transcriptMonth: 100,clipDay: 15, clipMonth: 80, maxMB: 2048 },
-};
-
-// ────────────────────────────────
-app.use(cors({
-  origin: ["https://reelscribe.site", "https://www.reelscribe.site"],
-  credentials: true,
-}));
-app.use(express.json());
-app.use(express.static("public"));
-app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: false }));
-app.use(passport.initialize());
-app.use(passport.session());
 
 // ── Uploads folder ──
 const uploadsDir = path.join(__dirname, "uploads");
