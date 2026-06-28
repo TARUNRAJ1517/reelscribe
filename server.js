@@ -34,6 +34,32 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+const multer = require('multer');
+const uploadProxy = multer({ dest: '/tmp/', limits: { fileSize: 2 * 1024 * 1024 * 1024 } });
+
+app.post("/proxy-upload", uploadProxy.single("video"), async (req, res) => {
+  const { userEmail, fcmToken } = req.body;
+  
+  const formData = new FormData();
+  formData.append("video", fs.createReadStream(req.file.path), req.file.originalname);
+  formData.append("userEmail", userEmail);
+  formData.append("fcmToken", fcmToken || "");
+
+  try {
+    const response = await axios.post(`${EC2_URL}/process-upload`, formData, {
+      headers: formData.getHeaders(),
+      timeout: 600000,
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+    });
+    fs.unlinkSync(req.file.path);
+    res.json(response.data);
+  } catch (err) {
+    if (fs.existsSync(req.file?.path)) fs.unlinkSync(req.file.path);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 const EC2_URL       = process.env.EC2_URL;         // e.g. http://13.206.252.122:4000
 const INTERNAL_KEY  = process.env.INTERNAL_SECRET; // shared secret with EC2
 
