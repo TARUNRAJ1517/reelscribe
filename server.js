@@ -478,44 +478,72 @@ app.post("/transcribe-url", async (req, res) => {
 });
 
 // ════════════════════════════════
-//  CLIPS ROUTE — Forward to EC2
+//  CLIPS ROUTE — Forward to EC2, wait for the pipeline, return clips
 // ════════════════════════════════
 
-app.post("/cut-clips", async (req, res) => {
-  const { email, fcmToken } = req.body;
+async function checkClipLimit(user) {
+  const plan   = user.plan || "free";
+  const limits = PLAN_LIMITS[plan];
 
+  let usedDay   = user.clipsUsedToday || 0;
+  let usedMonth = user.clipsUsedMonth || 0;
+
+  if (isNewDay(user.lastClipDate))   usedDay   = 0;
+  if (isNewMonth(user.lastClipDate)) usedMonth = 0;
+
+  if (usedDay >= limits.clipDay)
+    return { allowed: false, error: `Daily clip limit reached (${limits.clipDay}/day). Kal aao ya upgrade karo!` };
+  if (usedMonth >= limits.clipMonth)
+    return { allowed: false, error: `Monthly clip limit reached (${limits.clipMonth}/month). Plan upgrade karo!` };
+
+  return { allowed: true };
+}
+
+async function updateClipUsage(user) {
+  const now        = new Date();
+  const resetDay   = isNewDay(user.lastClipDate);
+  const resetMonth = isNewMonth(user.lastClipDate);
+
+  await User.findByIdAndUpdate(user._id, {
+    clipsUsedToday: resetDay   ? 1 : (user.clipsUsedToday || 0) + 1,
+    clipsUsedMonth: resetMonth ? 1 : (user.clipsUsedMonth || 0) + 1,
+    lastClipDate:   now,
+  });
+}
+
+app.post("/cut-clips", async (req, res) => {
+  const { ytUrl, email, fcmToken } = req.body;
+
+  if (!ytUrl) return res.status(400).json({ success: false, error: "YouTube URL required" });
   if (!email) return res.status(401).json({ success: false, loginRequired: true, error: "Login required" });
 
   const user = await User.findOne({ email });
   if (!user) return res.status(401).json({ success: false, loginRequired: true, error: "User not found" });
 
-  // Plan check on Render side
-  const plan   = user.plan || "free";
-  const limits = PLAN_LIMITS[plan];
-
+  const plan = user.plan || "free";
   if (plan === "free")
     return res.status(403).json({ success: false, error: "Free plan mein clips available nahi. Upgrade karo!" });
 
-  // Return EC2 upload URL + auth token to frontend
-  // Frontend will directly upload to EC2
-  res.json({
-    success:      true,
-    uploadUrl:    `${EC2_URL}/process-upload`,
-    userEmail:    email,
-    fcmToken:     fcmToken || null,
-    maxMB:        limits.maxMB,
-    plan,
-  });
-});
+  const limitCheck = await checkClipLimit(user);
+  if (!limitCheck.allowed)
+    return res.status(403).json({ success: false, error: limitCheck.error });
 
-// ── Clip downloaded notification ──
-app.post("/clip-downloaded", async (req, res) => {
   try {
-    const { s3Key } = req.body;
-    await axios.post(`${EC2_URL}/clip-downloaded`, { s3Key });
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    const ec2Response = await axios.post(
+      `${EC2_URL}/analyze-video`,
+      { url: ytUrl },
+      { headers: { "x-internal-key": INTERNAL_KEY }, timeout: 600000 }
+    );
+
+    if (!ec2Response.data?.success) {
+      return res.status(500).json({ success: false, error: ec2Response.data?.error || "Clip generation failed" });
+    }
+
+    await updateClipUsage(user);
+    return res.json({ success: true, clips: ec2Response.data.clips || [] });
+  } catch (err) {
+    const errMsg = err.response?.data?.error || err.message;
+    return res.status(500).json({ success: false, error: "Clip generation failed: " + errMsg });
   }
 });
 
