@@ -477,6 +477,15 @@ app.post("/transcribe-url", async (req, res) => {
   }
 });
 
+app.get("/debug-version", (req, res) => {
+  res.json({
+    version: "clips-fix-v2-with-logs",
+    ec2Url: EC2_URL,
+    hasInternalKey: !!INTERNAL_KEY,
+    time: new Date().toISOString(),
+  });
+});
+
 // ════════════════════════════════
 //  CLIPS ROUTE — Forward to EC2, wait for the pipeline, return clips
 // ════════════════════════════════
