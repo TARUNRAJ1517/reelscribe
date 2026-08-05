@@ -512,6 +512,8 @@ async function updateClipUsage(user) {
 }
 
 app.post("/cut-clips", async (req, res) => {
+  console.log("🎬 /cut-clips HIT — body:", JSON.stringify(req.body));
+
   const { ytUrl, email, fcmToken } = req.body;
 
   if (!ytUrl) return res.status(400).json({ success: false, error: "YouTube URL required" });
@@ -528,12 +530,16 @@ app.post("/cut-clips", async (req, res) => {
   if (!limitCheck.allowed)
     return res.status(403).json({ success: false, error: limitCheck.error });
 
+  console.log("🎬 Calling EC2 at:", `${EC2_URL}/analyze-video`);
+
   try {
     const ec2Response = await axios.post(
       `${EC2_URL}/analyze-video`,
       { url: ytUrl },
       { headers: { "x-internal-key": INTERNAL_KEY }, timeout: 600000 }
     );
+
+    console.log("🎬 EC2 responded:", JSON.stringify(ec2Response.data).slice(0, 300));
 
     if (!ec2Response.data?.success) {
       return res.status(500).json({ success: false, error: ec2Response.data?.error || "Clip generation failed" });
@@ -542,6 +548,7 @@ app.post("/cut-clips", async (req, res) => {
     await updateClipUsage(user);
     return res.json({ success: true, clips: ec2Response.data.clips || [] });
   } catch (err) {
+    console.log("🎬 EC2 call FAILED — code:", err.code, "| message:", err.message);
     const errMsg = err.response?.data?.error || err.message;
     return res.status(500).json({ success: false, error: "Clip generation failed: " + errMsg });
   }
