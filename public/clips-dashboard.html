@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Clips Dashboard – ReelScribe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #09070f;
+  --card: #111020;
+  --card2: #17142a;
+  --border: #201c38;
+  --border2: #2c2650;
+  --purple: #8b5cf6;
+  --pink: #ec4899;
+  --text: #f0eaff;
+  --sub: #8a7fab;
+  --muted: #3d3660;
+  --grad: linear-gradient(135deg, #8b5cf6, #ec4899);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  max-width: 480px; margin: 0 auto;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAV */
+.nav {
+  position: sticky; top: 0; z-index: 999;
+  background: rgba(9,7,15,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px;
+}
+.nav-logo {
+  font-size: 18px; font-weight: 900; letter-spacing: -0.5px;
+  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.nav-plan-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; padding: 4px 10px;
+  border-radius: 100px; border: 1px solid var(--border2);
+  color: var(--sub); background: var(--card);
+}
+.nav-plan-badge.paid { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); color: var(--purple); }
+.nav-menu { background: none; border: none; color: var(--sub); font-size: 20px; cursor: pointer; }
+
+/* DRAWER */
+.drawer-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.7); z-index: 9998; backdrop-filter: blur(6px);
+}
+.drawer-overlay.active { display: block; }
+.drawer {
+  position: fixed; top: 0; right: -320px;
+  width: 78%; max-width: 290px; height: 100%;
+  background: #0e0c1c; border-left: 1px solid var(--border2);
+  padding: 0; transition: right .3s ease;
+  z-index: 9999; display: flex; flex-direction: column;
+}
+.drawer.active { right: 0; }
+.drawer-head {
+  padding: 28px 22px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.drawer-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--grad);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 900; color: white;
+  margin-bottom: 12px;
+}
+.drawer-name { font-size: 16px; font-weight: 800; margin-bottom: 3px; }
+.drawer-email { font-size: 12px; color: var(--muted); word-break: break-all; margin-bottom: 12px; }
+.drawer-plan-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 10px 14px;
+}
+.drawer-plan-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.drawer-plan-value { font-size: 13px; font-weight: 800; color: var(--purple); }
+.drawer-body { flex: 1; padding: 16px 22px; display: flex; flex-direction: column; gap: 8px; }
+.drawer-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 12px;
+  background: transparent; border: 1px solid transparent;
+  color: var(--sub); font-size: 14px; font-weight: 600;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+  transition: all .2s; text-decoration: none;
+}
+.drawer-link svg { width: 16px; height: 16px; flex-shrink: 0; }
+.drawer-link:hover { background: var(--card); border-color: var(--border); color: var(--text); }
+.drawer-link-danger { color: #f87171; }
+.drawer-link-danger:hover { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.2); color: #f87171; }
+.drawer-foot { padding: 16px 22px; border-top: 1px solid var(--border); }
+.drawer-upgrade {
+  width: 100%; padding: 13px; border: none; border-radius: 12px;
+  background: var(--grad); color: white; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+}
+
+/* SECTION LABEL */
+.sec-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--purple); margin-bottom: 14px;
+}
+.sec-label::before {
+  content: ''; display: block;
+  width: 24px; height: 2px; background: var(--purple); flex-shrink: 0;
+}
+
+/* MAIN */
+.main { padding: 24px 20px; }
+
+/* WELCOME STRIP */
+.welcome-strip {
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 18px; padding: 20px;
+  margin-bottom: 20px; position: relative; overflow: hidden;
+}
+.welcome-strip::before {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(139,92,246,0.1), transparent 65%);
+  pointer-events: none;
+}
+.welcome-greeting { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+.welcome-name { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 14px; }
+.welcome-stats { display: flex; gap: 10px; }
+.welcome-stat {
+  flex: 1; background: var(--card2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px;
+}
+.welcome-stat-num { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; color: var(--purple); }
+.welcome-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+
+/* GENERATE CARD */
+.generate-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 20px; margin-bottom: 16px;
+}
+.generate-card-title { font-size: 15px; font-weight: 800; margin-bottom: 14px; }
+.generate-input-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card2); border: 1px solid var(--border2);
+  border-radius: 14px; padding: 6px 6px 6px 14px;
+}
+.generate-input-row svg { width: 16px; height: 16px; color: var(--muted); flex-shrink: 0; }
+.generate-input-row input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif;
+  min-width: 0;
+}
+.generate-btn {
+  padding: 12px 18px; border: none; border-radius: 10px;
+  background: var(--grad); color: white; font-size: 13px; font-weight: 800;
+  cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap;
+  display: flex; align-items: center; gap: 4px;
+}
+
+/* CLIP CARDS (result + history reuse this) */
+.clip-card {
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; margin-bottom: 10px;
+}
+.clip-card:last-child { margin-bottom: 0; }
+.clip-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+.clip-reason { font-size: 12px; color: var(--sub); line-height: 1.6; margin-bottom: 10px; }
+.clip-meta { display: flex; align-items: center; justify-content: space-between; }
+.clip-duration { font-size: 11px; color: var(--muted); font-weight: 700; }
+.clip-download-btn {
+  padding: 8px 16px; border-radius: 9px;
+  background: var(--grad); color: white; font-size: 12px; font-weight: 700;
+  text-decoration: none; font-family: 'Inter', sans-serif;
+}
+
+/* PROCESSING STATE */
+.processing-box { text-align: center; padding: 24px 16px; }
+.processing-spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 3px solid var(--border2);
+  border-top-color: var(--purple);
+  margin: 0 auto 16px; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.processing-title { font-size: 14px; font-weight: 800; margin-bottom: 8px; }
+.processing-sub { font-size: 12px; color: var(--sub); line-height: 1.7; }
+
+/* QUICK ACTIONS */
+.quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.quick-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px; cursor: pointer;
+  transition: border-color .2s; position: relative;
+}
+.quick-card:hover { border-color: rgba(139,92,246,0.4); }
+.quick-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--card2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 10px;
+}
+.quick-icon svg { width: 16px; height: 16px; color: var(--purple); }
+.quick-title { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
+.quick-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* HISTORY */
+.history-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 20px; margin-bottom: 16px;
+}
+.history-head { display: flex; align-items: center; justify-content: space-between; }
+.history-title { font-size: 15px; font-weight: 800; }
+.history-toggle {
+  background: none; border: 1px solid var(--border2);
+  border-radius: 8px; color: var(--muted);
+  font-size: 11px; font-weight: 700; padding: 5px 10px;
+  cursor: pointer; font-family: 'Inter', sans-serif; transition: all .2s;
+}
+.history-toggle:hover { border-color: var(--purple); color: var(--text); }
+.history-list { margin-top: 14px; display: none; }
+.history-item {
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; margin-bottom: 8px;
+  cursor: pointer; transition: border-color .2s;
+}
+.history-item:last-child { margin-bottom: 0; }
+.history-item:hover { border-color: rgba(139,92,246,0.3); }
+.history-item-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.history-item-date { font-size: 10px; color: var(--muted); font-weight: 600; }
+.history-item-source {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; padding: 2px 8px;
+  border-radius: 100px; background: rgba(139,92,246,0.08);
+  border: 1px solid rgba(139,92,246,0.15); color: var(--purple);
+}
+.history-item-preview { font-size: 13px; color: var(--text); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.history-item-url { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-empty { text-align: center; padding: 20px 0; font-size: 13px; color: var(--muted); }
+.history-item-clips { margin-top: 12px; display: none; padding-top: 12px; border-top: 1px solid var(--border); }
+
+/* UPGRADE BANNER */
+.upgrade-banner {
+  background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(236,72,153,0.08));
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 18px; padding: 22px 20px;
+  margin-bottom: 20px; text-align: center;
+}
+.upgrade-banner h3 { font-size: 18px; font-weight: 900; letter-spacing: -0.3px; margin-bottom: 6px; }
+.upgrade-banner p { font-size: 13px; color: var(--sub); margin-bottom: 16px; line-height: 1.6; }
+.upgrade-btn {
+  width: 100%; padding: 13px; border: none; border-radius: 12px;
+  background: var(--grad); color: white; font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+}
+
+/* LOGIN WALL */
+.login-wall {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 26px 20px; text-align: center;
+  margin-bottom: 20px;
+}
+.login-wall p { font-size: 13px; color: var(--sub); margin-bottom: 16px; line-height: 1.6; }
+.login-wall-btn {
+  padding: 12px 24px; border: none; border-radius: 12px;
+  background: var(--grad); color: white; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: 'Inter', sans-serif;
+}
+
+/* FOOTER */
+footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
+.foot-logo {
+  font-size: 15px; font-weight: 900;
+  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+.foot-tag { font-size: 11px; color: var(--muted); margin-bottom: 16px; }
+.foot-links { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 16px; }
+.foot-links a { color: var(--muted); font-size: 12px; text-decoration: none; transition: color .2s; }
+.foot-links a:hover { color: var(--sub); }
+.foot-sep { height: 1px; background: var(--border); margin-bottom: 14px; }
+.foot-copy { font-size: 11px; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- Drawer Overlay -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- Drawer -->
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-avatar" id="drawerAvatar">U</div>
+    <div class="drawer-name" id="drawerName">User</div>
+    <div class="drawer-email" id="drawerEmail">Loading...</div>
+    <div class="drawer-plan-row">
+      <span class="drawer-plan-label">Current Plan</span>
+      <span class="drawer-plan-value" id="drawerPlan">Free</span>
+    </div>
+  </div>
+  <div class="drawer-body">
+    <a class="drawer-link" href="/dashboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Transcript Dashboard
+    </a>
+    <a class="drawer-link" href="/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </a>
+    <a class="drawer-link" href="/pricing.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Pricing & Plans
+    </a>
+    <a class="drawer-link" href="/contact.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Support
+    </a>
+    <button class="drawer-link drawer-link-danger" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
+  </div>
+  <div class="drawer-foot">
+    <button class="drawer-upgrade" onclick="window.location.href='/pricing.html'">Upgrade Plan →</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">ReelScribe</div>
+  <div class="nav-right">
+    <div class="nav-plan-badge" id="navPlanBadge">Free</div>
+    <button class="nav-menu" onclick="openDrawer()">☰</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- Welcome -->
+  <div class="welcome-strip">
+    <div class="welcome-greeting">Cut Clips</div>
+    <div class="welcome-name" id="welcomeName">Loading...</div>
+    <div class="welcome-stats">
+      <div class="welcome-stat">
+        <div class="welcome-stat-num" id="statClipsLeft">—</div>
+        <div class="welcome-stat-label">Clips Left Today</div>
+      </div>
+      <div class="welcome-stat">
+        <div class="welcome-stat-num" id="statClipsHistory">—</div>
+        <div class="welcome-stat-label">Videos (24h)</div>
+      </div>
+      <div class="welcome-stat">
+        <div class="welcome-stat-num" id="statPlan">Free</div>
+        <div class="welcome-stat-label">Plan</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login wall (guests / free plan) -->
+  <div class="login-wall" id="loginWall" style="display:none;">
+    <p id="loginWallText">Login karo Cut Clips use karne ke liye.</p>
+    <button class="login-wall-btn" id="loginWallBtn" onclick="window.location.href='/'">Login Karo →</button>
+  </div>
+
+  <!-- Generate -->
+  <div class="generate-card" id="generateCard">
+    <div class="generate-card-title">Paste a YouTube link</div>
+    <div class="generate-input-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <input type="text" id="clipUrl" placeholder="https://youtube.com/watch?v=...">
+      <button class="generate-btn" onclick="generateClips()">Generate ↗</button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="generate-card" id="clipsResultBox" style="display:none;">
+    <div class="generate-card-title" id="clipsResultTitle">🎬 Your Clips Are Ready!</div>
+    <p id="clipsCount" style="font-size:12px;color:var(--sub);margin-bottom:14px;">— clips generated</p>
+    <div id="clipsList"></div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="sec-label">Quick Actions</div>
+  <div class="quick-actions">
+    <div class="quick-card" onclick="window.location.href='/dashboard.html'">
+      <div class="quick-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      </div>
+      <div class="quick-title">Transcript Dashboard</div>
+      <div class="quick-desc">Switch to transcript tools</div>
+    </div>
+    <div class="quick-card" onclick="window.location.href='/pricing.html'">
+      <div class="quick-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      </div>
+      <div class="quick-title">Upgrade Plan</div>
+      <div class="quick-desc">Get more clips & transcripts</div>
+    </div>
+    <div class="quick-card" onclick="window.location.href='/contact.html'">
+      <div class="quick-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="quick-title">Support</div>
+      <div class="quick-desc">Contact us anytime</div>
+    </div>
+    <div class="quick-card" onclick="window.location.href='/'">
+      <div class="quick-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <div class="quick-title">Home</div>
+      <div class="quick-desc">Back to main site</div>
+    </div>
+  </div>
+
+  <!-- Upgrade Banner (free users) -->
+  <div class="upgrade-banner" id="upgradeBanner" style="display:none">
+    <h3>Unlock More Power 🚀</h3>
+    <p>Get AI clip generation, 30+ transcripts/month, and priority processing — starting at just ₹149/mo.</p>
+    <button class="upgrade-btn" onclick="window.location.href='/pricing.html'">View Plans →</button>
+  </div>
+
+  <!-- History -->
+  <div class="sec-label">History</div>
+  <div class="history-card">
+    <div class="history-head">
+      <div class="history-title">Past Clips</div>
+      <button class="history-toggle" id="clipHistoryToggle" onclick="toggleClipHistory()">Show ▼</button>
+    </div>
+    <div class="history-list" id="clipHistoryList">
+      <div class="history-empty">⏳ Loading...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">ReelScribe</div>
+  <div class="foot-tag">Transcribe & clip any video instantly.</div>
+  <div class="foot-links">
+    <a href="/about.html">About</a>
+    <a href="/pricing.html">Pricing</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+  <div class="foot-sep"></div>
+  <p class="foot-copy">© 2026 ReelScribe. All rights reserved.</p>
+</footer>
+
+<script>
+const email = localStorage.getItem("userEmail") || "";
+const isGuest = !email || email === "guest@example.com";
+const userEmail = email;
+
+const nameStr = isGuest ? "Guest" : email.split("@")[0];
+const avatarStr = nameStr.charAt(0).toUpperCase();
+document.getElementById("welcomeName").innerText = isGuest ? "Guest User" : nameStr;
+document.getElementById("drawerName").innerText = nameStr;
+document.getElementById("drawerEmail").innerText = isGuest ? "Not logged in" : email;
+document.getElementById("drawerAvatar").innerText = avatarStr;
+
+let clipHistoryOpen = false;
+let clipHistoryLoaded = false;
+let currentPlan = "free";
+
+function openDrawer() {
+  document.getElementById("drawer").classList.add("active");
+  document.getElementById("drawerOverlay").classList.add("active");
+}
+function closeDrawer() {
+  document.getElementById("drawer").classList.remove("active");
+  document.getElementById("drawerOverlay").classList.remove("active");
+}
+function logout() {
+  localStorage.removeItem("userEmail");
+  window.location.href = "/";
+}
+
+function applyAccessState(){
+  const loginWall = document.getElementById("loginWall");
+  const loginWallText = document.getElementById("loginWallText");
+  const generateCard = document.getElementById("generateCard");
+
+  if (isGuest) {
+    loginWallText.innerText = "Login karo Cut Clips use karne ke liye.";
+    loginWall.style.display = "block";
+    generateCard.style.display = "none";
+  } else if (currentPlan === "free") {
+    loginWallText.innerText = "Free plan mein Cut Clips available nahi. Upgrade karo!";
+    document.getElementById("loginWallBtn").innerText = "Upgrade Plan →";
+    document.getElementById("loginWallBtn").onclick = () => window.location.href = "/pricing.html";
+    loginWall.style.display = "block";
+    generateCard.style.display = "none";
+  } else {
+    loginWall.style.display = "none";
+    generateCard.style.display = "block";
+  }
+}
+
+async function loadUserPlan() {
+  if (isGuest) { applyAccessState(); return; }
+  try {
+    const res = await fetch("/user-plan/" + encodeURIComponent(email));
+    const data = await res.json();
+    if (data.success && data.plan) {
+      currentPlan = data.plan;
+      const planLabel = data.plan.charAt(0).toUpperCase() + data.plan.slice(1);
+      document.getElementById("statPlan").innerText = planLabel;
+      document.getElementById("drawerPlan").innerText = planLabel;
+      const badge = document.getElementById("navPlanBadge");
+      badge.innerText = planLabel;
+      if (data.plan !== "free") {
+        badge.classList.add("paid");
+      } else {
+        document.getElementById("upgradeBanner").style.display = "block";
+      }
+      if (data.usage) {
+        const left = Math.max(0, (data.usage.clipDayLimit || 0) - (data.usage.clipDay || 0));
+        document.getElementById("statClipsLeft").innerText = data.usage.clipDayLimit ? left : "—";
+      }
+    }
+  } catch (e) {
+    document.getElementById("upgradeBanner").style.display = "block";
+  }
+  applyAccessState();
+}
+
+function toggleClipHistory(){
+  clipHistoryOpen = !clipHistoryOpen;
+  const list = document.getElementById('clipHistoryList');
+  const btn = document.getElementById('clipHistoryToggle');
+  list.style.display = clipHistoryOpen ? 'block' : 'none';
+  btn.innerText = clipHistoryOpen ? 'Hide ▲' : 'Show ▼';
+  if(clipHistoryOpen && !clipHistoryLoaded){
+    loadClipHistory();
+    clipHistoryLoaded = true;
+  }
+}
+
+async function loadClipHistory(){
+  const list = document.getElementById('clipHistoryList');
+  if(isGuest){
+    list.innerHTML = '<div class="history-empty">Login karo history dekhne ke liye</div>';
+    return;
+  }
+  try {
+    const res = await fetch(`/clip-history/${encodeURIComponent(userEmail)}`);
+    const data = await res.json();
+    if(!data.success || !data.data || data.data.length === 0){
+      list.innerHTML = '<div class="history-empty">📭 Koi history nahi hai</div>';
+      document.getElementById("statClipsHistory").innerText = "0";
+      return;
+    }
+
+    document.getElementById("statClipsHistory").innerText = data.data.length;
+
+    list.innerHTML = '';
+    data.data.forEach((job, jobIdx) => {
+      const date = new Date(job.createdAt).toLocaleDateString("en-IN", {
+        day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
+      });
+      const title = job.ytTitle || job.ytUrl;
+
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.innerHTML = `
+        <div class="history-item-top">
+          <div class="history-item-date">${date}</div>
+          <div class="history-item-source">${job.clips.length} clips</div>
+        </div>
+        <div class="history-item-preview">${title}</div>
+        <div class="history-item-url">${job.ytUrl}</div>
+        <div class="history-item-clips" id="historyClips${jobIdx}">
+          ${job.clips.map((clip, i) => `
+            <div class="clip-card">
+              <div class="clip-title">${clip.title || 'Clip ' + (i+1)}</div>
+              <div class="clip-reason">${clip.reason || ''}</div>
+              <div class="clip-meta">
+                <span class="clip-duration">⏱ ${clip.duration}s</span>
+                <a class="clip-download-btn" href="${clip.url}" download="clip_${i+1}.mp4" onclick="event.stopPropagation();notifyDownload('${clip.s3Key}')">Download ↓</a>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      item.onclick = () => {
+        const clipsDiv = document.getElementById(`historyClips${jobIdx}`);
+        clipsDiv.style.display = clipsDiv.style.display === 'block' ? 'none' : 'block';
+      };
+      list.appendChild(item);
+    });
+  } catch(e){
+    list.innerHTML = '<div class="history-empty">❌ History load nahi hui</div>';
+  }
+}
+
+async function notifyDownload(s3Key){
+  try {
+    await fetch('/clip-downloaded', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ s3Key })
+    });
+  } catch(e){}
+}
+
+async function generateClips(){
+  const url = document.getElementById("clipUrl").value.trim();
+  if(!url){ alert("Please paste a YouTube URL!"); return; }
+  if(isGuest || currentPlan === "free"){ applyAccessState(); return; }
+
+  const resultBox = document.getElementById("clipsResultBox");
+  const clipsList = document.getElementById("clipsList");
+
+  resultBox.style.display = "block";
+  document.getElementById('clipsResultTitle').innerText = "⏳ Processing...";
+  document.getElementById('clipsCount').innerText = "This may take 2–5 minutes. Please wait...";
+  clipsList.innerHTML = `
+    <div class="processing-box">
+      <div class="processing-spinner"></div>
+      <div class="processing-title">AI is finding viral moments</div>
+      <div class="processing-sub">Downloading video → Transcribing → Finding best clips → Cutting & uploading<br><br>Don't close this tab!</div>
+    </div>`;
+
+  resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  function refreshHistoryAfterJob(){
+    clipHistoryLoaded = false;
+    if(clipHistoryOpen){ loadClipHistory(); clipHistoryLoaded = true; }
+  }
+
+  function showError(msg){
+    document.getElementById('clipsResultTitle').innerText = "❌ Error";
+    document.getElementById('clipsCount').innerText = msg || "Something went wrong";
+    clipsList.innerHTML = '';
+    refreshHistoryAfterJob();
+  }
+
+  function showClips(clips){
+    document.getElementById('clipsResultTitle').innerText = "🎬 Your Clips Are Ready!";
+    document.getElementById('clipsCount').innerText = `${clips.length} clips generated from your video`;
+    clipsList.innerHTML = clips.map((clip, i) => `
+      <div class="clip-card">
+        <div class="clip-title">${clip.title || 'Clip ' + (i+1)}</div>
+        <div class="clip-reason">${clip.reason || ''}</div>
+        <div class="clip-meta">
+          <span class="clip-duration">⏱ ${clip.duration}s</span>
+          <a class="clip-download-btn" href="${clip.url}" download="clip_${i+1}.mp4" onclick="notifyDownload('${clip.s3Key}')">Download ↓</a>
+        </div>
+      </div>
+    `).join('');
+    refreshHistoryAfterJob();
+  }
+
+  try {
+    const res = await fetch("/cut-clips", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ytUrl: url, email: userEmail })
+    });
+    const data = await res.json();
+
+    if(data.loginRequired){
+      applyAccessState();
+      resultBox.style.display = 'none';
+      return;
+    }
+    if(!data.success || !data.jobId){
+      showError(data.error);
+      return;
+    }
+
+    const jobId = data.jobId;
+    const startTime = Date.now();
+    const maxWaitMs = 10 * 60 * 1000;
+
+    const poll = setInterval(async () => {
+      if (Date.now() - startTime > maxWaitMs) {
+        clearInterval(poll);
+        showError("Timed out. Please try again.");
+        return;
+      }
+      try {
+        const statusRes = await fetch(`/clip-status/${jobId}`);
+        const statusData = await statusRes.json();
+        if (!statusData.success) { clearInterval(poll); showError(statusData.error); return; }
+        if (statusData.status === "done") { clearInterval(poll); showClips(statusData.clips || []); }
+        else if (statusData.status === "error") { clearInterval(poll); showError(statusData.error); }
+      } catch (e) { /* transient — retry next tick */ }
+    }, 4000);
+
+  } catch(e){
+    showError("Server error. Please try again.");
+  }
+}
+
+// Init
+(async () => {
+  await loadUserPlan();
+})();
+</script>
+</body>
+</html>
