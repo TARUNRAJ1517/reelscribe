@@ -944,7 +944,7 @@ function handleResult(data){
   }
 }
 
-async function generateClips(){
+function generateClips(){
   const url = document.getElementById("clipUrl").value.trim();
   if(!url){ alert("Please paste a YouTube URL!"); return; }
 
@@ -953,109 +953,9 @@ async function generateClips(){
     return;
   }
 
-  const resultBox = document.getElementById("clipsResultBox");
-  const clipsList = document.getElementById("clipsList");
-
-  // Show processing state
-  resultBox.style.display = "block";
-  document.getElementById('clipLoginWall').style.display = 'none';
-  resultBox.querySelector('h3').innerText = "⏳ Processing...";
-  document.getElementById('clipsCount').innerText = "This may take 2–5 minutes. Please wait...";
-  clipsList.innerHTML = `
-    <div class="processing-box">
-      <div class="processing-spinner"></div>
-      <div class="processing-title">AI is finding viral moments</div>
-      <div class="processing-sub">Downloading video → Transcribing → Finding best clips → Cutting & uploading<br><br>Don't close this tab!</div>
-    </div>`;
-
-  // Scroll to result
-  resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  document.getElementById('clipHistorySection').style.display = 'none';
-
-  function showError(msg){
-    resultBox.querySelector('h3').innerText = "❌ Error";
-    document.getElementById('clipsCount').innerText = msg || "Something went wrong";
-    clipsList.innerHTML = '';
-    loadClipHistory();
-  }
-
-  function showClips(clips){
-    resultBox.querySelector('h3').innerText = "🎬 Your Clips Are Ready!";
-    document.getElementById('clipsCount').innerText = `${clips.length} clips generated from your video`;
-    clipsList.innerHTML = clips.map((clip, i) => `
-      <div class="clip-card">
-        <div class="clip-title">${clip.title || 'Clip ' + (i+1)}</div>
-        <div class="clip-reason">${clip.reason || ''}</div>
-        <div class="clip-meta">
-          <span class="clip-duration">⏱ ${clip.duration}s</span>
-          <a class="clip-download-btn" href="${clip.url}" download="clip_${i+1}.mp4" onclick="notifyDownload('${clip.s3Key}')">Download ↓</a>
-        </div>
-      </div>
-    `).join('');
-    loadClipHistory();
-  }
-
-  try {
-    const fcmToken = localStorage.getItem('fcmToken') || null;
-    const res = await fetch("/cut-clips", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ytUrl: url, email: userEmail, fcmToken })
-    });
-
-    const data = await res.json();
-
-    if(data.loginRequired){
-      document.getElementById('clipLoginWall').style.display = 'block';
-      resultBox.style.display = 'none';
-      return;
-    }
-
-    if(!data.success || !data.jobId){
-      showError(data.error);
-      return;
-    }
-
-    // Poll for completion instead of holding one long connection open —
-    // avoids Cloudflare/proxy timeouts on requests that take minutes.
-    const jobId = data.jobId;
-    const startTime = Date.now();
-    const maxWaitMs = 10 * 60 * 1000; // give up after 10 minutes
-
-    const poll = setInterval(async () => {
-      if (Date.now() - startTime > maxWaitMs) {
-        clearInterval(poll);
-        showError("Timed out. Please try again.");
-        return;
-      }
-
-      try {
-        const statusRes = await fetch(`/clip-status/${jobId}`);
-        const statusData = await statusRes.json();
-
-        if (!statusData.success) {
-          clearInterval(poll);
-          showError(statusData.error);
-          return;
-        }
-
-        if (statusData.status === "done") {
-          clearInterval(poll);
-          showClips(statusData.clips || []);
-        } else if (statusData.status === "error") {
-          clearInterval(poll);
-          showError(statusData.error);
-        }
-        // else status === "processing" → keep polling
-      } catch (e) {
-        // Transient network hiccup while polling — don't give up immediately,
-        // just skip this tick and try again next interval.
-      }
-    }, 4000);
-
-  } catch(e){
-    showError("Server error. Please try again.");
-  }
+  // Hand off to the Clips Dashboard — it opens straight up and starts
+  // processing this URL immediately (see autostart handling there).
+  window.location.href = "/clips-dashboard.html?ytUrl=" + encodeURIComponent(url) + "&autostart=1";
 }
 
 async function notifyDownload(s3Key){
