@@ -28,6 +28,11 @@ const ClipJobSchema = new mongoose.Schema(
       default: ""
     },
 
+    ytTitle: {
+      type: String,
+      default: ""
+    },
+
     clips: {
       type: [ClipItemSchema],
       default: []
