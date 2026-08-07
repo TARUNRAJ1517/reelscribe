@@ -279,7 +279,10 @@ function switchTab(tab) {
   document.getElementById('tabLogin').classList.toggle('active', isLogin);
   document.getElementById('tabSignup').classList.toggle('active', !isLogin);
 }
-function googleLogin() { window.location.href = '/auth/google'; }
+const nextParam = new URLSearchParams(window.location.search).get('next');
+const nextPath = (nextParam && nextParam.startsWith('/')) ? nextParam : '/dashboard.html';
+
+function googleLogin() { window.location.href = '/auth/google?next=' + encodeURIComponent(nextPath); }
 function showStatus(id, msg, type) {
   const el = document.getElementById(id);
   el.innerText = msg; el.className = 'status-msg ' + type; el.style.display = 'block';
@@ -321,7 +324,7 @@ async function verifyLoginOtp() {
     if (data.success) {
       localStorage.setItem('userEmail', email);
       showStatus('loginStep2Status', '✅ Login successful!', 'success');
-      setTimeout(() => { window.location.href = '/dashboard.html'; }, 1000);
+      setTimeout(() => { window.location.href = nextPath; }, 1000);
     } else {
       showStatus('loginStep2Status', '❌ ' + (data.message || 'Invalid OTP'), 'error');
     }
@@ -359,7 +362,7 @@ async function verifySignupOtp() {
     if (data.success) {
       localStorage.setItem('userEmail', email);
       showStatus('signupStep2Status', '✅ Account ban gaya!', 'success');
-      setTimeout(() => { window.location.href = '/dashboard.html'; }, 1000);
+      setTimeout(() => { window.location.href = nextPath; }, 1000);
     } else {
       showStatus('signupStep2Status', '❌ ' + (data.message || 'Invalid OTP'), 'error');
     }
