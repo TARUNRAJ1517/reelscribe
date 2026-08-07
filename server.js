@@ -520,9 +520,22 @@ async function updateClipUsage(user) {
   });
 }
 
-app.post("/cut-clips", async (req, res) => {
-  console.log("🎬 /cut-clips HIT — body:", JSON.stringify(req.body));
+// In-memory job store for clip generation (survives only while the server
+// process is running — fine for now since jobs are short-lived, minutes not days).
+const clipJobs = new Map();
 
+// Clean up old finished/errored jobs after 30 min so this Map doesn't grow forever.
+function scheduleJobCleanup(jobId) {
+  setTimeout(() => clipJobs.delete(jobId), 30 * 60 * 1000);
+}
+
+app.get("/clip-status/:jobId", (req, res) => {
+  const job = clipJobs.get(req.params.jobId);
+  if (!job) return res.status(404).json({ success: false, error: "Job not found or expired" });
+  res.json({ success: true, ...job });
+});
+
+app.post("/cut-clips", async (req, res) => {
   const { ytUrl, email, fcmToken } = req.body;
 
   if (!ytUrl) return res.status(400).json({ success: false, error: "YouTube URL required" });
@@ -539,28 +552,35 @@ app.post("/cut-clips", async (req, res) => {
   if (!limitCheck.allowed)
     return res.status(403).json({ success: false, error: limitCheck.error });
 
-  console.log("🎬 Calling EC2 at:", `${EC2_URL}/analyze-video`);
+  // Respond immediately with a jobId — the browser (and Cloudflare/Render's
+  // proxy in between) never has to hold a connection open for the 2-5 min
+  // the actual pipeline takes. Processing continues in the background below.
+  const jobId = crypto.randomUUID();
+  clipJobs.set(jobId, { status: "processing" });
+  res.json({ success: true, jobId });
 
-  try {
-    const ec2Response = await axios.post(
-      `${EC2_URL}/analyze-video`,
-      { url: ytUrl },
-      { headers: { "x-internal-key": INTERNAL_KEY }, timeout: 600000 }
-    );
+  (async () => {
+    try {
+      const ec2Response = await axios.post(
+        `${EC2_URL}/analyze-video`,
+        { url: ytUrl },
+        { headers: { "x-internal-key": INTERNAL_KEY }, timeout: 900000 }
+      );
 
-    console.log("🎬 EC2 responded:", JSON.stringify(ec2Response.data).slice(0, 300));
+      if (!ec2Response.data?.success) {
+        clipJobs.set(jobId, { status: "error", error: ec2Response.data?.error || "Clip generation failed" });
+        return scheduleJobCleanup(jobId);
+      }
 
-    if (!ec2Response.data?.success) {
-      return res.status(500).json({ success: false, error: ec2Response.data?.error || "Clip generation failed" });
+      await updateClipUsage(user);
+      clipJobs.set(jobId, { status: "done", clips: ec2Response.data.clips || [] });
+      scheduleJobCleanup(jobId);
+    } catch (err) {
+      const errMsg = err.response?.data?.error || err.message;
+      clipJobs.set(jobId, { status: "error", error: "Clip generation failed: " + errMsg });
+      scheduleJobCleanup(jobId);
     }
-
-    await updateClipUsage(user);
-    return res.json({ success: true, clips: ec2Response.data.clips || [] });
-  } catch (err) {
-    console.log("🎬 EC2 call FAILED — code:", err.code, "| message:", err.message);
-    const errMsg = err.response?.data?.error || err.message;
-    return res.status(500).json({ success: false, error: "Clip generation failed: " + errMsg });
-  }
+  })();
 });
 
 // ════════════════════════════════
