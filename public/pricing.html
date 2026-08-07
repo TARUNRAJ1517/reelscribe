@@ -436,11 +436,13 @@ async function buyPlan(plan) {
     return;
   }
 
+  const billing = yearly ? "yearly" : "monthly";
+
   try {
     const res = await fetch("/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan })
+      body: JSON.stringify({ plan, billing })
     });
 
     const data = await res.json();
@@ -455,7 +457,7 @@ async function buyPlan(plan) {
       amount: data.order.amount,
       currency: data.order.currency,
       name: "ReelScribe",
-      description: plan.charAt(0).toUpperCase() + plan.slice(1) + " Plan",
+      description: plan.charAt(0).toUpperCase() + plan.slice(1) + " Plan (" + (billing === "yearly" ? "Yearly" : "Monthly") + ")",
       order_id: data.order.id,
       prefill: { email },
 
@@ -467,6 +469,7 @@ async function buyPlan(plan) {
             body: JSON.stringify({
               ...response,
               plan,
+              billing,
               email
             })
           });
