@@ -283,10 +283,19 @@ app.post("/internal/update-usage", internalAuth, async (req, res) => {
 // ════════════════════════════════
 
 app.get("/test", (req, res) => res.send("TEST ROUTE WORKING"));
-app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+app.get("/auth/google", (req, res, next) => {
+  const next_ = req.query.next;
+  req.session.postLoginRedirect = (typeof next_ === "string" && next_.startsWith("/")) ? next_ : "/dashboard.html";
+  passport.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
+});
 app.get("/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
-  (req, res) => res.redirect("/dashboard.html?email=" + encodeURIComponent(req.user.email))
+  (req, res) => {
+    const dest = req.session.postLoginRedirect || "/dashboard.html";
+    delete req.session.postLoginRedirect;
+    const sep = dest.includes("?") ? "&" : "?";
+    res.redirect(dest + sep + "email=" + encodeURIComponent(req.user.email));
+  }
 );
 
 // ── Send OTP ──
