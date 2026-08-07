@@ -931,6 +931,27 @@ async function generateClips(){
   // Scroll to result
   resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+  function showError(msg){
+    resultBox.querySelector('h3').innerText = "❌ Error";
+    document.getElementById('clipsCount').innerText = msg || "Something went wrong";
+    clipsList.innerHTML = '';
+  }
+
+  function showClips(clips){
+    resultBox.querySelector('h3').innerText = "🎬 Your Clips Are Ready!";
+    document.getElementById('clipsCount').innerText = `${clips.length} clips generated from your video`;
+    clipsList.innerHTML = clips.map((clip, i) => `
+      <div class="clip-card">
+        <div class="clip-title">${clip.title || 'Clip ' + (i+1)}</div>
+        <div class="clip-reason">${clip.reason || ''}</div>
+        <div class="clip-meta">
+          <span class="clip-duration">⏱ ${clip.duration}s</span>
+          <a class="clip-download-btn" href="${clip.url}" download="clip_${i+1}.mp4" onclick="notifyDownload('${clip.s3Key}')">Download ↓</a>
+        </div>
+      </div>
+    `).join('');
+  }
+
   try {
     const fcmToken = localStorage.getItem('fcmToken') || null;
     const res = await fetch("/cut-clips", {
@@ -947,32 +968,50 @@ async function generateClips(){
       return;
     }
 
-    if(!data.success){
-      resultBox.querySelector('h3').innerText = "❌ Error";
-      document.getElementById('clipsCount').innerText = data.error || "Something went wrong";
-      clipsList.innerHTML = '';
+    if(!data.success || !data.jobId){
+      showError(data.error);
       return;
     }
 
-    const clips = data.clips || [];
-    resultBox.querySelector('h3').innerText = "🎬 Your Clips Are Ready!";
-    document.getElementById('clipsCount').innerText = `${clips.length} clips generated from your video`;
+    // Poll for completion instead of holding one long connection open —
+    // avoids Cloudflare/proxy timeouts on requests that take minutes.
+    const jobId = data.jobId;
+    const startTime = Date.now();
+    const maxWaitMs = 10 * 60 * 1000; // give up after 10 minutes
 
-    clipsList.innerHTML = clips.map((clip, i) => `
-      <div class="clip-card">
-        <div class="clip-title">${clip.title || 'Clip ' + (i+1)}</div>
-        <div class="clip-reason">${clip.reason || ''}</div>
-        <div class="clip-meta">
-          <span class="clip-duration">⏱ ${clip.duration}s</span>
-          <a class="clip-download-btn" href="${clip.url}" download="clip_${i+1}.mp4" onclick="notifyDownload('${clip.s3Key}')">Download ↓</a>
-        </div>
-      </div>
-    `).join('');
+    const poll = setInterval(async () => {
+      if (Date.now() - startTime > maxWaitMs) {
+        clearInterval(poll);
+        showError("Timed out. Please try again.");
+        return;
+      }
+
+      try {
+        const statusRes = await fetch(`/clip-status/${jobId}`);
+        const statusData = await statusRes.json();
+
+        if (!statusData.success) {
+          clearInterval(poll);
+          showError(statusData.error);
+          return;
+        }
+
+        if (statusData.status === "done") {
+          clearInterval(poll);
+          showClips(statusData.clips || []);
+        } else if (statusData.status === "error") {
+          clearInterval(poll);
+          showError(statusData.error);
+        }
+        // else status === "processing" → keep polling
+      } catch (e) {
+        // Transient network hiccup while polling — don't give up immediately,
+        // just skip this tick and try again next interval.
+      }
+    }, 4000);
 
   } catch(e){
-    resultBox.querySelector('h3').innerText = "❌ Error";
-    document.getElementById('clipsCount').innerText = "Server error. Please try again.";
-    clipsList.innerHTML = '';
+    showError("Server error. Please try again.");
   }
 }
 
