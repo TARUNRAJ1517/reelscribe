@@ -584,6 +584,7 @@ app.post("/cut-clips", async (req, res) => {
         await ClipJob.create({
           userEmail: email,
           ytUrl,
+          ytTitle: ec2Response.data.videoTitle || "",
           clips: clips.map(c => ({
             title: c.title, reason: c.reason, duration: c.duration,
             url: c.url, s3Key: c.s3Key
@@ -613,6 +614,7 @@ app.get("/clip-history/:email", async (req, res) => {
       .map(j => ({
         _id: j._id,
         ytUrl: j.ytUrl,
+        ytTitle: j.ytTitle,
         createdAt: j.createdAt,
         clips: j.clips.filter(c => !c.deleted)
       }))
