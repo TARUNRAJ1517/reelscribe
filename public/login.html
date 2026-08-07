@@ -199,7 +199,7 @@ footer a:hover { color: var(--sub); }
     </div>
 
     <div id="loginStep2" style="display:none">
-      <p style="font-size:12px;color:var(--sub);margin-bottom:10px;">📧 OTP bheja gaya <strong id="loginEmailShow" style="color:var(--text)"></strong> par</p>
+      <p style="font-size:12px;color:var(--sub);margin-bottom:10px;">📧 We've sent a verification code to <strong id="loginEmailShow" style="color:var(--text)"></strong> par</p>
       <div class="field">
         <label class="field-label">Enter OTP</label>
         <div class="field-wrap">
@@ -208,11 +208,11 @@ footer a:hover { color: var(--sub); }
         </div>
       </div>
       <button class="submit-btn" onclick="verifyLoginOtp()">Sign In →</button>
-      <div class="resend-row" id="loginResend">OTP nahi aaya? <span onclick="sendLoginOtp()">Resend karo</span></div>
+      <div class="resend-row" id="loginResend">OTP not received? <span onclick="sendLoginOtp()">Resend</span></div>
       <div class="status-msg" id="loginStep2Status"></div>
     </div>
 
-    <div class="bottom-text">Account nahi hai? <span onclick="switchTab('signup')">Create Account →</span></div>
+    <div class="bottom-text">Don't have an account? <span onclick="switchTab('signup')">Create Account →</span></div>
   </div>
 
   <!-- SIGNUP -->
@@ -244,24 +244,25 @@ footer a:hover { color: var(--sub); }
     </div>
 
     <div id="signupStep2" style="display:none">
-      <p style="font-size:12px;color:var(--sub);margin-bottom:10px;">📧 OTP bheja gaya <strong id="signupEmailShow" style="color:var(--text)"></strong> par</p>
+      <p style="font-size:12px;color:var(--sub);margin-bottom:10px;">📧 A verification code has been sent to <strong id="signupEmailShow" style="color:var(--text)"></strong> par</p>
       <div class="field">
         <label class="field-label">Enter OTP</label>
         <div class="field-wrap">
           <div class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8"/></svg></div>
-          <input class="field-input" type="tel" id="s1" maxlength="6" placeholder="6 digit OTP daalo" style="letter-spacing:4px;font-size:18px;font-weight:800;">
+          <input class="field-input" type="tel" id="s1" maxlength="6" place\u003Cbutton class=\"otp-send-btn\" id=\"signupSendOtp\" onclick=\"sendSignupOtp()\">Send OTP\u003C/button>holder="Enter 6 digit OTP" style="letter-spacing:4px;font-size:18px;font-weight:800;">
         </div>
       </div>
       <button class="submit-btn" onclick="verifySignupOtp()">Create Account →</button>
-      <div class="resend-row" id="signupResend">OTP nahi aaya? <span onclick="sendSignupOtp()">Resend karo</span></div>
+      <div class="resend-row" id="signupResend">Haven't received your OTP? <span onclick="sendSignupOtp()">Resend Code</span></div>
       <div class="status-msg" id="signupStep2Status"></div>
     </div>
 
-    <div class="bottom-text">Pehle se account hai? <span onclick="switchTab('login')">Sign In →</span></div>
+    <div class="bottom-text">Already account? <span onclick="switchTab('login')">Sign In →</span></div>
   </div>
 
   <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:16px;">
-    Continue karne se aap hamare <a href="/terms.html" style="color:var(--muted);text-decoration:underline">Terms</a> aur <a href="/privacy.html" style="color:var(--muted);text-decoration:underline">Privacy Policy</a> se agree karte ho.
+    By continuing, you agree to Reelscribe <a href="/terms.html" style="color:var(--muted);text-decoration:underline">Terms</a> and <a href="/privacy.html" style="color:var(--muted);text-decoration:underline">Privacy Policy</a> 
+Read our Privacy Policy
   </div>
 </div>
 
