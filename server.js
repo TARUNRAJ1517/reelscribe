@@ -23,6 +23,7 @@ const { Resend }            = require("resend");
 const Reel        = require("./models/Reel");
 const User        = require("./models/User");
 const GuestUsage  = require("./models/GuestUsage");
+const ClipJob     = require("./models/Clip");
 const Razorpay    = require("razorpay");
 const crypto      = require("crypto");
 const FormData    = require("form-data"); // FIX: needed for multipart forward to EC2
@@ -573,8 +574,22 @@ app.post("/cut-clips", async (req, res) => {
       }
 
       await updateClipUsage(user);
-      clipJobs.set(jobId, { status: "done", clips: ec2Response.data.clips || [] });
+      const clips = ec2Response.data.clips || [];
+      clipJobs.set(jobId, { status: "done", clips });
       scheduleJobCleanup(jobId);
+
+      // Save to history so it's still visible after a refresh/back-navigation,
+      // and so the cleanup sweep below knows what to actually delete from S3.
+      if (clips.length > 0) {
+        await ClipJob.create({
+          userEmail: email,
+          ytUrl,
+          clips: clips.map(c => ({
+            title: c.title, reason: c.reason, duration: c.duration,
+            url: c.url, s3Key: c.s3Key
+          }))
+        });
+      }
     } catch (err) {
       const errMsg = err.response?.data?.error || err.message;
       clipJobs.set(jobId, { status: "error", error: "Clip generation failed: " + errMsg });
@@ -582,6 +597,103 @@ app.post("/cut-clips", async (req, res) => {
     }
   })();
 });
+
+// Last 24h of clip history for a user — lets the "Recent Clips" section
+// survive a page refresh/back-navigation instead of vanishing.
+app.get("/clip-history/:email", async (req, res) => {
+  try {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const jobs = await ClipJob.find({
+      userEmail: req.params.email,
+      createdAt: { $gte: since }
+    }).sort({ createdAt: -1 });
+
+    // Hide clips already deleted (post-download 5-min cleanup) from the list.
+    const data = jobs
+      .map(j => ({
+        _id: j._id,
+        ytUrl: j.ytUrl,
+        createdAt: j.createdAt,
+        clips: j.clips.filter(c => !c.deleted)
+      }))
+      .filter(j => j.clips.length > 0);
+
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Frontend calls this right when a download starts — schedule the actual
+// S3 delete 5 min later, matching the "downloaded clips delete in 5 minutes" promise.
+app.post("/clip-downloaded", async (req, res) => {
+  const { s3Key } = req.body;
+  if (!s3Key) return res.status(400).json({ success: false, error: "s3Key required" });
+
+  res.json({ success: true }); // ack immediately, deletion happens in the background
+
+  try {
+    await ClipJob.updateOne(
+      { "clips.s3Key": s3Key },
+      { $set: { "clips.$.downloaded": true, "clips.$.downloadedAt": new Date() } }
+    );
+  } catch (e) { /* non-fatal — the periodic sweep below will still catch it eventually */ }
+
+  setTimeout(async () => {
+    try {
+      await axios.post(`${EC2_URL}/delete-clips`, { keys: [s3Key] },
+        { headers: { "x-internal-key": INTERNAL_KEY }, timeout: 30000 });
+      await ClipJob.updateOne(
+        { "clips.s3Key": s3Key },
+        { $set: { "clips.$.deleted": true } }
+      );
+    } catch (e) { /* the periodic sweep below is the safety net if this fails */ }
+  }, 5 * 60 * 1000);
+});
+
+// ── Real cleanup sweep — actually enforces both promises the UI makes:
+// "clips auto-delete after 24h" and "downloaded clips delete in 5 min".
+// Runs every 15 min; each key deletion is best-effort/independent.
+async function runClipCleanupSweep() {
+  try {
+    const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+    const jobs = await ClipJob.find({
+      $or: [
+        { createdAt: { $lt: dayAgo } },
+        { "clips.downloaded": true, "clips.downloadedAt": { $lt: fiveMinAgo }, "clips.deleted": { $ne: true } }
+      ]
+    });
+
+    const keysToDelete = [];
+    for (const job of jobs) {
+      const jobExpired = job.createdAt < dayAgo;
+      for (const clip of job.clips) {
+        if (clip.deleted) continue;
+        const downloadExpired = clip.downloaded && clip.downloadedAt && clip.downloadedAt < fiveMinAgo;
+        if (jobExpired || downloadExpired) keysToDelete.push(clip.s3Key);
+      }
+    }
+
+    if (keysToDelete.length > 0) {
+      await axios.post(`${EC2_URL}/delete-clips`, { keys: keysToDelete },
+        { headers: { "x-internal-key": INTERNAL_KEY }, timeout: 60000 });
+
+      await ClipJob.updateMany(
+        { "clips.s3Key": { $in: keysToDelete } },
+        { $set: { "clips.$[c].deleted": true } },
+        { arrayFilters: [{ "c.s3Key": { $in: keysToDelete } }] }
+      );
+    }
+
+    // Fully-expired job docs (24h+) can just be removed outright.
+    await ClipJob.deleteMany({ createdAt: { $lt: dayAgo } });
+  } catch (e) {
+    console.error("Clip cleanup sweep failed:", e.message);
+  }
+}
+setInterval(runClipCleanupSweep, 15 * 60 * 1000);
 
 // ════════════════════════════════
 //  PAYMENT ROUTES
