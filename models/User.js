@@ -12,6 +12,11 @@ const UserSchema = new mongoose.Schema({
     default: "free"
   },
   planExpiresAt: { type: Date, default: null },
+  billingCycle: {
+    type: String,
+    enum: ["monthly", "yearly", null],
+    default: null
+  },
 
   // ── TRANSCRIPTION TRACKING ──
   transcriptsUsedToday:     { type: Number, default: 0 },
