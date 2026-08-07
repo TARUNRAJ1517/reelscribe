@@ -713,16 +713,27 @@ setInterval(runClipCleanupSweep, 15 * 60 * 1000);
 //  PAYMENT ROUTES
 // ════════════════════════════════
 
+// Monthly price aur yearly price (per-month-when-billed-annually) — pricing.html ke `prices` object se match hona chahiye
+const PLAN_PRICING = {
+  starter: { m: 149, y: 124 },
+  pro:     { m: 299, y: 249 },
+  agency:  { m: 599, y: 499 }
+};
+
 app.post("/create-order", async (req, res) => {
   try {
-    const { plan } = req.body;
-    const plans = { starter: 149, pro: 299, agency: 599 };
-    if (!plans[plan]) return res.status(400).json({ success: false, error: "Invalid plan" });
+    const { plan, billing } = req.body;
+    if (!PLAN_PRICING[plan]) return res.status(400).json({ success: false, error: "Invalid plan" });
+
+    const isYearly = billing === "yearly";
+    // Yearly: user ko poore saal ka amount ek saath charge hota hai (discounted per-month rate * 12)
+    const amountRupees = isYearly ? PLAN_PRICING[plan].y * 12 : PLAN_PRICING[plan].m;
 
     const order = await razorpay.orders.create({
-      amount:   plans[plan] * 100,
+      amount:   amountRupees * 100,
       currency: "INR",
       receipt:  `receipt_${Date.now()}`,
+      notes:    { plan, billing: isYearly ? "yearly" : "monthly" },
     });
     res.json({ success: true, order, key: process.env.RAZORPAY_KEY_ID });
   } catch (err) {
@@ -732,7 +743,7 @@ app.post("/create-order", async (req, res) => {
 
 app.post("/verify-payment", async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan, email } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan, billing, email } = req.body;
 
     const expectedSig = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -746,13 +757,19 @@ app.post("/verify-payment", async (req, res) => {
     if (!validPlans.includes(plan))
       return res.status(400).json({ success: false, error: "Invalid plan" });
 
+    const isYearly = billing === "yearly";
     const planExpiry = new Date();
-    planExpiry.setMonth(planExpiry.getMonth() + 1);
+    if (isYearly) {
+      planExpiry.setFullYear(planExpiry.getFullYear() + 1);
+    } else {
+      planExpiry.setMonth(planExpiry.getMonth() + 1);
+    }
 
     const user = await User.findOneAndUpdate(
       { email },
       {
         plan,
+        billingCycle:            isYearly ? "yearly" : "monthly",
         planExpiresAt:           planExpiry,
         transcriptsUsedToday:    0,
         transcriptsUsedMonth:    0,
