@@ -169,6 +169,12 @@ body {
 }
 .trust-pill svg { width: 12px; height: 12px; color: var(--purple); }
 
+.demo-video-box {
+  margin-top: 18px; border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--border2); background: var(--card);
+}
+.demo-video-box video { display: block; width: 100%; height: auto; }
+
 .feature-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
 .feature-tag {
   display: flex; align-items: center; gap: 6px;
@@ -679,6 +685,12 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
       <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5–12 clips per video</span>
       <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Auto deleted after 24h</span>
       <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Download then 5min delete</span>
+    </div>
+
+    <div class="demo-video-box">
+      <video autoplay loop muted playsinline preload="metadata">
+        <source src="/assets/videos/demo.mp4" type="video/mp4">
+      </video>
     </div>
   </div>
 
