@@ -710,9 +710,28 @@ async function generateClips(){
   }
 }
 
-// Init
+// Init — if we arrived here from the main page with a link already
+// pasted (Generate button on "/"), prefill it and kick off processing
+// automatically as soon as access checks pass.
 (async () => {
+  const params = new URLSearchParams(window.location.search);
+  const incomingUrl = params.get("ytUrl");
+  const autostart = params.get("autostart") === "1";
+
+  if (incomingUrl) {
+    document.getElementById("clipUrl").value = incomingUrl;
+  }
+
   await loadUserPlan();
+
+  // Clean the URL so a refresh/back doesn't re-trigger processing
+  if (incomingUrl || autostart) {
+    window.history.replaceState({}, document.title, "/clips-dashboard.html");
+  }
+
+  if (incomingUrl && autostart && !isGuest && currentPlan !== "free") {
+    generateClips();
+  }
 })();
 </script>
 </body>
