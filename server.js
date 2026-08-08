@@ -41,11 +41,13 @@ const EC2_URL       = process.env.EC2_URL;         // e.g. http://13.206.252.122
 const INTERNAL_KEY  = process.env.INTERNAL_SECRET; // shared secret with EC2
 
 // ── Plan limits (same as EC2) ──
+// maxVideoMinutes: sabse zaroori limit — bina isके koi bhi user 3-4 ghante ka
+// podcast daal sakta tha jisse EC2 pe processing bahut lambi chalti ya timeout/crash ho jata
 const PLAN_LIMITS = {
-  free:    { transcriptDay: 2,  transcriptMonth: 5,  clipDay: 0,  clipMonth: 0,  maxMB: 100  },
-  starter: { transcriptDay: 5,  transcriptMonth: 20, clipDay: 3,  clipMonth: 15, maxMB: 500  },
-  pro:     { transcriptDay: 10, transcriptMonth: 50, clipDay: 8,  clipMonth: 40, maxMB: 1024 },
-  agency:  { transcriptDay: 20, transcriptMonth: 100,clipDay: 15, clipMonth: 80, maxMB: 2048 },
+  free:    { transcriptDay: 2,  transcriptMonth: 5,  clipDay: 0,  clipMonth: 0,  maxMB: 100,  maxVideoMinutes: 0   },
+  starter: { transcriptDay: 5,  transcriptMonth: 20, clipDay: 3,  clipMonth: 15, maxMB: 500,  maxVideoMinutes: 40  },
+  pro:     { transcriptDay: 10, transcriptMonth: 50, clipDay: 8,  clipMonth: 40, maxMB: 1024, maxVideoMinutes: 70  },
+  agency:  { transcriptDay: 20, transcriptMonth: 100,clipDay: 15, clipMonth: 80, maxMB: 2048, maxVideoMinutes: 120 },
 };
 
 // ════════════════════════════════
@@ -212,6 +214,26 @@ function getYouTubeVideoId(url) {
   ];
   for (const p of patterns) { const m = url.match(p); if (m) return m[1]; }
   return null;
+}
+
+// ── Fetch YouTube video duration (seconds), no API key needed ──
+// Watch page HTML mein "lengthSeconds" field embedded hota hai — usko scrape karte hain.
+// Isse "Cut Clips" pe bhejne se PEHLE check kar sakte hain ki video plan ki duration limit mein fit hota hai ya nahi
+// (varna EC2 pe koi 3-4 ghante ka podcast chala jaye to processing bahut lambi ho jati ya timeout ho jata)
+async function getYouTubeDurationSeconds(url) {
+  const videoId = getYouTubeVideoId(url);
+  if (!videoId) return null;
+  try {
+    const { data: html } = await axios.get(`https://www.youtube.com/watch?v=${videoId}`, {
+      headers: { "User-Agent": "Mozilla/5.0" },
+      timeout: 8000,
+    });
+    const match = html.match(/"lengthSeconds":"(\d+)"/);
+    return match ? parseInt(match[1], 10) : null;
+  } catch (e) {
+    console.error("YouTube duration fetch failed:", e.message);
+    return null; // fetch fail ho to block nahi karenge, EC2 apni taraf se handle karega
+  }
 }
 
 // ── Check transcript limits ──
@@ -575,6 +597,17 @@ app.post("/cut-clips", async (req, res) => {
   const limitCheck = await checkClipLimit(user);
   if (!limitCheck.allowed)
     return res.status(403).json({ success: false, error: limitCheck.error });
+
+  // Duration check — plan ki maxVideoMinutes limit se lamba video EC2 ko bhejne se pehle hi reject karo
+  const maxMinutes = PLAN_LIMITS[plan].maxVideoMinutes;
+  const durationSec = await getYouTubeDurationSeconds(ytUrl);
+  if (durationSec !== null && durationSec > maxMinutes * 60) {
+    const videoMinutes = Math.ceil(durationSec / 60);
+    return res.status(403).json({
+      success: false,
+      error: `Video ${videoMinutes} min ka hai. ${plan} plan mein max ${maxMinutes} min tak allowed hai. Chota video try karo ya upgrade karo!`,
+    });
+  }
 
   // Respond immediately with a jobId — the browser (and Cloudflare/Render's
   // proxy in between) never has to hold a connection open for the 2-5 min
