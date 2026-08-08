@@ -106,6 +106,53 @@ mongoose.connect(process.env.MONGO_URI)
 
 const otpStore = {};
 
+// ── OTP rate limiting (in-memory) ──
+// Bina isके /send-otp aur /verify-otp par unlimited attempts allowed the —
+// 6-digit OTP ko brute-force karna theoretically possible tha.
+const otpSendLimiter   = {}; // key: email  -> { count, windowStart }
+const otpVerifyAttempts = {}; // key: email -> { count, windowStart }
+
+const OTP_SEND_MAX_PER_WINDOW   = 3;          // max 3 OTP requests
+const OTP_SEND_WINDOW_MS        = 15 * 60 * 1000; // per 15 minutes
+const OTP_VERIFY_MAX_ATTEMPTS   = 5;          // max 5 wrong tries
+const OTP_VERIFY_WINDOW_MS      = 15 * 60 * 1000; // per 15 minutes
+
+function checkOtpSendLimit(email) {
+  const now = Date.now();
+  const rec = otpSendLimiter[email];
+  if (!rec || now - rec.windowStart > OTP_SEND_WINDOW_MS) {
+    otpSendLimiter[email] = { count: 1, windowStart: now };
+    return { allowed: true };
+  }
+  if (rec.count >= OTP_SEND_MAX_PER_WINDOW) {
+    const waitMin = Math.ceil((OTP_SEND_WINDOW_MS - (now - rec.windowStart)) / 60000);
+    return { allowed: false, error: `Bahut zyada OTP requests. ${waitMin} min baad try karo.` };
+  }
+  rec.count++;
+  return { allowed: true };
+}
+
+function checkOtpVerifyLimit(email) {
+  const now = Date.now();
+  const rec = otpVerifyAttempts[email];
+  if (!rec || now - rec.windowStart > OTP_VERIFY_WINDOW_MS) {
+    otpVerifyAttempts[email] = { count: 1, windowStart: now };
+    return { allowed: true };
+  }
+  if (rec.count >= OTP_VERIFY_MAX_ATTEMPTS) {
+    return { allowed: false, error: "Bahut zyada galat attempts. Naya OTP mangwao." };
+  }
+  rec.count++;
+  return { allowed: true };
+}
+
+// Periodic cleanup so these objects don't grow forever
+setInterval(() => {
+  const now = Date.now();
+  for (const k in otpSendLimiter)    if (now - otpSendLimiter[k].windowStart > OTP_SEND_WINDOW_MS) delete otpSendLimiter[k];
+  for (const k in otpVerifyAttempts) if (now - otpVerifyAttempts[k].windowStart > OTP_VERIFY_WINDOW_MS) delete otpVerifyAttempts[k];
+}, 10 * 60 * 1000);
+
 // ── Passport ──
 passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
@@ -131,12 +178,44 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } }); // 25MB for transcription
 
-// ── Admin auth ──
+// ── Admin auth (with IP-based rate limiting against brute-force) ──
+const adminAuthAttempts = {}; // key: IP -> { count, windowStart, blockedUntil }
+const ADMIN_MAX_ATTEMPTS  = 5;
+const ADMIN_WINDOW_MS     = 15 * 60 * 1000; // 15 min
+const ADMIN_BLOCK_MS      = 30 * 60 * 1000; // block for 30 min after too many fails
+
 function adminAuth(req, res, next) {
-  if (req.headers["x-admin-key"] !== process.env.ADMIN_SECRET)
+  const ip  = req.headers["x-forwarded-for"]?.split(",")[0].trim() || req.socket.remoteAddress || "unknown";
+  const now = Date.now();
+  const rec = adminAuthAttempts[ip];
+
+  if (rec?.blockedUntil && now < rec.blockedUntil) {
+    const waitMin = Math.ceil((rec.blockedUntil - now) / 60000);
+    return res.status(429).json({ success: false, error: `Bahut zyada galat attempts. ${waitMin} min baad try karo.` });
+  }
+
+  if (req.headers["x-admin-key"] !== process.env.ADMIN_SECRET) {
+    if (!rec || now - rec.windowStart > ADMIN_WINDOW_MS) {
+      adminAuthAttempts[ip] = { count: 1, windowStart: now, blockedUntil: null };
+    } else {
+      rec.count++;
+      if (rec.count >= ADMIN_MAX_ATTEMPTS) rec.blockedUntil = now + ADMIN_BLOCK_MS;
+    }
     return res.status(401).json({ success: false, error: "Unauthorized" });
+  }
+
+  delete adminAuthAttempts[ip]; // success -> reset
   next();
 }
+
+// Periodic cleanup
+setInterval(() => {
+  const now = Date.now();
+  for (const k in adminAuthAttempts) {
+    const r = adminAuthAttempts[k];
+    if ((!r.blockedUntil || now > r.blockedUntil) && now - r.windowStart > ADMIN_WINDOW_MS) delete adminAuthAttempts[k];
+  }
+}, 10 * 60 * 1000);
 
 // ── Internal auth (EC2 ↔ Render) ──
 function internalAuth(req, res, next) {
@@ -352,6 +431,9 @@ app.post("/send-otp", async (req, res) => {
     const { email } = req.body;
     if (!isValidEmail(email)) return res.status(400).json({ success: false, message: "Valid email required" });
 
+    const sendLimit = checkOtpSendLimit(email);
+    if (!sendLimit.allowed) return res.status(429).json({ success: false, message: sendLimit.error });
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
 
@@ -383,12 +465,17 @@ app.post("/verify-otp", async (req, res) => {
   try {
     const { email, otp } = req.body;
     if (!isValidEmail(email)) return res.status(400).json({ success: false, message: "Valid email required" });
+
+    const verifyLimit = checkOtpVerifyLimit(email);
+    if (!verifyLimit.allowed) return res.status(429).json({ success: false, message: verifyLimit.error });
+
     const record = otpStore[email];
     if (!record)                    return res.status(400).json({ success: false, message: "OTP not found" });
     if (Date.now() > record.expiresAt) { delete otpStore[email]; return res.status(400).json({ success: false, message: "OTP expired" }); }
     if (record.otp !== otp)         return res.status(400).json({ success: false, message: "Invalid OTP" });
 
     delete otpStore[email];
+    delete otpVerifyAttempts[email];
     let user = await User.findOne({ email });
     if (!user) user = await User.create({ name: email.split("@")[0], email, credits: 5 });
 
