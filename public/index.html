@@ -517,9 +517,10 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
     </div>
     <a href="/">Home</a>
     <a href="/pricing.html">Pricing</a>
-    <a href="/dashboard.html" id="menuDash" style="display:none;">Dashboard</a>
+    <a href="/dashboard.html" id="menuDashTranscript" style="display:none;">Transcription Dashboard</a>
+    <a href="/clips-dashboard.html" id="menuDashClips" style="display:none;">Clips Dashboard</a>
     <button class="menu-cta" id="menuLoginBtn" onclick="window.location.href='/login.html'">Login→</button>
-    <button class="menu-cta" id="menuDashBtn" style="display:none; background:var(--card2); border:1px solid var(--border2);" onclick="window.location.href='/dashboard.html'">Go to Dashboard →</button>
+    <button class="menu-cta" id="menuLogoutBtn" style="display:none; background:var(--card2); border:1px solid var(--border2);" onclick="logout()">Logout →</button>
   </div>
 </div>
 
@@ -825,9 +826,16 @@ const userEmail = localStorage.getItem("userEmail");
 const isLoggedIn = !!(userEmail && userEmail !== "guest@example.com");
 
 if(isLoggedIn){
-  document.getElementById("menuDash").style.display = "block";
+  document.getElementById("menuDashTranscript").style.display = "block";
+  document.getElementById("menuDashClips").style.display = "block";
   document.getElementById("menuLoginBtn").style.display = "none";
-  document.getElementById("menuDashBtn").style.display = "block";
+  document.getElementById("menuLogoutBtn").style.display = "block";
+}
+
+function logout(){
+  localStorage.removeItem("userEmail");
+  localStorage.removeItem("latestTranscript");
+  window.location.href = "/";
 }
 
 function switchMode(m){
