@@ -1002,6 +1002,44 @@ app.post("/admin/add-credit", adminAuth, async (req, res) => {
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
+// Admin manually kisi user ko plan de sakta hai (bina payment ke) — jaise complimentary/trial plans
+app.post("/admin/set-plan", adminAuth, async (req, res) => {
+  try {
+    const { email, plan, durationDays } = req.body;
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, error: "Valid email required" });
+
+    const validPlans = ["free", "starter", "pro", "agency"];
+    if (!validPlans.includes(plan)) return res.status(400).json({ success: false, error: "Invalid plan" });
+
+    let planExpiry = null;
+    if (plan !== "free") {
+      const days = parseInt(durationDays) || 30; // default 30 din agar kuch na diya ho
+      planExpiry = new Date();
+      planExpiry.setDate(planExpiry.getDate() + days);
+    }
+
+    const user = await User.findOneAndUpdate(
+      { email },
+      {
+        plan,
+        planExpiresAt:           planExpiry,
+        billingCycle:            plan === "free" ? null : "manual",
+        transcriptsUsedToday:    0,
+        transcriptsUsedMonth:    0,
+        clipsUsedToday:          0,
+        clipsUsedMonth:          0,
+        lastTranscriptDate:      null,
+        lastTranscriptResetDate: null,
+        lastClipDate:            null,
+      },
+      { new: true }
+    );
+
+    if (!user) return res.status(404).json({ success: false, error: "User not found" });
+    res.json({ success: true, message: `${plan} plan diya gaya`, user });
+  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+});
+
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
 const PORT = process.env.PORT || 3000;
