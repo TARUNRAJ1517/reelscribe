@@ -145,6 +145,17 @@ function internalAuth(req, res, next) {
   next();
 }
 
+// ── Email validation (NoSQL injection guard) ──
+// req.body.email seedha MongoDB queries (findOne/findOneAndUpdate) mein use hota hai.
+// Bina type-check ke agar attacker email ki jagah JSON object bheje (e.g. {"$ne": null}),
+// Mongo usse query operator maan leta hai — arbitrary user match/update ho sakta hai.
+// Yeh function ensure karta hai email hamesha ek simple string hi ho.
+function isValidEmail(email) {
+  return typeof email === "string" &&
+    email.length > 0 && email.length < 255 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 // ════════════════════════════════
 //  HELPERS
 // ════════════════════════════════
@@ -290,6 +301,7 @@ app.get("/internal/user-limits/:email", internalAuth, async (req, res) => {
 app.post("/internal/update-usage", internalAuth, async (req, res) => {
   try {
     const { email, type } = req.body;
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, error: "Invalid email" });
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ success: false });
 
@@ -338,7 +350,7 @@ app.get("/auth/google/callback",
 app.post("/send-otp", async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) return res.status(400).json({ success: false, message: "Email required" });
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, message: "Valid email required" });
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     otpStore[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
@@ -370,6 +382,7 @@ app.post("/send-otp", async (req, res) => {
 app.post("/verify-otp", async (req, res) => {
   try {
     const { email, otp } = req.body;
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, message: "Valid email required" });
     const record = otpStore[email];
     if (!record)                    return res.status(400).json({ success: false, message: "OTP not found" });
     if (Date.now() > record.expiresAt) { delete otpStore[email]; return res.status(400).json({ success: false, message: "OTP expired" }); }
@@ -393,7 +406,7 @@ app.post("/verify-otp", async (req, res) => {
 app.post("/transcribe", upload.single("video"), async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email)    return res.status(400).json({ success: false, error: "Email required" });
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, error: "Valid email required" });
     if (!req.file) return res.status(400).json({ success: false, error: "File nahi mili" });
 
     const user    = await User.findOne({ email });
@@ -445,7 +458,8 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
 // ── Transcribe URL (YouTube captions / Instagram) ──
 app.post("/transcribe-url", async (req, res) => {
   const { email, url } = req.body;
-  if (!email || !url) return res.status(400).json({ success: false, error: "Email aur URL required" });
+  if (!isValidEmail(email) || typeof url !== "string" || !url)
+    return res.status(400).json({ success: false, error: "Valid email aur URL required" });
 
   const isYouTube   = url.includes("youtube.com") || url.includes("youtu.be");
   const isInstagram = url.includes("instagram.com");
@@ -584,8 +598,8 @@ app.get("/clip-status/:jobId", (req, res) => {
 app.post("/cut-clips", async (req, res) => {
   const { ytUrl, email, fcmToken } = req.body;
 
-  if (!ytUrl) return res.status(400).json({ success: false, error: "YouTube URL required" });
-  if (!email) return res.status(401).json({ success: false, loginRequired: true, error: "Login required" });
+  if (typeof ytUrl !== "string" || !ytUrl) return res.status(400).json({ success: false, error: "YouTube URL required" });
+  if (!isValidEmail(email)) return res.status(401).json({ success: false, loginRequired: true, error: "Login required" });
 
   const user = await User.findOne({ email });
   if (!user) return res.status(401).json({ success: false, loginRequired: true, error: "User not found" });
@@ -789,6 +803,11 @@ app.post("/verify-payment", async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan, billing, email } = req.body;
 
+    if (typeof razorpay_order_id !== "string" || typeof razorpay_payment_id !== "string" || typeof razorpay_signature !== "string")
+      return res.status(400).json({ success: false, error: "Invalid payment data" });
+    if (!isValidEmail(email))
+      return res.status(400).json({ success: false, error: "Valid email required" });
+
     const expectedSig = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(razorpay_order_id + "|" + razorpay_payment_id)
@@ -889,7 +908,7 @@ app.get("/admin/users", adminAuth, async (req, res) => {
 app.post("/admin/add-credit", adminAuth, async (req, res) => {
   try {
     const { email, credits } = req.body;
-    if (!email || !credits) return res.status(400).json({ success: false, error: "Email aur credits required" });
+    if (!isValidEmail(email) || !credits) return res.status(400).json({ success: false, error: "Valid email aur credits required" });
     const user = await User.findOneAndUpdate({ email }, { $inc: { credits: parseInt(credits) } }, { new: true });
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
     res.json({ success: true, message: `${credits} credits add kiye`, user });
