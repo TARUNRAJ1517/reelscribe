@@ -188,6 +188,31 @@ input[type="password"]{ letter-spacing:3px; }
         <div class="resultBox" id="addResult"></div>
     </div>
 
+    <!-- Set Plan -->
+    <div class="adminCard">
+        <h2>🎟️ Set Plan</h2>
+        <p class="subtitle">User ko manually plan do (bina payment ke)</p>
+
+        <label>USER EMAIL</label>
+        <input type="email" id="planEmail" placeholder="user@example.com">
+
+        <label>PLAN</label>
+        <select id="planSelect" style="width:100%; padding:12px; border-radius:10px; margin-bottom:14px; background:#1a1625; color:#fff; border:1px solid #322c47;">
+            <option value="free">Free</option>
+            <option value="starter">Starter</option>
+            <option value="pro">Pro</option>
+            <option value="agency">Agency</option>
+        </select>
+
+        <label>DURATION (DAYS)</label>
+        <input type="number" id="planDuration" placeholder="30" min="1" value="30">
+
+        <button class="btn" onclick="setPlan()">✅ Set Plan</button>
+        <button class="btn" style="background:#3d1f2b; color:#ff6b8a; margin-top:8px;" onclick="cancelPlan()">🚫 Cancel Plan (revert to Free)</button>
+
+        <div class="resultBox" id="planResult"></div>
+    </div>
+
     <!-- All Users -->
     <div class="usersCard">
         <h3>👥 All Users</h3>
@@ -263,6 +288,75 @@ async function addCredits(){
         }
     } catch(e){
         showResult("addResult", "❌ Server error!", false);
+    }
+}
+
+async function setPlan(){
+    const email = document.getElementById("planEmail").value.trim();
+    const plan = document.getElementById("planSelect").value;
+    const durationDays = document.getElementById("planDuration").value.trim();
+
+    if(!email){
+        showResult("planResult", "❌ Email daalo pehle!", false);
+        return;
+    }
+
+    try {
+        const res = await fetch("/admin/set-plan", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-admin-key": SECRET_KEY
+            },
+            body: JSON.stringify({ email, plan, durationDays: parseInt(durationDays) || 30 })
+        });
+
+        const data = await res.json();
+
+        if(data.success){
+            const expiryText = data.user.planExpiresAt
+                ? new Date(data.user.planExpiresAt).toLocaleDateString("en-IN")
+                : "N/A (free plan)";
+            showResult("planResult", `✅ Plan set ho gaya!\n📧 ${data.user.email}\n🎟️ Plan: ${data.user.plan}\n📅 Expires: ${expiryText}`, true);
+            document.getElementById("planEmail").value = "";
+            loadUsers();
+        } else {
+            showResult("planResult", "❌ " + (data.error || "Something went wrong"), false);
+        }
+    } catch(e){
+        showResult("planResult", "❌ Server error!", false);
+    }
+}
+
+async function cancelPlan(){
+    const email = document.getElementById("planEmail").value.trim();
+
+    if(!email){
+        showResult("planResult", "❌ Email daalo pehle!", false);
+        return;
+    }
+
+    try {
+        const res = await fetch("/admin/set-plan", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-admin-key": SECRET_KEY
+            },
+            body: JSON.stringify({ email, plan: "free" })
+        });
+
+        const data = await res.json();
+
+        if(data.success){
+            showResult("planResult", `✅ Plan cancel ho gaya!\n📧 ${data.user.email}\n🎟️ Ab plan: Free`, true);
+            document.getElementById("planEmail").value = "";
+            loadUsers();
+        } else {
+            showResult("planResult", "❌ " + (data.error || "Something went wrong"), false);
+        }
+    } catch(e){
+        showResult("planResult", "❌ Server error!", false);
     }
 }
 
