@@ -194,6 +194,15 @@ function downloadVideo(videoUrl, outputPath) {
   });
 }
 
+// ── Effective plan: paid plan sirf tab tak valid hai jab tak planExpiresAt na nikal jaye ──
+// Isse purchase ke baad plan hamesha ke liye "unlimited" nahi ho jata — expiry ke baad free pe reset ho jata hai
+function getEffectivePlan(user) {
+  const plan = user.plan || "free";
+  if (plan === "free") return "free";
+  if (!user.planExpiresAt || new Date(user.planExpiresAt) < new Date()) return "free";
+  return plan;
+}
+
 function getYouTubeVideoId(url) {
   const patterns = [
     /youtube\.com\/watch\?v=([^&]+)/,
@@ -207,7 +216,7 @@ function getYouTubeVideoId(url) {
 
 // ── Check transcript limits ──
 async function checkTranscriptLimit(user) {
-  const plan   = user.plan || "free";
+  const plan   = getEffectivePlan(user);
   const limits = PLAN_LIMITS[plan];
 
   let usedDay   = user.transcriptsUsedToday  || 0;
@@ -247,7 +256,9 @@ app.get("/internal/user-limits/:email", internalAuth, async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.email });
     if (!user) return res.status(404).json({ success: false });
-    res.json({ success: true, user });
+    // effectivePlan: EC2 side should use this instead of user.plan directly,
+    // so an expired paid plan doesn't keep granting paid limits forever
+    res.json({ success: true, user, effectivePlan: getEffectivePlan(user) });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
@@ -504,7 +515,7 @@ app.get("/debug-version", (req, res) => {
 // ════════════════════════════════
 
 async function checkClipLimit(user) {
-  const plan   = user.plan || "free";
+  const plan   = getEffectivePlan(user);
   const limits = PLAN_LIMITS[plan];
 
   let usedDay   = user.clipsUsedToday || 0;
@@ -557,7 +568,7 @@ app.post("/cut-clips", async (req, res) => {
   const user = await User.findOne({ email });
   if (!user) return res.status(401).json({ success: false, loginRequired: true, error: "User not found" });
 
-  const plan = user.plan || "free";
+  const plan = getEffectivePlan(user);
   if (plan === "free")
     return res.status(403).json({ success: false, error: "Free plan mein clips available nahi. Upgrade karo!" });
 
@@ -799,7 +810,7 @@ app.get("/user-plan/:email", async (req, res) => {
     const user = await User.findOne({ email: req.params.email });
     if (!user) return res.status(404).json({ success: false });
 
-    const plan   = user.plan || "free";
+    const plan   = getEffectivePlan(user);
     const limits = PLAN_LIMITS[plan];
 
     // Reset if new day/month
@@ -811,6 +822,8 @@ app.get("/user-plan/:email", async (req, res) => {
     res.json({
       success: true,
       plan,
+      rawPlan: user.plan || "free",
+      planExpired: (user.plan && user.plan !== "free") && plan === "free",
       planExpiresAt: user.planExpiresAt,
       usage: {
         transcriptDay,   transcriptDayLimit:   limits.transcriptDay,
