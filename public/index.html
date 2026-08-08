@@ -496,6 +496,72 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
 .foot-links a:hover { color: var(--sub); }
 .foot-sep { height: 1px; background: var(--border); margin-bottom: 16px; }
 .foot-copy { font-size: 11px; color: var(--muted); text-align: center; }
+
+/* CAPTION STYLES — COMING SOON */
+.caption-heading { font-size: 30px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 4px; }
+.caption-heading-ghost {
+  font-size: 30px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 14px;
+  color: transparent; -webkit-text-stroke: 1px var(--border2);
+}
+.caption-sub { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 20px; }
+
+.marquee-wrap {
+  position: relative; overflow: hidden; margin-bottom: 10px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.marquee-track { display: flex; gap: 12px; width: max-content; animation: scrollLeft 28s linear infinite; }
+.marquee-track.reverse { animation: scrollRight 28s linear infinite; }
+@keyframes scrollLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes scrollRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
+.caption-card { flex-shrink: 0; width: 132px; border-radius: 14px; overflow: hidden; background: var(--card); border: 1px solid var(--border); }
+.caption-preview {
+  height: 100px; background: #000; display: flex; align-items: center; justify-content: center; padding: 8px;
+  background-image:
+    radial-gradient(circle at 30% 20%, rgba(139,92,246,0.18), transparent 60%),
+    radial-gradient(circle at 70% 80%, rgba(236,72,153,0.14), transparent 60%);
+}
+.caption-preview span { font-size: 13px; font-weight: 800; letter-spacing: -0.2px; text-align: center; }
+.caption-label-bar { display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 8px 10px; background: var(--card2); border-top: 1px solid var(--border); }
+.caption-name { font-size: 9.5px; font-weight: 700; color: var(--text); letter-spacing: 0.2px; }
+.soon-badge {
+  font-size: 7.5px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase;
+  background: var(--grad); color: white; padding: 3px 6px; border-radius: 100px; flex-shrink: 0;
+}
+
+.style-bold-pop span { color: #fff; }
+.style-bold-pop .accent { color: var(--pink); }
+.style-neon-glow span { color: #fff; text-shadow: 0 0 10px var(--purple), 0 0 20px var(--purple); }
+.style-karaoke span { color: var(--muted); }
+.style-karaoke .filled { color: var(--pink); text-shadow: 0 0 8px rgba(236,72,153,0.6); }
+.style-outline span { color: transparent; -webkit-text-stroke: 1.3px #fff; }
+.style-minimal span { color: #fff; background: rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 6px; font-size: 11px; }
+.style-gradient span { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.style-cinematic span { color: #fff; font-style: italic; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; font-size: 10.5px; }
+.style-red-glow span { color: #fff; text-shadow: 0 0 10px #ec4899, 0 0 22px #ec4899; }
+.style-word-pop span { color: #fff; }
+.style-word-pop .accent { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; padding: 2px 4px; }
+.style-boxed span { background: #fff; color: #09070f; padding: 4px 9px; border-radius: 5px; font-size: 11px; }
+.style-typewriter span { color: #fff; font-family: monospace; letter-spacing: 0.5px; font-size: 11px; }
+.style-classic-bold span { color: #fff; -webkit-text-stroke: 2px #000; paint-order: stroke fill; font-size: 14px; }
+.style-yellow-highlight span { background: #ffe135; color: #09070f; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+.style-meme span { font-family: 'Inter', sans-serif; text-transform: uppercase; color: #fff; -webkit-text-stroke: 1.8px #000; paint-order: stroke fill; font-size: 13px; }
+.style-bounce span { color: #fff; display: inline-block; animation: bouncePreview 1.2s ease-in-out infinite; }
+@keyframes bouncePreview { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+.style-duotone span { color: var(--pink); text-shadow: 2px 2px 0 var(--purple); }
+.style-shake span { color: #fff; display: inline-block; animation: shakePreview 0.35s ease-in-out infinite; }
+@keyframes shakePreview { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
+
+.caption-cta {
+  margin-top: 6px; padding: 14px 16px;
+  background: var(--card); border: 1px dashed var(--border2);
+  border-radius: 14px; display: flex; align-items: center; gap: 12px;
+}
+.caption-cta-icon { width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; background: var(--grad); display: flex; align-items: center; justify-content: center; }
+.caption-cta-icon svg { width: 18px; height: 18px; color: white; }
+.caption-cta-text h4 { font-size: 13px; font-weight: 800; margin-bottom: 2px; }
+.caption-cta-text p { font-size: 11.5px; color: var(--sub); line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -712,12 +778,6 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
     <div class="clip-delete-warn">⏰ Clips auto-delete in 24 hours. Downloaded clips delete in 5 minutes.</div>
   </div>
 
-  <!-- Recent clips history — survives refresh/back-navigation, unlike clipsResultBox above -->
-  <div id="clipHistorySection" style="display:none; margin-top:24px;">
-    <div class="sec-label" style="margin-bottom:12px;">Your Recent Clips (last 24h)</div>
-    <div id="clipHistoryList"></div>
-  </div>
-
   <div class="ticker-wrap">
     <div class="ticker">
       <span class="ticker-item ticker-item-pink">AI CLIPPING</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
@@ -739,6 +799,166 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
       <div class="stat-box"><div class="stat-num">2–5<span class="accent-pink">m</span></div><div class="stat-label">Avg Processing Time</div></div>
       <div class="stat-box"><div class="stat-num">24<span class="accent-pink">h</span></div><div class="stat-label">Auto Delete Timer</div></div>
       <div class="stat-5th"><div class="stat-num">₹149<span class="accent-pink">/mo</span></div><div class="stat-label">Start with Starter — 5x cheaper than KlipRok</div></div>
+    </div>
+  </div>
+
+  <!-- Caption Styles — Coming Soon -->
+  <div class="features-section" style="padding-top:0;">
+    <div class="sec-label sec-label-pink">Coming Soon</div>
+    <div class="caption-heading">Caption Styles.</div>
+    <div class="caption-heading-ghost">Built Right In.</div>
+    <p class="caption-sub">Burned-in captions for every clip — pick a style and it's done. No editing app needed.</p>
+
+    <!-- Row 1: scrolls left -->
+    <div class="marquee-wrap">
+      <div class="marquee-track">
+        <div class="caption-card">
+          <div class="caption-preview style-bold-pop"><span>BOLD<span class="accent">POP</span></span></div>
+          <div class="caption-label-bar"><span class="caption-name">Bold Pop</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-neon-glow"><span>NEON GLOW</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Neon Glow</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Karaoke</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-outline"><span>OUTLINE</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Outline</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-word-pop"><span>WORD <span class="accent">POP</span></span></div>
+          <div class="caption-label-bar"><span class="caption-name">Word Pop</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-classic-bold"><span>CLASSIC</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Classic Bold</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-meme"><span>MEME</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Meme Impact</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-bounce"><span>BOUNCE</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Bounce</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <!-- duplicate set for seamless loop -->
+        <div class="caption-card">
+          <div class="caption-preview style-bold-pop"><span>BOLD<span class="accent">POP</span></span></div>
+          <div class="caption-label-bar"><span class="caption-name">Bold Pop</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-neon-glow"><span>NEON GLOW</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Neon Glow</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Karaoke</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-outline"><span>OUTLINE</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Outline</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-word-pop"><span>WORD <span class="accent">POP</span></span></div>
+          <div class="caption-label-bar"><span class="caption-name">Word Pop</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-classic-bold"><span>CLASSIC</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Classic Bold</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-meme"><span>MEME</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Meme Impact</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-bounce"><span>BOUNCE</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Bounce</span><span class="soon-badge">Soon</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: scrolls right -->
+    <div class="marquee-wrap">
+      <div class="marquee-track reverse">
+        <div class="caption-card">
+          <div class="caption-preview style-minimal"><span>Minimal Clean</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Minimal Clean</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-gradient"><span>GRADIENT</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Gradient Fill</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-cinematic"><span>Cinematic</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Cinematic</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-red-glow"><span>RED GLOW</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Red Glow</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-boxed"><span>BOXED</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Boxed</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-yellow-highlight"><span>HIGHLIGHT</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Yellow Highlight</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-duotone"><span>DUOTONE</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Duotone</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-shake"><span>SHAKE IT</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Shake</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <!-- duplicate set for seamless loop -->
+        <div class="caption-card">
+          <div class="caption-preview style-minimal"><span>Minimal Clean</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Minimal Clean</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-gradient"><span>GRADIENT</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Gradient Fill</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-cinematic"><span>Cinematic</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Cinematic</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-red-glow"><span>RED GLOW</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Red Glow</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-boxed"><span>BOXED</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Boxed</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-yellow-highlight"><span>HIGHLIGHT</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Yellow Highlight</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-duotone"><span>DUOTONE</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Duotone</span><span class="soon-badge">Soon</span></div>
+        </div>
+        <div class="caption-card">
+          <div class="caption-preview style-shake"><span>SHAKE IT</span></div>
+          <div class="caption-label-bar"><span class="caption-name">Shake</span><span class="soon-badge">Soon</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="caption-cta">
+      <div class="caption-cta-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+      </div>
+      <div class="caption-cta-text">
+        <h4>Custom caption styles are coming</h4>
+        <p>Pick a style, and it'll be burned into your clips automatically. Launching soon.</p>
+      </div>
     </div>
   </div>
 
@@ -851,42 +1071,9 @@ function switchMode(m){
   if(!isT){
     document.getElementById('clipLoginWall').style.display = isLoggedIn ? 'none' : 'block';
     document.getElementById('clipsResultBox').style.display = 'none';
-    if(isLoggedIn) loadClipHistory();
   }
 }
 
-async function loadClipHistory(){
-  const historySection = document.getElementById('clipHistorySection');
-  const historyList = document.getElementById('clipHistoryList');
-  try {
-    const res = await fetch(`/clip-history/${encodeURIComponent(userEmail)}`);
-    const data = await res.json();
-    if(!data.success || !data.data || data.data.length === 0){
-      historySection.style.display = 'none';
-      return;
-    }
-
-    historyList.innerHTML = data.data.map(job => `
-      <div style="margin-bottom:16px;">
-        <div style="font-size:13px;color:var(--sub);margin-bottom:8px;word-break:break-all;">${job.ytUrl}</div>
-        ${job.clips.map((clip, i) => `
-          <div class="clip-card">
-            <div class="clip-title">${clip.title || 'Clip ' + (i+1)}</div>
-            <div class="clip-reason">${clip.reason || ''}</div>
-            <div class="clip-meta">
-              <span class="clip-duration">⏱ ${clip.duration}s</span>
-              <a class="clip-download-btn" href="${clip.url}" download="clip_${i+1}.mp4" onclick="notifyDownload('${clip.s3Key}')">Download ↓</a>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `).join('');
-
-    historySection.style.display = 'block';
-  } catch(e){
-    historySection.style.display = 'none';
-  }
-}
 if(location.search.includes('mode=clips')) switchMode('clips');
 
 function openMenu(){ document.getElementById('menuOverlay').style.display = 'block'; }
