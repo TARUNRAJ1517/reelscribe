@@ -7,37 +7,38 @@
 <link rel="icon" type="image/png" href="/assets/videos/favicon.png">
 <link rel="canonical" href="https://reelscribe.site/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg: #09070f;
-  --card: #111020;
-  --card2: #17142a;
-  --border: #201c38;
-  --border2: #2c2650;
-  --purple: #8b5cf6;
-  --pink: #ec4899;
-  --text: #f0eaff;
-  --sub: #8a7fab;
-  --muted: #3d3660;
-  --grad: linear-gradient(135deg, #8b5cf6, #ec4899);
+  --bg: #0e0d10;
+  --s1: #161418;
+  --s2: #1c191e;
+  --border: #2a262b;
+  --border2: #38333a;
+  --red: #ff3b30;
+  --red-dim: #a32a22;
+  --text: #f5f2ee;
+  --sub: #a39d95;
+  --muted: #665f5c;
 }
 
 html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Archivo', -apple-system, sans-serif;
   max-width: 480px; margin: 0 auto;
   -webkit-font-smoothing: antialiased;
 }
+.mono { font-family: 'IBM Plex Mono', monospace; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
 /* NAV */
 .nav {
   position: sticky; top: 0; z-index: 999;
-  background: rgba(9,7,15,0.9);
+  background: rgba(14,13,16,0.9);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center;
@@ -45,22 +46,23 @@ body {
   padding: 13px 20px; gap: 10px;
 }
 .nav-logo {
-  font-size: 18px; font-weight: 900; letter-spacing: -0.5px;
-  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  flex-shrink: 0;
+  font-size: 16px; font-weight: 700; letter-spacing: -0.2px;
+  display: flex; align-items: center; gap: 7px; flex-shrink: 0;
 }
+.nav-logo .ndot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
 .nav-toggle {
   display: flex; flex: 1; max-width: 200px;
-  background: var(--card); border: 1px solid var(--border2);
-  border-radius: 10px; padding: 3px;
+  background: var(--s1); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 3px;
 }
 .nav-btn {
-  flex: 1; padding: 6px 4px; border-radius: 7px; border: none;
+  flex: 1; padding: 6px 4px; border-radius: 4px; border: none;
   background: transparent; color: var(--muted);
-  font-size: 11px; font-weight: 700; cursor: pointer;
-  font-family: 'Inter', sans-serif; transition: all .2s; white-space: nowrap;
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  font-family: 'Archivo', sans-serif; transition: all .2s; white-space: nowrap;
+  letter-spacing: 0.3px; text-transform: uppercase;
 }
-.nav-btn.active { background: var(--grad); color: white; }
+.nav-btn.active { background: var(--red); color: #1a0a08; }
 .nav-menu { background: none; border: none; color: var(--sub); font-size: 20px; cursor: pointer; flex-shrink: 0; }
 
 /* MENU OVERLAY */
@@ -69,14 +71,14 @@ body {
   background: rgba(0,0,0,.8); z-index: 9999; backdrop-filter: blur(8px);
 }
 .menu-box {
-  background: #0e0c1c; border: 1px solid var(--border2);
-  margin: 14px; border-radius: 22px; padding: 22px;
+  background: var(--s1); border: 1px solid var(--border2);
+  margin: 14px; border-radius: 12px; padding: 22px;
 }
 .menu-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
 .menu-box a {
   display: flex; align-items: center; gap: 10px;
   padding: 13px 0; text-decoration: none; color: var(--sub);
-  font-size: 14px; font-weight: 600;
+  font-size: 14px; font-weight: 500;
   border-bottom: 1px solid var(--border); transition: color .2s;
 }
 .menu-box a:last-of-type { border-bottom: none; }
@@ -84,425 +86,301 @@ body {
 .menu-close { background: none; border: none; color: var(--sub); font-size: 20px; cursor: pointer; }
 .menu-cta {
   width: 100%; margin-top: 18px; padding: 14px; border: none;
-  border-radius: 12px; color: white; font-size: 14px; font-weight: 700;
-  background: var(--grad); cursor: pointer; font-family: 'Inter', sans-serif;
+  border-radius: 4px; color: #1a0a08; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  background: var(--red); cursor: pointer; font-family: 'Archivo', sans-serif;
 }
 
 /* HERO */
-.hero {
-  padding: 48px 22px 36px;
-  position: relative; overflow: hidden;
+.hero { padding: 44px 22px 32px; }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 10.5px; font-weight: 500; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--red);
+  margin-bottom: 20px; font-family: 'IBM Plex Mono', monospace;
 }
-.hero::after {
-  content: '';
-  position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
-  width: 360px; height: 360px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(139,92,246,0.12), transparent 65%);
-  pointer-events: none;
-}
-.clip-hero-glow::after {
-  background: radial-gradient(circle, rgba(236,72,153,0.12), transparent 65%) !important;
-}
-
-.hero-label {
-  display: inline-flex; align-items: center; gap: 7px;
-  border: 1px solid var(--border2); border-radius: 100px;
-  padding: 5px 13px; margin-bottom: 22px;
-  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
-  text-transform: uppercase; color: var(--purple);
-}
-.hero-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--purple); animation: blink 2s infinite; }
-.hero-dot-pink { background: var(--pink); }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.eyebrow::before, .eyebrow::after { content: ''; width: 14px; height: 1px; background: var(--border2); }
+.eyebrow .edot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); flex-shrink:0; }
 
 .hero-h1 {
-  font-size: 36px; font-weight: 900; line-height: 1.05;
-  letter-spacing: -1.5px; margin-bottom: 6px;
-  text-transform: uppercase;
+  font-size: 32px; font-weight: 700; line-height: 1.12;
+  letter-spacing: -0.8px; margin-bottom: 16px;
 }
-.hero-h1-ghost {
-  font-size: 36px; font-weight: 900; line-height: 1.05;
-  letter-spacing: -1.5px; margin-bottom: 20px;
-  text-transform: uppercase;
-  color: transparent; -webkit-text-stroke: 1px var(--border2);
-}
-.hero-h1-accent {
-  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
+.hero-h1 em { font-style: normal; color: var(--red); }
 .hero-sub {
   font-size: 14px; color: var(--sub); line-height: 1.7;
-  margin-bottom: 28px;
+  margin-bottom: 26px;
 }
-.hero-sub strong { color: var(--text); }
+.hero-sub strong { color: var(--text); font-weight: 600; }
 
 .hero-input-wrap {
-  display: flex; background: var(--card);
-  border: 1px solid var(--border2); border-radius: 14px; overflow: hidden;
-  margin-bottom: 12px;
+  display: flex; background: var(--s1);
+  border: 1px solid var(--border2); border-radius: 6px; overflow: hidden;
+  margin-bottom: 12px; transition: border-color .2s, box-shadow .2s;
 }
+.hero-input-wrap:focus-within { border-color: var(--red); box-shadow: 0 0 0 3px rgba(255,59,48,0.12); }
 .hero-input {
   flex: 1; padding: 15px 16px; background: transparent;
   border: none; outline: none; color: var(--text);
-  font-size: 14px; font-family: 'Inter', sans-serif;
+  font-size: 14px; font-family: 'Archivo', sans-serif;
 }
 .hero-input::placeholder { color: var(--muted); }
 .hero-input-btn {
-  padding: 12px 16px; border: none; background: var(--grad);
-  color: white; font-size: 13px; font-weight: 800;
-  cursor: pointer; font-family: 'Inter', sans-serif;
-  white-space: nowrap; letter-spacing: -0.2px;
+  padding: 12px 18px; border: none; background: var(--red);
+  color: #1a0a08; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif;
+  white-space: nowrap; transition: opacity .2s;
 }
+.hero-input-btn:hover { opacity: .88; }
 
-.hero-or { text-align: center; color: var(--muted); font-size: 12px; margin: 10px 0; }
+.hero-or { text-align: center; color: var(--muted); font-size: 11px; margin: 10px 0; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; }
 .hero-upload {
   width: 100%; padding: 13px; border: 1px solid var(--border2);
-  border-radius: 12px; background: transparent; color: var(--sub);
-  font-size: 13px; font-weight: 600; cursor: pointer;
-  font-family: 'Inter', sans-serif; transition: all .2s;
+  border-radius: 6px; background: transparent; color: var(--sub);
+  font-size: 12.5px; font-weight: 500; cursor: pointer;
+  font-family: 'Archivo', sans-serif; transition: all .2s;
   display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-.hero-upload:hover { border-color: var(--purple); color: var(--text); }
+.hero-upload:hover { border-color: var(--red); color: var(--text); }
 .hero-upload svg { width: 15px; height: 15px; }
 
-.trust-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.trust-pills { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 16px; }
 .trust-pill {
   display: flex; align-items: center; gap: 5px;
-  font-size: 11px; font-weight: 600; color: var(--sub);
+  font-size: 11px; font-weight: 500; color: var(--sub);
 }
-.trust-pill svg { width: 12px; height: 12px; color: var(--purple); }
+.trust-pill svg { width: 12px; height: 12px; color: var(--red); }
 
 .demo-video-box {
-  margin-top: 18px; border-radius: 16px; overflow: hidden;
-  border: 1px solid var(--border2); background: var(--card);
+  margin-top: 18px; border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--border2); background: var(--s1);
 }
 .demo-video-box video { display: block; width: 100%; height: auto; }
 
-.feature-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
-.feature-tag {
-  display: flex; align-items: center; gap: 6px;
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 100px; padding: 6px 12px;
-  font-size: 11px; font-weight: 600; color: var(--sub);
-}
-.feature-tag svg { width: 12px; height: 12px; }
-
 #previewBox {
-  display: none; margin-top: 14px;
-  background: var(--card); border: 1px solid var(--border2);
-  border-radius: 16px; padding: 16px;
+  display: none; margin-top: 16px;
+  background: var(--s1); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 18px;
 }
-#previewBox h4 { font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+#previewBox h4 { font-size: 12px; font-weight: 600; margin-bottom: 10px; color: var(--sub); letter-spacing: 1px; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; }
 #previewText { font-size: 13px; color: var(--sub); line-height: 1.7; white-space: pre-wrap; }
 #loginSection { display: none; margin-top: 14px; }
 #dashboardSection { display: none; margin-top: 14px; }
 .lock-text { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
 #googleBtn {
-  width: 100%; padding: 13px; border: none; border-radius: 12px;
-  background: white; color: #333; font-size: 13px; font-weight: 700;
+  width: 100%; padding: 13px; border: none; border-radius: 6px;
+  background: white; color: #333; font-size: 13px; font-weight: 600;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  gap: 8px; font-family: 'Inter', sans-serif;
+  gap: 8px; font-family: 'Archivo', sans-serif;
 }
 .g-logo { width: 16px; height: 16px; }
 .dash-btn {
-  width: 100%; padding: 13px; border: none; border-radius: 12px;
-  background: var(--grad); color: white; font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: 'Inter', sans-serif;
+  width: 100%; padding: 13px; border: none; border-radius: 6px;
+  background: var(--red); color: #1a0a08; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif;
 }
 
-/* CLIPS RESULT BOX */
-#clipsResultBox {
-  display: none; margin: 0 22px 24px;
-  background: var(--card); border: 1px solid var(--border2);
-  border-radius: 20px; padding: 20px;
-}
-#clipsResultBox h3 {
-  font-size: 16px; font-weight: 800; margin-bottom: 4px;
-}
-#clipsResultBox p {
-  font-size: 12px; color: var(--sub); margin-bottom: 16px;
-}
-.clip-card {
-  background: var(--card2); border: 1px solid var(--border);
-  border-radius: 14px; padding: 16px; margin-bottom: 10px;
-}
-.clip-card:last-child { margin-bottom: 0; }
-.clip-title {
-  font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text);
-}
-.clip-reason {
-  font-size: 12px; color: var(--sub); margin-bottom: 12px; line-height: 1.5;
-}
-.clip-meta {
-  display: flex; align-items: center; justify-content: space-between;
-}
-.clip-duration {
-  font-size: 11px; color: var(--muted); font-weight: 600;
-}
-.clip-download-btn {
-  padding: 8px 16px; border: none; border-radius: 8px;
-  background: var(--grad); color: white; font-size: 12px; font-weight: 700;
-  cursor: pointer; font-family: 'Inter', sans-serif; text-decoration: none;
-  display: inline-block;
-}
-.clip-delete-warn {
-  font-size: 11px; color: var(--muted); text-align: center;
-  margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);
-}
-
-/* PROCESSING STATE */
-.processing-box {
-  text-align: center; padding: 24px 16px;
-}
+/* PROCESSING (used while a clip request is queued before redirect) */
+.processing-box { text-align: center; padding: 24px 16px; }
 .processing-spinner {
-  width: 40px; height: 40px; border-radius: 50%;
+  width: 36px; height: 36px; border-radius: 50%;
   border: 3px solid var(--border2);
-  border-top-color: var(--pink);
+  border-top-color: var(--red);
   animation: spin 1s linear infinite;
   margin: 0 auto 16px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-.processing-title { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+.processing-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
 .processing-sub { font-size: 12px; color: var(--sub); line-height: 1.6; }
 
 /* LOGIN WALL FOR CLIPS */
 #clipLoginWall {
   display: none; margin: 0 22px 24px;
-  background: var(--card); border: 1px solid var(--border2);
-  border-radius: 20px; padding: 28px 20px; text-align: center;
+  background: var(--s1); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 28px 20px; text-align: center;
 }
-#clipLoginWall h3 { font-size: 18px; font-weight: 900; margin-bottom: 8px; }
-#clipLoginWall p { font-size: 13px; color: var(--sub); margin-bottom: 20px; }
+#clipLoginWall h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+#clipLoginWall p { font-size: 13px; color: var(--sub); margin-bottom: 20px; line-height: 1.6; }
 .clip-login-btn {
-  width: 100%; padding: 14px; border: none; border-radius: 12px;
-  background: var(--grad); color: white; font-size: 14px; font-weight: 700;
-  cursor: pointer; font-family: 'Inter', sans-serif;
+  width: 100%; padding: 14px; border: none; border-radius: 6px;
+  background: var(--red); color: #1a0a08; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif;
 }
 
 /* SEC LABEL */
 .sec-label {
   display: flex; align-items: center; gap: 8px;
-  font-size: 10px; font-weight: 700; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--purple); margin-bottom: 14px;
+  font-size: 10.5px; font-weight: 500; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--red); margin-bottom: 16px;
+  font-family: 'IBM Plex Mono', monospace;
 }
-.sec-label::before {
-  content: ''; display: block;
-  width: 24px; height: 2px; background: var(--purple); flex-shrink: 0;
-}
-.sec-label-pink { color: var(--pink); }
-.sec-label-pink::before { background: var(--pink); }
+.sec-label::before { content: ''; display: block; width: 14px; height: 1px; background: var(--border2); flex-shrink: 0; }
 
 /* TICKER */
-.ticker-wrap {
-  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-  padding: 10px 0; overflow: hidden;
-}
-.ticker {
-  display: flex; gap: 32px; white-space: nowrap;
-  animation: ticker 18s linear infinite;
-}
+.ticker-wrap { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 10px 0; overflow: hidden; }
+.ticker { display: flex; gap: 32px; white-space: nowrap; animation: ticker 20s linear infinite; }
 @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 .ticker-item {
-  font-size: 11px; font-weight: 600; letter-spacing: 1px;
+  font-size: 10.5px; font-weight: 500; letter-spacing: 1px;
   text-transform: uppercase; color: var(--muted); flex-shrink: 0;
+  font-family: 'IBM Plex Mono', monospace;
 }
-.ticker-item span { color: var(--purple); }
-.ticker-item-pink span { color: var(--pink); }
+.ticker-item span { color: var(--red); }
 
 /* STATS */
 .stats-section { padding: 36px 22px; }
 .stats-grid {
   display: grid; grid-template-columns: 1fr 1fr;
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 20px; overflow: hidden;
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
 }
-.stat-box {
-  padding: 22px 20px; border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
+.stat-box { padding: 22px 20px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .stat-box:nth-child(2) { border-right: none; }
 .stat-box:nth-child(3) { border-bottom: none; }
 .stat-box:nth-child(4) { border-right: none; border-bottom: none; }
-.stat-num { font-size: 32px; font-weight: 900; letter-spacing: -1.5px; line-height: 1; margin-bottom: 4px; }
-.stat-num .accent { color: var(--purple); }
-.stat-num .accent-pink { color: var(--pink); }
-.stat-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+.stat-num { font-size: 30px; font-weight: 700; letter-spacing: -1px; line-height: 1; margin-bottom: 4px; }
+.stat-num .accent { color: var(--red); }
+.stat-label { font-size: 10px; font-weight: 500; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
 .stat-5th { grid-column: 1 / -1; padding: 18px 20px; border-top: 1px solid var(--border); text-align: center; }
-.stat-5th .stat-num { font-size: 28px; }
+.stat-5th .stat-num { font-size: 26px; }
 
 /* FEATURES */
 .features-section { padding: 0 22px 36px; }
-.feat-heading { font-size: 32px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 6px; }
-.feat-heading-ghost {
-  font-size: 32px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 20px;
-  color: transparent; -webkit-text-stroke: 1px var(--border2);
-}
+.feat-heading { font-size: 28px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.15; margin-bottom: 20px; }
+.feat-heading em { font-style: normal; color: var(--red); }
 .feat-sub { font-size: 14px; color: var(--sub); line-height: 1.6; margin-bottom: 22px; }
 .feat-cards { display: flex; flex-direction: column; gap: 10px; }
 .feat-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 18px; padding: 20px; transition: border-color .2s;
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px; transition: border-color .25s, transform .2s;
+  position: relative;
 }
-.feat-card:hover { border-color: rgba(139,92,246,0.4); }
-.feat-card-label {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.2);
-  border-radius: 100px; padding: 4px 10px;
-  font-size: 10px; font-weight: 700; letter-spacing: 1px;
-  text-transform: uppercase; color: var(--purple); margin-bottom: 14px;
-}
-.feat-card-label svg { width: 11px; height: 11px; }
-.feat-card-label-pink {
-  background: rgba(236,72,153,0.08); border-color: rgba(236,72,153,0.2); color: var(--pink);
-}
-.feat-card h3 { font-size: 18px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 8px; }
+.feat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.feat-card.live { background: #131013; border-color: rgba(255,59,48,0.4); }
+.feat-num { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 12px; letter-spacing: 1px; }
+.feat-card.live .feat-num { color: var(--red); }
+.feat-card h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 8px; }
 .feat-card p { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 16px; }
 .feat-stats { display: flex; gap: 24px; }
-.feat-stat-num { font-size: 22px; font-weight: 900; color: var(--purple); line-height: 1; }
-.feat-stat-num-pink { color: var(--pink); }
-.feat-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+.feat-stat-num { font-size: 20px; font-weight: 700; color: var(--red); line-height: 1; }
+.feat-stat-label { font-size: 10px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 3px; font-family: 'IBM Plex Mono', monospace; }
 
 /* HOW IT WORKS */
 .how-section { padding: 0 22px 36px; }
-.how-heading { font-size: 32px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 6px; }
-.how-heading-ghost {
-  font-size: 32px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 20px;
-  color: transparent; -webkit-text-stroke: 1px var(--border2);
-}
+.how-heading { font-size: 28px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.15; margin-bottom: 6px; }
 .how-sub { font-size: 13px; color: var(--sub); margin-bottom: 24px; }
 .steps { display: flex; flex-direction: column; }
-.step {
-  background: var(--card); border: 1px solid var(--border);
-  padding: 20px; border-bottom: none; position: relative;
-}
-.step:first-child { border-radius: 16px 16px 0 0; }
-.step:last-child { border-radius: 0 0 16px 16px; border-bottom: 1px solid var(--border); }
-.step-num-label { font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: 1px; margin-bottom: 14px; }
+.step { background: var(--s1); border: 1px solid var(--border); padding: 20px; border-bottom: none; position: relative; }
+.step:first-child { border-radius: 10px 10px 0 0; }
+.step:last-child { border-radius: 0 0 10px 10px; border-bottom: 1px solid var(--border); }
+.step-num-label { font-size: 10px; color: var(--muted); font-weight: 500; letter-spacing: 1.5px; margin-bottom: 14px; font-family: 'IBM Plex Mono', monospace; }
 .step-icon {
-  width: 40px; height: 40px; border-radius: 12px;
-  background: var(--card2); border: 1px solid var(--border2);
+  width: 38px; height: 38px; border-radius: 6px;
+  background: var(--s2); border: 1px solid var(--border2);
   display: flex; align-items: center; justify-content: center; margin-bottom: 12px;
 }
-.step-icon svg { width: 18px; height: 18px; color: var(--purple); }
-.step-icon-pink svg { color: var(--pink); }
-.step h4 { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 6px; }
+.step-icon svg { width: 17px; height: 17px; color: var(--red); }
+.step h4 { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 6px; }
 .step p { font-size: 13px; color: var(--sub); line-height: 1.6; }
 
 /* PLATFORMS */
 .platforms-section { padding: 0 22px 36px; }
 .platforms-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 .p-icon {
-  width: 48px; height: 48px; background: var(--card);
-  border: 1px solid var(--border); border-radius: 13px;
-  display: flex; align-items: center; justify-content: center; transition: all .2s;
+  width: 46px; height: 46px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; transition: transform .2s;
 }
-.p-icon:hover { border-color: var(--purple); transform: translateY(-2px); }
-.p-icon img { width: 22px; height: 22px; filter: invert(1); opacity: 0.6; }
+.p-icon:hover { transform: translateY(-2px); }
+.p-icon img { width: 20px; height: 20px; }
 
 /* CTA */
 .cta-section {
   margin: 0 22px 36px;
-  background: var(--card); border: 1px solid var(--border2);
-  border-radius: 22px; padding: 32px 22px; text-align: center;
-  position: relative; overflow: hidden;
+  background: var(--s1); border: 1px solid var(--border2);
+  border-radius: 12px; padding: 32px 22px; text-align: center;
 }
-.cta-section::before {
-  content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-  width: 280px; height: 280px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(139,92,246,0.15), transparent 65%);
-  pointer-events: none;
-}
-.cta-section-pink::before {
-  background: radial-gradient(circle, rgba(236,72,153,0.15), transparent 65%);
-}
-.cta-h { font-size: 26px; font-weight: 900; letter-spacing: -0.8px; margin-bottom: 10px; }
+.cta-h { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 10px; }
 .cta-p { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 22px; }
 .cta-btn {
-  width: 100%; padding: 15px; border: none; border-radius: 13px;
-  background: var(--grad); color: white; font-size: 15px; font-weight: 800;
-  cursor: pointer; font-family: 'Inter', sans-serif; letter-spacing: -0.2px;
+  width: 100%; padding: 15px; border: none; border-radius: 6px;
+  background: var(--red); color: #1a0a08; font-size: 13.5px; font-weight: 600;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif;
   transition: opacity .2s;
 }
-.cta-btn:hover { opacity: 0.85; }
+.cta-btn:hover { opacity: 0.88; }
+.cta-btn-outline {
+  width: 100%; margin-top: 10px; padding: 15px; border-radius: 6px;
+  background: transparent; border: 1px solid var(--border2); color: var(--sub);
+  font-size: 13.5px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif; transition: all .2s;
+}
+.cta-btn-outline:hover { color: var(--text); border-color: var(--red); }
 
 #clipPage { display: none; }
 
-/* Plans */
+/* Plans (teaser — full detail lives on /pricing.html) */
 .plans-section { padding: 0 22px 36px; }
 .plans-grid { display: flex; flex-direction: column; gap: 10px; }
-.plan-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 18px; padding: 20px; position: relative;
-}
-.plan-card-popular {
-  border-color: rgba(236,72,153,0.4);
-  background: linear-gradient(135deg, rgba(139,92,246,0.05), rgba(236,72,153,0.05));
-}
+.plan-card { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 20px; position: relative; }
+.plan-card.popular { background: #131013; border-color: rgba(255,59,48,0.4); }
 .plan-badge {
-  position: absolute; top: -1px; right: 18px;
-  background: var(--grad); color: white;
-  font-size: 9px; font-weight: 800; letter-spacing: 1px;
-  text-transform: uppercase; padding: 4px 10px;
-  border-radius: 0 0 8px 8px;
+  position: absolute; top: -10px; left: 18px;
+  background: var(--red); color: #1a0a08;
+  font-size: 9px; font-weight: 600; letter-spacing: 1.2px;
+  text-transform: uppercase; padding: 3px 9px;
+  border-radius: 2px; font-family: 'IBM Plex Mono', monospace;
 }
-.plan-name { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
-.plan-price { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin-bottom: 4px; }
-.plan-price span { font-size: 14px; font-weight: 600; color: var(--sub); }
+.plan-name { font-size: 12px; font-weight: 600; color: var(--sub); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.plan-price { font-size: 26px; font-weight: 700; letter-spacing: -0.8px; margin-bottom: 4px; }
+.plan-price span { font-size: 13px; font-weight: 500; color: var(--muted); }
 .plan-desc { font-size: 12px; color: var(--sub); margin-bottom: 14px; line-height: 1.5; }
 .plan-features { display: flex; flex-direction: column; gap: 7px; }
-.plan-feat {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 12px; color: var(--sub); font-weight: 500;
-}
-.plan-feat svg { width: 13px; height: 13px; color: var(--purple); flex-shrink: 0; }
-.plan-feat-pink svg { color: var(--pink); }
+.plan-feat { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--sub); font-weight: 400; }
+.plan-feat svg { width: 12px; height: 12px; color: var(--red); flex-shrink: 0; }
 .plan-cta {
   width: 100%; margin-top: 16px; padding: 12px; border: none;
-  border-radius: 10px; background: var(--card2); border: 1px solid var(--border2);
-  color: var(--sub); font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: 'Inter', sans-serif; transition: all .2s;
+  border-radius: 4px; background: transparent; border: 1px solid var(--border2);
+  color: var(--sub); font-size: 12.5px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif; transition: all .2s;
 }
-.plan-cta:hover { border-color: var(--purple); color: var(--text); }
-.plan-cta-primary { background: var(--grad); color: white; border: none; }
-.plan-cta-primary:hover { opacity: 0.9; color: white; }
+.plan-cta:hover { border-color: var(--red); color: var(--text); }
+.plan-cta-primary { background: var(--red); color: #1a0a08; border: none; }
+.plan-cta-primary:hover { opacity: 0.88; color: #1a0a08; }
 
 /* Testimonials */
 .testimonials-section { padding: 0 22px 36px; }
 .testi-cards { display: flex; flex-direction: column; gap: 10px; }
-.testi-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 18px;
-}
-.testi-stars { color: var(--purple); font-size: 13px; margin-bottom: 10px; letter-spacing: 2px; }
-.testi-stars-pink { color: var(--pink); }
-.testi-text { font-size: 13px; color: var(--sub); line-height: 1.7; margin-bottom: 12px; font-style: italic; }
+.testi-card { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+.testi-stars { color: var(--red); font-size: 12px; margin-bottom: 10px; letter-spacing: 2px; }
+.testi-text { font-size: 13px; color: var(--sub); line-height: 1.7; margin-bottom: 12px; }
 .testi-author { display: flex; align-items: center; gap: 10px; }
 .testi-avatar {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: var(--grad); display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 800; color: white; flex-shrink: 0;
+  width: 30px; height: 30px; border-radius: 4px;
+  background: var(--s2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--red); flex-shrink: 0;
+  font-family: 'IBM Plex Mono', monospace;
 }
-.testi-name { font-size: 13px; font-weight: 700; }
+.testi-name { font-size: 13px; font-weight: 600; }
 .testi-handle { font-size: 11px; color: var(--muted); }
 
 footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
-.foot-logo {
-  font-size: 16px; font-weight: 900; letter-spacing: -0.4px;
-  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  margin-bottom: 4px;
-}
-.foot-tag { font-size: 11px; color: var(--muted); margin-bottom: 20px; }
+.foot-logo { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
+.foot-logo .fdot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
+.foot-tag { font-size: 11px; color: var(--muted); margin-bottom: 20px; font-family: 'IBM Plex Mono', monospace; }
 .foot-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 20px; }
 .foot-links a { color: var(--muted); font-size: 12px; text-decoration: none; transition: color .2s; }
 .foot-links a:hover { color: var(--sub); }
 .foot-sep { height: 1px; background: var(--border); margin-bottom: 16px; }
-.foot-copy { font-size: 11px; color: var(--muted); text-align: center; }
+.foot-copy { font-size: 11px; color: var(--muted); text-align: center; font-family: 'IBM Plex Mono', monospace; }
 
 /* CAPTION STYLES — COMING SOON */
-.caption-heading { font-size: 30px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 4px; }
-.caption-heading-ghost {
-  font-size: 30px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 14px;
-  color: transparent; -webkit-text-stroke: 1px var(--border2);
-}
+.caption-heading { font-size: 26px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.15; margin-bottom: 14px; }
+.caption-heading em { font-style: normal; color: var(--red); }
 .caption-sub { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 20px; }
 
 .marquee-wrap {
@@ -510,57 +388,45 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
-.marquee-track { display: flex; gap: 12px; width: max-content; animation: scrollLeft 28s linear infinite; }
-.marquee-track.reverse { animation: scrollRight 28s linear infinite; }
+.marquee-track { display: flex; gap: 12px; width: max-content; animation: scrollLeft 26s linear infinite; }
+.marquee-track.reverse { animation: scrollRight 26s linear infinite; }
 @keyframes scrollLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @keyframes scrollRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 
-.caption-card { flex-shrink: 0; width: 132px; border-radius: 14px; overflow: hidden; background: var(--card); border: 1px solid var(--border); }
+.caption-card { flex-shrink: 0; width: 128px; border-radius: 8px; overflow: hidden; background: var(--s1); border: 1px solid var(--border); }
 .caption-preview {
-  height: 100px; background: #000; display: flex; align-items: center; justify-content: center; padding: 8px;
-  background-image:
-    radial-gradient(circle at 30% 20%, rgba(139,92,246,0.18), transparent 60%),
-    radial-gradient(circle at 70% 80%, rgba(236,72,153,0.14), transparent 60%);
+  height: 96px; background: #000; display: flex; align-items: center; justify-content: center; padding: 8px;
 }
-.caption-preview span { font-size: 13px; font-weight: 800; letter-spacing: -0.2px; text-align: center; }
-.caption-label-bar { display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 8px 10px; background: var(--card2); border-top: 1px solid var(--border); }
-.caption-name { font-size: 9.5px; font-weight: 700; color: var(--text); letter-spacing: 0.2px; }
+.caption-preview span { font-size: 12.5px; font-weight: 700; letter-spacing: -0.2px; text-align: center; color: #fff; }
+.caption-label-bar { display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 8px 10px; background: var(--s2); border-top: 1px solid var(--border); }
+.caption-name { font-size: 9.5px; font-weight: 600; color: var(--text); letter-spacing: 0.2px; }
 .soon-badge {
-  font-size: 7.5px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase;
-  background: var(--grad); color: white; padding: 3px 6px; border-radius: 100px; flex-shrink: 0;
+  font-size: 7.5px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
+  background: var(--red); color: #1a0a08; padding: 3px 6px; border-radius: 2px; flex-shrink: 0;
+  font-family: 'IBM Plex Mono', monospace;
 }
-
-.style-bold-pop span { color: #fff; }
-.style-bold-pop .accent { color: var(--pink); }
-.style-neon-glow span { color: #fff; text-shadow: 0 0 10px var(--purple), 0 0 20px var(--purple); }
-.style-karaoke span { color: var(--muted); }
-.style-karaoke .filled { color: var(--pink); text-shadow: 0 0 8px rgba(236,72,153,0.6); }
 .style-outline span { color: transparent; -webkit-text-stroke: 1.3px #fff; }
-.style-minimal span { color: #fff; background: rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 6px; font-size: 11px; }
-.style-gradient span { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.style-cinematic span { color: #fff; font-style: italic; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; font-size: 10.5px; }
-.style-red-glow span { color: #fff; text-shadow: 0 0 10px #ec4899, 0 0 22px #ec4899; }
-.style-word-pop span { color: #fff; }
-.style-word-pop .accent { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; padding: 2px 4px; }
-.style-boxed span { background: #fff; color: #09070f; padding: 4px 9px; border-radius: 5px; font-size: 11px; }
-.style-typewriter span { color: #fff; font-family: monospace; letter-spacing: 0.5px; font-size: 11px; }
-.style-classic-bold span { color: #fff; -webkit-text-stroke: 2px #000; paint-order: stroke fill; font-size: 14px; }
-.style-yellow-highlight span { background: #ffe135; color: #09070f; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-.style-meme span { font-family: 'Inter', sans-serif; text-transform: uppercase; color: #fff; -webkit-text-stroke: 1.8px #000; paint-order: stroke fill; font-size: 13px; }
+.style-red span { color: #fff; text-shadow: 0 0 10px var(--red), 0 0 20px var(--red); }
+.style-boxed span { background: #fff; color: #0e0d10; padding: 4px 9px; border-radius: 3px; font-size: 11px; }
+.style-mono span { color: #fff; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; font-size: 11px; }
+.style-classic span { color: #fff; -webkit-text-stroke: 2px #000; paint-order: stroke fill; font-size: 14px; }
+.style-highlight span { background: var(--red); color: #1a0a08; padding: 4px 8px; border-radius: 3px; font-size: 11px; }
+.style-karaoke span { color: var(--muted); }
+.style-karaoke .filled { color: var(--red); }
+.style-minimal span { color: #fff; background: rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 4px; font-size: 11px; }
 .style-bounce span { color: #fff; display: inline-block; animation: bouncePreview 1.2s ease-in-out infinite; }
 @keyframes bouncePreview { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-.style-duotone span { color: var(--pink); text-shadow: 2px 2px 0 var(--purple); }
 .style-shake span { color: #fff; display: inline-block; animation: shakePreview 0.35s ease-in-out infinite; }
 @keyframes shakePreview { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
 
 .caption-cta {
   margin-top: 6px; padding: 14px 16px;
-  background: var(--card); border: 1px dashed var(--border2);
-  border-radius: 14px; display: flex; align-items: center; gap: 12px;
+  background: var(--s1); border: 1px dashed var(--border2);
+  border-radius: 8px; display: flex; align-items: center; gap: 12px;
 }
-.caption-cta-icon { width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; background: var(--grad); display: flex; align-items: center; justify-content: center; }
-.caption-cta-icon svg { width: 18px; height: 18px; color: white; }
-.caption-cta-text h4 { font-size: 13px; font-weight: 800; margin-bottom: 2px; }
+.caption-cta-icon { width: 36px; height: 36px; border-radius: 6px; flex-shrink: 0; background: var(--s2); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; }
+.caption-cta-icon svg { width: 17px; height: 17px; color: var(--red); }
+.caption-cta-text h4 { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
 .caption-cta-text p { font-size: 11.5px; color: var(--sub); line-height: 1.4; }
 </style>
 </head>
@@ -568,42 +434,41 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
 
 <!-- NAV -->
 <nav class="nav">
-  <div class="nav-logo">ReelScribe</div>
+  <div class="nav-logo"><span class="ndot"></span>ReelScribe</div>
   <div class="nav-toggle">
     <button class="nav-btn active" id="btnT" onclick="switchMode('transcript')">Transcript</button>
     <button class="nav-btn" id="btnC" onclick="switchMode('clips')">Cut Clips</button>
   </div>
-  <button class="nav-menu" onclick="openMenu()">☰</button>
+  <button class="nav-menu" onclick="openMenu()" aria-label="Open menu">☰</button>
 </nav>
 
 <!-- MENU -->
 <div class="menu-overlay" id="menuOverlay">
-  <div class="menu-box">
+  <div class="menu-box" id="menuBox">
     <div class="menu-top">
-      <div class="nav-logo">ReelScribe</div>
-      <button class="menu-close" onclick="closeMenu()">✕</button>
+      <div class="nav-logo"><span class="ndot"></span>ReelScribe</div>
+      <button class="menu-close" onclick="closeMenu()" aria-label="Close menu">✕</button>
     </div>
     <a href="/">Home</a>
     <a href="/pricing.html">Pricing</a>
     <a href="/dashboard.html" id="menuDashTranscript" style="display:none;">Transcription Dashboard</a>
     <a href="/clips-dashboard.html" id="menuDashClips" style="display:none;">Clips Dashboard</a>
-    <button class="menu-cta" id="menuLoginBtn" onclick="window.location.href='/login.html'">Login→</button>
-    <button class="menu-cta" id="menuLogoutBtn" style="display:none; background:var(--card2); border:1px solid var(--border2);" onclick="logout()">Logout →</button>
+    <button class="menu-cta" id="menuLoginBtn" onclick="window.location.href='/login.html'">Login →</button>
+    <button class="menu-cta" id="menuLogoutBtn" style="display:none; background:var(--s2); border:1px solid var(--border2); color:var(--sub);" onclick="logout()">Logout →</button>
   </div>
 </div>
 
 <!-- TRANSCRIPT PAGE -->
 <div id="transcriptPage">
   <div class="hero">
-    <div class="hero-label"><span class="hero-dot"></span> AI Powered · Free to Start</div>
-    <div class="hero-h1">TURN ANY VIDEO<br>INTO A</div>
-    <div class="hero-h1-ghost">VIRAL <span class="hero-h1-accent">SCRIPT.</span></div>
+    <div class="eyebrow"><span class="edot"></span> AI Powered · Free to Start</div>
+    <h1 class="hero-h1">Turn any video into a <em>viral script.</em></h1>
     <p class="hero-sub">ReelScribe <strong>instantly extracts transcripts</strong> from any video. Study hooks, discover scripts, and create better content — in seconds.</p>
 
     <div class="hero-input-wrap">
-      <svg style="width:16px;height:16px;color:#3d3660;margin:auto 0 auto 14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <svg style="width:16px;height:16px;color:var(--muted);margin:auto 0 auto 14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
       <input class="hero-input" type="url" id="videoUrl" placeholder="Paste Instagram, YouTube, TikTok URL...">
-      <button class="hero-input-btn" onclick="transcribeVideo()">Get Transcript ↗</button>
+      <button class="hero-input-btn" onclick="transcribeVideo()">Get Transcript</button>
     </div>
 
     <div class="hero-or">or</div>
@@ -666,12 +531,11 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
 
   <div class="features-section">
     <div class="sec-label">Everything You Need</div>
-    <div class="feat-heading">Two Engines.</div>
-    <div class="feat-heading-ghost">One Platform.</div>
+    <h2 class="feat-heading">Two engines.<br>One <em>platform.</em></h2>
     <p class="feat-sub">Transcribe any video instantly. Cut viral clips automatically. All in one place.</p>
     <div class="feat-cards">
       <div class="feat-card">
-        <div class="feat-card-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>AI Transcript</div>
+        <div class="feat-num mono">01 — TRANSCRIPT</div>
         <h3>Extract Any Script</h3>
         <p>Paste a link or upload a file. ReelScribe transcribes speech with high accuracy — study viral hooks, discover what works, repurpose content.</p>
         <div class="feat-stats">
@@ -679,13 +543,13 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
           <div><div class="feat-stat-num">~5s</div><div class="feat-stat-label">Avg Speed</div></div>
         </div>
       </div>
-      <div class="feat-card">
-        <div class="feat-card-label feat-card-label-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>AI Clipping · Live</div>
+      <div class="feat-card live">
+        <div class="feat-num mono">02 — CLIPPING · LIVE</div>
         <h3>Cut Clips Automatically</h3>
         <p>Paste a YouTube link. AI finds the best moments and cuts 5–12 ready-to-post vertical clips. No timeline editing required.</p>
         <div class="feat-stats">
-          <div><div class="feat-stat-num feat-stat-num-pink">5–12</div><div class="feat-stat-label">Clips Per Video</div></div>
-          <div><div class="feat-stat-num feat-stat-num-pink">Auto</div><div class="feat-stat-label">Delete After 24h</div></div>
+          <div><div class="feat-stat-num">5–12</div><div class="feat-stat-label">Clips Per Video</div></div>
+          <div><div class="feat-stat-num">Auto</div><div class="feat-stat-label">Delete After 24h</div></div>
         </div>
       </div>
     </div>
@@ -693,8 +557,8 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
 
   <div class="how-section">
     <div class="sec-label">Process</div>
-    <div class="how-heading">How ReelScribe Works</div>
-    <div class="how-heading-ghost">Paste To Published.</div>
+    <h2 class="how-heading">How ReelScribe Works</h2>
+    <p class="how-sub">Paste to published — three steps.</p>
     <div class="steps">
       <div class="step">
         <div class="step-num-label">01</div>
@@ -720,11 +584,11 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
   <div class="platforms-section">
     <div class="sec-label">Supported Platforms</div>
     <div class="platforms-row">
-      <div class="p-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg" alt="YouTube"></div>
-      <div class="p-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram"></div>
-      <div class="p-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" alt="TikTok"></div>
-      <div class="p-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" alt="X"></div>
-      <div class="p-icon"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" alt="Facebook"></div>
+      <div class="p-icon" style="background:#fff;"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg" alt="YouTube"></div>
+      <div class="p-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);"><img style="filter:brightness(0) invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram"></div>
+      <div class="p-icon" style="background:#000;"><img style="filter:invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" alt="TikTok"></div>
+      <div class="p-icon" style="background:#000;"><img style="filter:invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" alt="X"></div>
+      <div class="p-icon" style="background:#1877F2;"><img style="filter:brightness(0) invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" alt="Facebook"></div>
     </div>
   </div>
 
@@ -737,16 +601,15 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
 
 <!-- CLIP PAGE -->
 <div id="clipPage">
-  <div class="hero clip-hero-glow">
-    <div class="hero-label"><span class="hero-dot hero-dot-pink"></span> AI Powered · Login Required</div>
-    <div class="hero-h1">TURN LONG VIDEOS</div>
-    <div class="hero-h1-ghost">INTO <span class="hero-h1-accent">VIRAL CLIPS.</span></div>
+  <div class="hero">
+    <div class="eyebrow"><span class="edot"></span> AI Powered · Login Required</div>
+    <h1 class="hero-h1">Turn long videos into <em>viral clips.</em></h1>
     <p class="hero-sub">Paste any YouTube link. AI scans the transcript, finds the <strong>best viral moments</strong>, and cuts 5–12 ready-to-post reels — automatically.</p>
 
     <div class="hero-input-wrap">
-      <svg style="width:16px;height:16px;color:#3d3660;margin:auto 0 auto 14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <svg style="width:16px;height:16px;color:var(--muted);margin:auto 0 auto 14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
       <input class="hero-input" type="url" id="clipUrl" placeholder="Paste YouTube video link...">
-      <button class="hero-input-btn" onclick="generateClips()">Generate ↗</button>
+      <button class="hero-input-btn" onclick="generateClips()">Generate</button>
     </div>
 
     <div class="trust-pills">
@@ -770,184 +633,79 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
     <button class="clip-login-btn" onclick="window.location.href='/login.html?next=' + encodeURIComponent('/?mode=clips')">Login →</button>
   </div>
 
-  <!-- Clips result box -->
-  <div id="clipsResultBox">
-    <h3>🎬 Your Clips Are Ready!</h3>
-    <p id="clipsCount">— clips generated</p>
-    <div id="clipsList"></div>
-    <div class="clip-delete-warn">⏰ Clips auto-delete in 24 hours. Downloaded clips delete in 5 minutes.</div>
-  </div>
-
   <div class="ticker-wrap">
     <div class="ticker">
-      <span class="ticker-item ticker-item-pink">AI CLIPPING</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">5–12 CLIPS PER VIDEO</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">YOUTUBE · REELS · SHORTS</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">AI BEST MOMENTS</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">AUTO DELETE · SECURE</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">AI CLIPPING</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">5–12 CLIPS PER VIDEO</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
-      <span class="ticker-item ticker-item-pink">AUTO DELETE · SECURE</span><span class="ticker-item"><span style="color:var(--pink)">✦</span></span>
+      <span class="ticker-item">AI CLIPPING</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">5–12 CLIPS PER VIDEO</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">YOUTUBE · REELS · SHORTS</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">AI BEST MOMENTS</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">AUTO DELETE · SECURE</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">AI CLIPPING</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">5–12 CLIPS PER VIDEO</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">AUTO DELETE · SECURE</span><span class="ticker-item"><span>✦</span></span>
     </div>
   </div>
 
   <div class="stats-section">
-    <div class="sec-label sec-label-pink">Impact</div>
+    <div class="sec-label">Impact</div>
     <div class="stats-grid">
-      <div class="stat-box"><div class="stat-num">5–12<span class="accent-pink">✦</span></div><div class="stat-label">Clips Per Video</div></div>
-      <div class="stat-box"><div class="stat-num">480<span class="accent-pink">p</span></div><div class="stat-label">Optimized Quality</div></div>
-      <div class="stat-box"><div class="stat-num">2–5<span class="accent-pink">m</span></div><div class="stat-label">Avg Processing Time</div></div>
-      <div class="stat-box"><div class="stat-num">24<span class="accent-pink">h</span></div><div class="stat-label">Auto Delete Timer</div></div>
-      <div class="stat-5th"><div class="stat-num">₹149<span class="accent-pink">/mo</span></div><div class="stat-label">Start with Starter — 5x cheaper than KlipRok</div></div>
+      <div class="stat-box"><div class="stat-num">5–12<span class="accent">✦</span></div><div class="stat-label">Clips Per Video</div></div>
+      <div class="stat-box"><div class="stat-num">480<span class="accent">p</span></div><div class="stat-label">Optimized Quality</div></div>
+      <div class="stat-box"><div class="stat-num">2–5<span class="accent">m</span></div><div class="stat-label">Avg Processing Time</div></div>
+      <div class="stat-box"><div class="stat-num">24<span class="accent">h</span></div><div class="stat-label">Auto Delete Timer</div></div>
+      <div class="stat-5th"><div class="stat-num">₹149<span class="accent">/mo</span></div><div class="stat-label">Start with Starter — 5x cheaper than KlipRok</div></div>
     </div>
   </div>
 
   <!-- Caption Styles — Coming Soon -->
   <div class="features-section" style="padding-top:0;">
-    <div class="sec-label sec-label-pink">Coming Soon</div>
-    <div class="caption-heading">Caption Styles.</div>
-    <div class="caption-heading-ghost">Built Right In.</div>
+    <div class="sec-label">Coming Soon</div>
+    <h2 class="caption-heading">Caption styles.<br>Built <em>right in.</em></h2>
     <p class="caption-sub">Burned-in captions for every clip — pick a style and it's done. No editing app needed.</p>
 
     <!-- Row 1: scrolls left -->
     <div class="marquee-wrap">
       <div class="marquee-track">
-        <div class="caption-card">
-          <div class="caption-preview style-bold-pop"><span>BOLD<span class="accent">POP</span></span></div>
-          <div class="caption-label-bar"><span class="caption-name">Bold Pop</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-neon-glow"><span>NEON GLOW</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Neon Glow</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Karaoke</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-outline"><span>OUTLINE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Outline</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-word-pop"><span>WORD <span class="accent">POP</span></span></div>
-          <div class="caption-label-bar"><span class="caption-name">Word Pop</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-classic-bold"><span>CLASSIC</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Classic Bold</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-meme"><span>MEME</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Meme Impact</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-bounce"><span>BOUNCE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Bounce</span><span class="soon-badge">Soon</span></div>
-        </div>
+        <div class="caption-card"><div class="caption-preview style-red"><span>BOLD POP</span></div><div class="caption-label-bar"><span class="caption-name">Bold Pop</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-red"><span>NEON GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Neon Glow</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div><div class="caption-label-bar"><span class="caption-name">Karaoke</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-outline"><span>OUTLINE</span></div><div class="caption-label-bar"><span class="caption-name">Outline</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-mono"><span>WORD POP</span></div><div class="caption-label-bar"><span class="caption-name">Word Pop</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-classic"><span>CLASSIC</span></div><div class="caption-label-bar"><span class="caption-name">Classic Bold</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-classic"><span>MEME</span></div><div class="caption-label-bar"><span class="caption-name">Meme Impact</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-bounce"><span>BOUNCE</span></div><div class="caption-label-bar"><span class="caption-name">Bounce</span><span class="soon-badge">Soon</span></div></div>
         <!-- duplicate set for seamless loop -->
-        <div class="caption-card">
-          <div class="caption-preview style-bold-pop"><span>BOLD<span class="accent">POP</span></span></div>
-          <div class="caption-label-bar"><span class="caption-name">Bold Pop</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-neon-glow"><span>NEON GLOW</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Neon Glow</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Karaoke</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-outline"><span>OUTLINE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Outline</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-word-pop"><span>WORD <span class="accent">POP</span></span></div>
-          <div class="caption-label-bar"><span class="caption-name">Word Pop</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-classic-bold"><span>CLASSIC</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Classic Bold</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-meme"><span>MEME</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Meme Impact</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-bounce"><span>BOUNCE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Bounce</span><span class="soon-badge">Soon</span></div>
-        </div>
+        <div class="caption-card"><div class="caption-preview style-red"><span>BOLD POP</span></div><div class="caption-label-bar"><span class="caption-name">Bold Pop</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-red"><span>NEON GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Neon Glow</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div><div class="caption-label-bar"><span class="caption-name">Karaoke</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-outline"><span>OUTLINE</span></div><div class="caption-label-bar"><span class="caption-name">Outline</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-mono"><span>WORD POP</span></div><div class="caption-label-bar"><span class="caption-name">Word Pop</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-classic"><span>CLASSIC</span></div><div class="caption-label-bar"><span class="caption-name">Classic Bold</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-classic"><span>MEME</span></div><div class="caption-label-bar"><span class="caption-name">Meme Impact</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-bounce"><span>BOUNCE</span></div><div class="caption-label-bar"><span class="caption-name">Bounce</span><span class="soon-badge">Soon</span></div></div>
       </div>
     </div>
 
     <!-- Row 2: scrolls right -->
     <div class="marquee-wrap">
       <div class="marquee-track reverse">
-        <div class="caption-card">
-          <div class="caption-preview style-minimal"><span>Minimal Clean</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Minimal Clean</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-gradient"><span>GRADIENT</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Gradient Fill</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-cinematic"><span>Cinematic</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Cinematic</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-red-glow"><span>RED GLOW</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Red Glow</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-boxed"><span>BOXED</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Boxed</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-yellow-highlight"><span>HIGHLIGHT</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Yellow Highlight</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-duotone"><span>DUOTONE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Duotone</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-shake"><span>SHAKE IT</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Shake</span><span class="soon-badge">Soon</span></div>
-        </div>
+        <div class="caption-card"><div class="caption-preview style-minimal"><span>Minimal Clean</span></div><div class="caption-label-bar"><span class="caption-name">Minimal Clean</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-mono"><span>GRADIENT</span></div><div class="caption-label-bar"><span class="caption-name">Gradient Fill</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-minimal"><span>Cinematic</span></div><div class="caption-label-bar"><span class="caption-name">Cinematic</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-red"><span>RED GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Red Glow</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-boxed"><span>BOXED</span></div><div class="caption-label-bar"><span class="caption-name">Boxed</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-highlight"><span>HIGHLIGHT</span></div><div class="caption-label-bar"><span class="caption-name">Highlight</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-classic"><span>DUOTONE</span></div><div class="caption-label-bar"><span class="caption-name">Duotone</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-shake"><span>SHAKE IT</span></div><div class="caption-label-bar"><span class="caption-name">Shake</span><span class="soon-badge">Soon</span></div></div>
         <!-- duplicate set for seamless loop -->
-        <div class="caption-card">
-          <div class="caption-preview style-minimal"><span>Minimal Clean</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Minimal Clean</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-gradient"><span>GRADIENT</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Gradient Fill</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-cinematic"><span>Cinematic</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Cinematic</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-red-glow"><span>RED GLOW</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Red Glow</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-boxed"><span>BOXED</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Boxed</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-yellow-highlight"><span>HIGHLIGHT</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Yellow Highlight</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-duotone"><span>DUOTONE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Duotone</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-shake"><span>SHAKE IT</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Shake</span><span class="soon-badge">Soon</span></div>
-        </div>
+        <div class="caption-card"><div class="caption-preview style-minimal"><span>Minimal Clean</span></div><div class="caption-label-bar"><span class="caption-name">Minimal Clean</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-mono"><span>GRADIENT</span></div><div class="caption-label-bar"><span class="caption-name">Gradient Fill</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-minimal"><span>Cinematic</span></div><div class="caption-label-bar"><span class="caption-name">Cinematic</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-red"><span>RED GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Red Glow</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-boxed"><span>BOXED</span></div><div class="caption-label-bar"><span class="caption-name">Boxed</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-highlight"><span>HIGHLIGHT</span></div><div class="caption-label-bar"><span class="caption-name">Highlight</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-classic"><span>DUOTONE</span></div><div class="caption-label-bar"><span class="caption-name">Duotone</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-shake"><span>SHAKE IT</span></div><div class="caption-label-bar"><span class="caption-name">Shake</span><span class="soon-badge">Soon</span></div></div>
       </div>
     </div>
 
@@ -963,25 +721,25 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
   </div>
 
   <div class="how-section">
-    <div class="sec-label sec-label-pink">Process</div>
-    <div class="how-heading">How Clip Generation Works</div>
-    <div class="how-heading-ghost">Link To Download.</div>
+    <div class="sec-label">Process</div>
+    <h2 class="how-heading">How Clip Generation Works</h2>
+    <p class="how-sub">Link to download — three steps.</p>
     <div class="steps">
       <div class="step">
         <div class="step-num-label">01</div>
-        <div class="step-icon step-icon-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
         <h4>Paste YouTube Link</h4>
         <p>Any public video — podcast, interview, tutorial, vlog.</p>
       </div>
       <div class="step">
         <div class="step-num-label">02</div>
-        <div class="step-icon step-icon-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
         <h4>AI Finds Best Moments</h4>
         <p>AI reads the full transcript and picks the highest hook-strength, most viral moments.</p>
       </div>
       <div class="step">
         <div class="step-num-label">03</div>
-        <div class="step-icon step-icon-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
         <h4>Download Your Clips</h4>
         <p>5–12 clips ready to download. Main video deleted instantly. Clips auto-delete in 24 hours.</p>
       </div>
@@ -989,9 +747,8 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
   </div>
 
   <div class="plans-section">
-    <div class="sec-label sec-label-pink">Pricing</div>
-    <div class="feat-heading">Simple Plans.</div>
-    <div class="feat-heading-ghost">No Surprises.</div>
+    <div class="sec-label">Pricing</div>
+    <h2 class="feat-heading">Simple plans.<br>No <em>surprises.</em></h2>
     <div class="plans-grid">
       <div class="plan-card">
         <div class="plan-name">Starter</div>
@@ -1004,22 +761,22 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
         </div>
         <button class="plan-cta" onclick="window.location.href='/pricing.html'">Get Starter →</button>
       </div>
-      <div class="plan-card plan-card-popular">
+      <div class="plan-card popular">
         <div class="plan-badge">Most Popular</div>
         <div class="plan-name">Pro</div>
         <div class="plan-price">₹299 <span>/month</span></div>
         <div class="plan-desc">For regular creators who need more clips.</div>
         <div class="plan-features">
-          <div class="plan-feat plan-feat-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>60 transcripts/month</div>
-          <div class="plan-feat plan-feat-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5–12 clips/video</div>
-          <div class="plan-feat plan-feat-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>15 videos/month</div>
+          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>60 transcripts/month</div>
+          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5–12 clips/video</div>
+          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>15 videos/month</div>
         </div>
         <button class="plan-cta plan-cta-primary" onclick="window.location.href='/pricing.html'">Get Pro →</button>
       </div>
     </div>
   </div>
 
-  <div class="cta-section cta-section-pink">
+  <div class="cta-section">
     <div class="cta-h">Ready to Cut Your First Clips?</div>
     <p class="cta-p">Start at ₹149/month. No hidden fees. Cancel anytime.</p>
     <button class="cta-btn" onclick="window.location.href='/pricing.html'">View Plans & Get Started →</button>
@@ -1027,7 +784,7 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
 </div>
 
 <footer>
-  <div class="foot-logo">ReelScribe</div>
+  <div class="foot-logo"><span class="fdot"></span>ReelScribe</div>
   <div class="foot-tag">Transcribe · Repurpose · Scale</div>
   <div class="foot-links">
     <a href="/about.html">About</a>
@@ -1037,10 +794,23 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
     <a href="/privacy.html">Privacy</a>
   </div>
   <div class="foot-sep"></div>
-  <p class="foot-copy">© 2026 ReelScribe. All rights reserved.</p>
+  <p class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</p>
 </footer>
 
 <script>
+/* ── AUTH NOTE (fix pending on backend) ─────────────────────────────
+   isLoggedIn abhi bhi client-supplied "email" query param /
+   localStorage par based hai. Isका matlab koi bhi ?email=x@y.com
+   URL mein daal kar khud ko "logged in" dikha sakta hai, without any
+   real verification, aur wahi email seedha /transcribe* APIs ko
+   identity ke roop mein chala jata hai.
+   Iska pakka fix sirf frontend se nahi ho sakta — backend ko Google
+   OAuth ke baad ek signed session cookie/JWT issue karna hoga, aur
+   har protected API call par us session ko server-side verify karna
+   hoga (raw email par trust karne ke bajaye). Jab tak wo backend
+   change nahi hota, ye ek known open issue hai — is comment ko
+   udate karna mat bhoolna jab backend session-based ho jaye.
+─────────────────────────────────────────────────────────────────── */
 const params = new URLSearchParams(window.location.search);
 const gEmail = params.get("email");
 if(gEmail) localStorage.setItem("userEmail", gEmail);
@@ -1067,10 +837,8 @@ function switchMode(m){
   document.getElementById('btnT').classList.toggle('active', isT);
   document.getElementById('btnC').classList.toggle('active', !isT);
 
-  // Show login wall if not logged in on clips tab
   if(!isT){
     document.getElementById('clipLoginWall').style.display = isLoggedIn ? 'none' : 'block';
-    document.getElementById('clipsResultBox').style.display = 'none';
   }
 }
 
@@ -1078,14 +846,39 @@ if(location.search.includes('mode=clips')) switchMode('clips');
 
 function openMenu(){ document.getElementById('menuOverlay').style.display = 'block'; }
 function closeMenu(){ document.getElementById('menuOverlay').style.display = 'none'; }
+
+// FIX: menu ab bahar click karne se, ya Escape dabane se bhi band ho jata hai
+document.getElementById('menuOverlay').addEventListener('click', function(e){
+  if(e.target === this) closeMenu();
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeMenu();
+});
+
 function googleLogin(){ window.location.href = "/auth/google"; }
 
+// FIX: file upload se pehle type/size check — pehle koi limit nahi thi,
+// koi bhi bahut badi file seedha server ko chali jaati thi
+const MAX_UPLOAD_MB = 250;
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("uploadTrigger").addEventListener("click", () => {
     document.getElementById("videoFile").click();
   });
   document.getElementById("videoFile").addEventListener("change", function(){
-    if(this.files.length){ transcribeFile(this.files[0]); }
+    if(!this.files.length) return;
+    const file = this.files[0];
+    const isMedia = file.type.startsWith("video/") || file.type.startsWith("audio/");
+    if(!isMedia){
+      alert("Please select a video or audio file.");
+      this.value = "";
+      return;
+    }
+    if(file.size > MAX_UPLOAD_MB * 1024 * 1024){
+      alert("File is too large. Please upload something under " + MAX_UPLOAD_MB + "MB.");
+      this.value = "";
+      return;
+    }
+    transcribeFile(file);
   });
 });
 
@@ -1162,16 +955,6 @@ function generateClips(){
   // Hand off to the Clips Dashboard — it opens straight up and starts
   // processing this URL immediately (see autostart handling there).
   window.location.href = "/clips-dashboard.html?ytUrl=" + encodeURIComponent(url) + "&autostart=1";
-}
-
-async function notifyDownload(s3Key){
-  try {
-    await fetch('/clip-downloaded', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ s3Key })
-    });
-  } catch(e){}
 }
 </script>
 </body>
