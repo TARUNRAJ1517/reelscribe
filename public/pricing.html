@@ -6,6 +6,11 @@
 <title>Pricing – ReelScribe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<!-- FIX: moved here from end of body — previously if a user clicked "Get Pro"
+     before this script (loaded at the very bottom) finished loading, `Razorpay`
+     was undefined and buyPlan() would throw. Loading it in <head> means it's
+     ready well before the user can interact with any button. -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -445,7 +450,10 @@ async function buyPlan(plan) {
     const res = await fetch("/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan, billing })
+      // FIX: email ab yahin bhej rahe hain — server iske order.notes mein
+      // lock kar deta hai aur verify-payment step pe wahi se wapas padhta hai,
+      // client se dobara nahi lete (tamper-proofing ke liye).
+      body: JSON.stringify({ plan, billing, email })
     });
 
     const data = await res.json();
@@ -466,15 +474,13 @@ async function buyPlan(plan) {
 
       handler: async function (response) {
         try {
+          // FIX: plan/billing/email ab nahi bhej rahe — server Razorpay order
+          // se khud padh leta hai (locked notes), taaki koi client-side
+          // tampering se sasta plan pay karke mehenga plan activate na kar sake.
           const verify = await fetch("/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ...response,
-              plan,
-              billing,
-              email
-            })
+            body: JSON.stringify({ ...response })
           });
 
           const result = await verify.json();
@@ -508,6 +514,5 @@ async function buyPlan(plan) {
   }
 }
 </script>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </body>
 </html>
