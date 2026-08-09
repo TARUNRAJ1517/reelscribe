@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ReelScribe — Transcribe Any Video Instantly</title>
-<link rel="icon" type="image/png" href="/assets/videos/favicon.png">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="canonical" href="https://reelscribe.site/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -798,33 +798,43 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
 </footer>
 
 <script>
-/* ── AUTH NOTE (fix pending on backend) ─────────────────────────────
-   isLoggedIn abhi bhi client-supplied "email" query param /
-   localStorage par based hai. Isका matlab koi bhi ?email=x@y.com
-   URL mein daal kar khud ko "logged in" dikha sakta hai, without any
-   real verification, aur wahi email seedha /transcribe* APIs ko
-   identity ke roop mein chala jata hai.
-   Iska pakka fix sirf frontend se nahi ho sakta — backend ko Google
-   OAuth ke baad ek signed session cookie/JWT issue karna hoga, aur
-   har protected API call par us session ko server-side verify karna
-   hoga (raw email par trust karne ke bajaye). Jab tak wo backend
-   change nahi hota, ye ek known open issue hai — is comment ko
-   udate karna mat bhoolna jab backend session-based ho jaye.
+/* ── AUTH NOTE ──────────────────────────────────────────────────────
+   FIXED: identity now comes from the server session (see /me), not
+   from a client-supplied "email" query param or localStorage. Those
+   are kept only to show the signed-in email in the UI instantly —
+   they carry no authentication weight. Every protected API call
+   below is verified server-side against the session.
 ─────────────────────────────────────────────────────────────────── */
-const params = new URLSearchParams(window.location.search);
-const gEmail = params.get("email");
-if(gEmail) localStorage.setItem("userEmail", gEmail);
-const userEmail = localStorage.getItem("userEmail");
-const isLoggedIn = !!(userEmail && userEmail !== "guest@example.com");
+let userEmail = localStorage.getItem("userEmail") || "";
+let isLoggedIn = false;
 
-if(isLoggedIn){
-  document.getElementById("menuDashTranscript").style.display = "block";
-  document.getElementById("menuDashClips").style.display = "block";
-  document.getElementById("menuLoginBtn").style.display = "none";
-  document.getElementById("menuLogoutBtn").style.display = "block";
+async function resolveIdentity(){
+  const params = new URLSearchParams(window.location.search);
+  const gEmail = params.get("email");
+  if(gEmail) localStorage.setItem("userEmail", gEmail);
+
+  try {
+    const me = await fetch("/me").then(r => r.json());
+    isLoggedIn = !!me.loggedIn;
+    userEmail = me.email || "";
+    if(userEmail) localStorage.setItem("userEmail", userEmail);
+    else localStorage.removeItem("userEmail");
+  } catch(e) {
+    isLoggedIn = false;
+  }
+
+  if(isLoggedIn){
+    document.getElementById("menuDashTranscript").style.display = "block";
+    document.getElementById("menuDashClips").style.display = "block";
+    document.getElementById("menuLoginBtn").style.display = "none";
+    document.getElementById("menuLogoutBtn").style.display = "block";
+  }
+
+  if(location.search.includes('mode=clips')) switchMode('clips');
 }
 
-function logout(){
+async function logout(){
+  try { await fetch("/logout", { method: "POST" }); } catch(e) {}
   localStorage.removeItem("userEmail");
   localStorage.removeItem("latestTranscript");
   window.location.href = "/";
@@ -842,12 +852,11 @@ function switchMode(m){
   }
 }
 
-if(location.search.includes('mode=clips')) switchMode('clips');
+resolveIdentity();
 
 function openMenu(){ document.getElementById('menuOverlay').style.display = 'block'; }
 function closeMenu(){ document.getElementById('menuOverlay').style.display = 'none'; }
 
-// FIX: menu ab bahar click karne se, ya Escape dabane se bhi band ho jata hai
 document.getElementById('menuOverlay').addEventListener('click', function(e){
   if(e.target === this) closeMenu();
 });
@@ -857,8 +866,6 @@ document.addEventListener('keydown', function(e){
 
 function googleLogin(){ window.location.href = "/auth/google"; }
 
-// FIX: file upload se pehle type/size check — pehle koi limit nahi thi,
-// koi bhi bahut badi file seedha server ko chali jaati thi
 const MAX_UPLOAD_MB = 250;
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("uploadTrigger").addEventListener("click", () => {
@@ -887,7 +894,6 @@ async function transcribeVideo(){
   if(!url){ alert("Please paste a URL first!"); return; }
   const previewBox = document.getElementById("previewBox");
   const previewText = document.getElementById("previewText");
-  const email = isLoggedIn ? userEmail : "guest@example.com";
   previewBox.style.display = "block";
   previewText.innerText = "⏳ Generating transcript...";
   document.getElementById("loginSection").style.display = "none";
@@ -895,7 +901,7 @@ async function transcribeVideo(){
   try {
     const res = await fetch("/transcribe-url", {
       method: "POST", headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ email, url })
+      body: JSON.stringify({ url })
     });
     const data = await res.json();
     handleResult(data);
@@ -907,13 +913,12 @@ async function transcribeVideo(){
 async function transcribeFile(file){
   const previewBox = document.getElementById("previewBox");
   const previewText = document.getElementById("previewText");
-  const email = isLoggedIn ? userEmail : "guest@example.com";
   previewBox.style.display = "block";
   previewText.innerText = "⏳ Uploading and processing...";
   document.getElementById("loginSection").style.display = "none";
   document.getElementById("dashboardSection").style.display = "none";
   const fd = new FormData();
-  fd.append("email", email); fd.append("video", file);
+  fd.append("video", file);
   try {
     const res = await fetch("/transcribe", { method: "POST", body: fd });
     const data = await res.json();
