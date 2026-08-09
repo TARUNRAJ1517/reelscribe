@@ -47,11 +47,13 @@ const INTERNAL_KEY  = process.env.INTERNAL_SECRET; // shared secret with EC2
 // FIX: clipDay / clipMonth ab exactly pricing.html ke promise se match karte hain —
 // pehle Starter 15/month, Pro 40/month, Agency 80/month de rahe the (promise se zyada generous).
 // Ab: Starter 2/day · 10/month | Pro 5/day · 15/month | Agency 15/day · 60/month
+// FIX: transcriptMonth ab pricing.html ke promise se match karta hai —
+// pehle Starter 20, Pro 50, Agency 100 the (page pe 30/60/150 likha tha).
 const PLAN_LIMITS = {
-  free:    { transcriptDay: 2,  transcriptMonth: 5,  clipDay: 0,  clipMonth: 0,  maxMB: 100,  maxVideoMinutes: 0   },
-  starter: { transcriptDay: 5,  transcriptMonth: 20, clipDay: 2,  clipMonth: 10, maxMB: 500,  maxVideoMinutes: 40  },
-  pro:     { transcriptDay: 10, transcriptMonth: 50, clipDay: 5,  clipMonth: 15, maxMB: 1024, maxVideoMinutes: 70  },
-  agency:  { transcriptDay: 20, transcriptMonth: 100,clipDay: 15, clipMonth: 60, maxMB: 2048, maxVideoMinutes: 120 },
+  free:    { transcriptDay: 2,  transcriptMonth: 5,   clipDay: 0,  clipMonth: 0,  maxMB: 100,  maxVideoMinutes: 0   },
+  starter: { transcriptDay: 5,  transcriptMonth: 30,  clipDay: 2,  clipMonth: 10, maxMB: 500,  maxVideoMinutes: 40  },
+  pro:     { transcriptDay: 10, transcriptMonth: 60,  clipDay: 5,  clipMonth: 15, maxMB: 1024, maxVideoMinutes: 70  },
+  agency:  { transcriptDay: 20, transcriptMonth: 150, clipDay: 15, clipMonth: 60, maxMB: 2048, maxVideoMinutes: 120 },
 };
 
 // ════════════════════════════════
@@ -871,8 +873,9 @@ const PLAN_PRICING = {
 
 app.post("/create-order", async (req, res) => {
   try {
-    const { plan, billing } = req.body;
+    const { plan, billing, email } = req.body;
     if (!PLAN_PRICING[plan]) return res.status(400).json({ success: false, error: "Invalid plan" });
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, error: "Valid email required" });
 
     const isYearly = billing === "yearly";
     // Yearly: user ko poore saal ka amount ek saath charge hota hai (discounted per-month rate * 12)
@@ -882,7 +885,10 @@ app.post("/create-order", async (req, res) => {
       amount:   amountRupees * 100,
       currency: "INR",
       receipt:  `receipt_${Date.now()}`,
-      notes:    { plan, billing: isYearly ? "yearly" : "monthly" },
+      // FIX: plan/billing/email locked into the order itself — /verify-payment
+      // reads these back from Razorpay instead of trusting the client's body,
+      // so a tampered client request can't buy a cheap plan and activate an expensive one.
+      notes:    { plan, billing: isYearly ? "yearly" : "monthly", email },
     });
     res.json({ success: true, order, key: process.env.RAZORPAY_KEY_ID });
   } catch (err) {
@@ -892,12 +898,10 @@ app.post("/create-order", async (req, res) => {
 
 app.post("/verify-payment", async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, plan, billing, email } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     if (typeof razorpay_order_id !== "string" || typeof razorpay_payment_id !== "string" || typeof razorpay_signature !== "string")
       return res.status(400).json({ success: false, error: "Invalid payment data" });
-    if (!isValidEmail(email))
-      return res.status(400).json({ success: false, error: "Valid email required" });
 
     const expectedSig = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -906,6 +910,22 @@ app.post("/verify-payment", async (req, res) => {
 
     if (expectedSig !== razorpay_signature)
       return res.status(400).json({ success: false, error: "Invalid payment signature" });
+
+    // FIX: plan/billing/email ab client body se NAHI, Razorpay order ke locked
+    // notes se liye jaate hain. Pehle client body se trust karte the — koi bhi
+    // Starter order pay karke response body mein plan:"agency" bhej sakta tha
+    // aur ₹149 mein Agency plan activate ho jata (signature check sirf payment
+    // genuine hone ko proves karta hai, requested plan ko nahi).
+    const order = await razorpay.orders.fetch(razorpay_order_id);
+    if (!order || order.status !== "paid")
+      return res.status(400).json({ success: false, error: "Order not paid" });
+
+    const plan    = order.notes?.plan;
+    const billing = order.notes?.billing;
+    const email   = order.notes?.email;
+
+    if (!isValidEmail(email))
+      return res.status(400).json({ success: false, error: "Order has no valid email on file" });
 
     const validPlans = ["starter", "pro", "agency"];
     if (!validPlans.includes(plan))
