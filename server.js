@@ -24,6 +24,7 @@ const Reel        = require("./models/Reel");
 const User        = require("./models/User");
 const GuestUsage  = require("./models/GuestUsage");
 const ClipJob     = require("./models/Clip");
+const AdminLog    = require("./models/AdminLog");
 const Razorpay    = require("razorpay");
 const crypto      = require("crypto");
 const FormData    = require("form-data"); // FIX: needed for multipart forward to EC2
@@ -227,6 +228,11 @@ const ADMIN_WINDOW_MS     = 15 * 60 * 1000; // 15 min
 const ADMIN_BLOCK_MS      = 30 * 60 * 1000; // block for 30 min after too many fails
 
 function adminAuth(req, res, next) {
+  // Session takes priority — set once by POST /admin/login, so the admin
+  // key itself doesn't need to be resent (and re-typed into a JS variable
+  // that lives in the page) on every single request.
+  if (req.session?.isAdmin) return next();
+
   const ip  = req.ip || "unknown"; // FIX: was reading a spoofable header directly
   const now = Date.now();
   const rec = adminAuthAttempts[ip];
@@ -236,6 +242,9 @@ function adminAuth(req, res, next) {
     return res.status(429).json({ success: false, error: `Too many incorrect attempts. Please try again in ${waitMin} minute${waitMin === 1 ? "" : "s"}.` });
   }
 
+  // Fallback: a raw key header still works too, kept only for backward
+  // compatibility with any existing integration — the session path above
+  // is what the admin panel itself uses now.
   if (req.headers["x-admin-key"] !== process.env.ADMIN_SECRET) {
     if (!rec || now - rec.windowStart > ADMIN_WINDOW_MS) {
       adminAuthAttempts[ip] = { count: 1, windowStart: now, blockedUntil: null };
@@ -1077,10 +1086,91 @@ app.get("/history", requireAuth, async (req, res) => {
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
+// Fire-and-forget audit log write — never blocks or fails the actual
+// admin action, since a logging hiccup should never break a real request.
+function logAdminAction(action, targetEmail, details, req) {
+  AdminLog.create({ action, targetEmail: targetEmail || null, details: details || "", ip: req.ip || "" })
+    .catch(() => {});
+}
+
+app.post("/admin/login", (req, res) => {
+  const ip  = req.ip || "unknown";
+  const now = Date.now();
+  const rec = adminAuthAttempts[ip];
+
+  if (rec?.blockedUntil && now < rec.blockedUntil) {
+    const waitMin = Math.ceil((rec.blockedUntil - now) / 60000);
+    return res.status(429).json({ success: false, error: `Too many incorrect attempts. Please try again in ${waitMin} minute${waitMin === 1 ? "" : "s"}.` });
+  }
+
+  if (req.body?.key !== process.env.ADMIN_SECRET) {
+    if (!rec || now - rec.windowStart > ADMIN_WINDOW_MS) {
+      adminAuthAttempts[ip] = { count: 1, windowStart: now, blockedUntil: null };
+    } else {
+      rec.count++;
+      if (rec.count >= ADMIN_MAX_ATTEMPTS) rec.blockedUntil = now + ADMIN_BLOCK_MS;
+    }
+    return res.status(401).json({ success: false, error: "Incorrect key." });
+  }
+
+  delete adminAuthAttempts[ip];
+  req.session.isAdmin = true;
+  logAdminAction("login", null, "Admin logged in", req);
+  res.json({ success: true });
+});
+
+app.post("/admin/logout", adminAuth, (req, res) => {
+  req.session.isAdmin = false;
+  res.json({ success: true });
+});
+
+app.get("/admin/stats", adminAuth, async (req, res) => {
+  try {
+    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+    const startOfWeek   = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const [totalUsers, newToday, newThisWeek, planCounts] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ createdAt: { $gte: startOfToday } }),
+      User.countDocuments({ createdAt: { $gte: startOfWeek } }),
+      User.aggregate([{ $group: { _id: { $ifNull: ["$plan", "free"] }, count: { $sum: 1 } } }]),
+    ]);
+
+    const byPlan = { free: 0, starter: 0, pro: 0, agency: 0 };
+    planCounts.forEach(p => { if (byPlan[p._id] !== undefined) byPlan[p._id] = p.count; });
+
+    res.json({ success: true, totalUsers, newToday, newThisWeek, byPlan });
+  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+});
+
+app.get("/admin/logs", adminAuth, async (req, res) => {
+  try {
+    const page  = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 25));
+
+    const [logs, total] = await Promise.all([
+      AdminLog.find().sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+      AdminLog.countDocuments(),
+    ]);
+
+    res.json({ success: true, data: logs, page, totalPages: Math.max(1, Math.ceil(total / limit)), total });
+  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+});
+
 app.get("/admin/users", adminAuth, async (req, res) => {
   try {
-    const users = await User.find().sort({ createdAt: -1 });
-    res.json({ success: true, data: users });
+    const page   = Math.max(1, parseInt(req.query.page) || 1);
+    const limit  = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const search = (req.query.search || "").trim();
+
+    const filter = search ? { email: { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" } } : {};
+
+    const [users, total] = await Promise.all([
+      User.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+      User.countDocuments(filter),
+    ]);
+
+    res.json({ success: true, data: users, page, totalPages: Math.max(1, Math.ceil(total / limit)), total });
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
@@ -1090,6 +1180,7 @@ app.post("/admin/add-credit", adminAuth, async (req, res) => {
     if (!isValidEmail(email) || !credits) return res.status(400).json({ success: false, error: "A valid email and credit amount are required." });
     const user = await User.findOneAndUpdate({ email }, { $inc: { credits: parseInt(credits) } }, { new: true });
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
+    logAdminAction("add-credit", email, `Added ${credits} credits (new total: ${user.credits})`, req);
     res.json({ success: true, message: `${credits} credits added successfully.`, user });
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
@@ -1128,6 +1219,7 @@ app.post("/admin/set-plan", adminAuth, async (req, res) => {
     );
 
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
+    logAdminAction("set-plan", email, `Set plan to ${plan}${planExpiry ? ` (expires ${planExpiry.toISOString().slice(0,10)})` : ""}`, req);
     res.json({ success: true, message: `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan assigned successfully.`, user });
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
