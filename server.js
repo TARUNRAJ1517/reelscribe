@@ -61,15 +61,51 @@ const PLAN_LIMITS = {
 //  FIX: cors() + express.json() were previously defined AFTER
 //  /proxy-upload, so that route never got CORS headers
 // ════════════════════════════════
+// FIX: trust the first proxy hop (Render's own load balancer) so req.ip
+// resolves to the real client IP. Without this, req.ip / any header read
+// from x-forwarded-for could be spoofed by the client — that broke both
+// the admin brute-force block and the guest preview limiter below.
+app.set("trust proxy", 1);
+
 app.use(cors({
   origin: ["https://reelscribe.site", "https://www.reelscribe.site"],
   credentials: true,
 }));
 app.use(express.json());
 app.use(express.static("public"));
-app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: false }));
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  },
+}));
 app.use(passport.initialize());
 app.use(passport.session());
+
+// ════════════════════════════════
+//  SESSION-BASED IDENTITY
+//  FIX: every protected route used to trust a plain `email` string sent
+//  by the client (from localStorage / query param / form body). Anyone
+//  could call e.g. /history/someone-else@email.com and read that
+//  person's data, or spend their monthly quota. Identity is now resolved
+//  from the signed session cookie set at login, and client-supplied
+//  emails are only used for guest bootstrap and login itself.
+// ════════════════════════════════
+function getSessionEmail(req) {
+  return (req.user && req.user.email) || req.session?.userEmail || null;
+}
+
+function requireAuth(req, res, next) {
+  const email = getSessionEmail(req);
+  if (!email) return res.status(401).json({ success: false, loginRequired: true, error: "Please log in to continue." });
+  req.authEmail = email;
+  next();
+}
 
 // ════════════════════════════════
 //  PROXY UPLOAD ROUTE — forwards large video uploads to EC2
@@ -132,7 +168,7 @@ function checkOtpSendLimit(email) {
   }
   if (rec.count >= OTP_SEND_MAX_PER_WINDOW) {
     const waitMin = Math.ceil((OTP_SEND_WINDOW_MS - (now - rec.windowStart)) / 60000);
-    return { allowed: false, error: `Bahut zyada OTP requests. ${waitMin} min baad try karo.` };
+    return { allowed: false, error: `Too many OTP requests. Please try again in ${waitMin} minute${waitMin === 1 ? "" : "s"}.` };
   }
   rec.count++;
   return { allowed: true };
@@ -146,7 +182,7 @@ function checkOtpVerifyLimit(email) {
     return { allowed: true };
   }
   if (rec.count >= OTP_VERIFY_MAX_ATTEMPTS) {
-    return { allowed: false, error: "Bahut zyada galat attempts. Naya OTP mangwao." };
+    return { allowed: false, error: "Too many incorrect attempts. Please request a new code." };
   }
   rec.count++;
   return { allowed: true };
@@ -191,13 +227,13 @@ const ADMIN_WINDOW_MS     = 15 * 60 * 1000; // 15 min
 const ADMIN_BLOCK_MS      = 30 * 60 * 1000; // block for 30 min after too many fails
 
 function adminAuth(req, res, next) {
-  const ip  = req.headers["x-forwarded-for"]?.split(",")[0].trim() || req.socket.remoteAddress || "unknown";
+  const ip  = req.ip || "unknown"; // FIX: was reading a spoofable header directly
   const now = Date.now();
   const rec = adminAuthAttempts[ip];
 
   if (rec?.blockedUntil && now < rec.blockedUntil) {
     const waitMin = Math.ceil((rec.blockedUntil - now) / 60000);
-    return res.status(429).json({ success: false, error: `Bahut zyada galat attempts. ${waitMin} min baad try karo.` });
+    return res.status(429).json({ success: false, error: `Too many incorrect attempts. Please try again in ${waitMin} minute${waitMin === 1 ? "" : "s"}.` });
   }
 
   if (req.headers["x-admin-key"] !== process.env.ADMIN_SECRET) {
@@ -257,7 +293,8 @@ function isNewMonth(lastDate) {
 }
 
 async function checkGuestLimit(req) {
-  const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
+  const ip = req.ip; // FIX: req.ip (with trust proxy set above) instead of a raw,
+                      // spoofable x-forwarded-for header
   let guest = await GuestUsage.findOne({ ip });
   if (!guest) guest = await GuestUsage.create({ ip, previewCount: 0 });
   if (guest.previewCount >= 3) return { allowed: false };
@@ -279,7 +316,7 @@ async function getInstagramVideoUrl(instagramUrl) {
   );
   if (response.data?.data?.length > 0 && response.data.data[0].media)
     return response.data.data[0].media;
-  throw new Error("Video URL nahi mila");
+  throw new Error("Couldn't find a video at that URL.");
 }
 
 function downloadVideo(videoUrl, outputPath) {
@@ -344,9 +381,9 @@ async function checkTranscriptLimit(user) {
   if (isNewMonth(user.lastTranscriptResetDate)) usedMonth = 0;
 
   if (usedDay >= limits.transcriptDay)
-    return { allowed: false, error: `Daily limit reached (${limits.transcriptDay}/day). Kal aao ya upgrade karo!` };
+    return { allowed: false, error: `Daily limit reached (${limits.transcriptDay}/day). Come back tomorrow or upgrade your plan.` };
   if (usedMonth >= limits.transcriptMonth)
-    return { allowed: false, error: `Monthly limit reached (${limits.transcriptMonth}/month). Plan upgrade karo!` };
+    return { allowed: false, error: `Monthly limit reached (${limits.transcriptMonth}/month). Upgrade your plan for more.` };
 
   return { allowed: true };
 }
@@ -424,12 +461,27 @@ app.get("/auth/google", (req, res, next) => {
 app.get("/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
+    // FIX: identity for every future request now comes from this session,
+    // not from the "?email=" value appended below (that value is kept only
+    // so the UI can show the signed-in email — it carries no auth weight).
+    req.session.userEmail = req.user.email;
     const state_ = req.query.state;
     const dest = (typeof state_ === "string" && state_.startsWith("/")) ? state_ : "/dashboard.html";
     const sep = dest.includes("?") ? "&" : "?";
     res.redirect(dest + sep + "email=" + encodeURIComponent(req.user.email));
   }
 );
+
+// ── Log out — clears the session so protected routes stop resolving to this user ──
+app.post("/logout", (req, res) => {
+  req.session.destroy(() => res.json({ success: true }));
+});
+
+// ── Who am I — lets the frontend know the *real*, server-verified identity ──
+app.get("/me", (req, res) => {
+  const email = getSessionEmail(req);
+  res.json({ success: true, loggedIn: !!email, email: email || null });
+});
 
 // ── Send OTP ──
 app.post("/send-otp", async (req, res) => {
@@ -485,6 +537,10 @@ app.post("/verify-otp", async (req, res) => {
     let user = await User.findOne({ email });
     if (!user) user = await User.create({ name: email.split("@")[0], email, credits: 5 });
 
+    // FIX: this is the moment identity is actually established server-side.
+    // Every protected route below trusts this session, not a client-sent email.
+    req.session.userEmail = email;
+
     res.json({ success: true, user });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -498,18 +554,20 @@ app.post("/verify-otp", async (req, res) => {
 // ── Transcribe uploaded file ──
 app.post("/transcribe", upload.single("video"), async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!isValidEmail(email)) return res.status(400).json({ success: false, error: "Valid email required" });
-    if (!req.file) return res.status(400).json({ success: false, error: "File nahi mili" });
+    if (!req.file) return res.status(400).json({ success: false, error: "No file was uploaded." });
 
-    const user    = await User.findOne({ email });
+    // FIX: identity now comes from the session, never from req.body.email —
+    // a logged-in user's quota and history can no longer be spent/read by
+    // anyone who simply sends a different email in the request body.
+    const email   = getSessionEmail(req);
+    const user    = email ? await User.findOne({ email }) : null;
     const isGuest = !user;
 
     if (isGuest) {
       const { allowed } = await checkGuestLimit(req);
       if (!allowed) {
         if (req.file?.path) fs.unlinkSync(req.file.path);
-        return res.status(403).json({ success: false, loginRequired: true, forceLogin: true, error: "3 free previews khatam. Login karo!" });
+        return res.status(403).json({ success: false, loginRequired: true, forceLogin: true, error: "You've used all 3 free previews. Please log in to continue." });
       }
     } else {
       const limitCheck = await checkTranscriptLimit(user);
@@ -550,21 +608,23 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
 
 // ── Transcribe URL (YouTube captions / Instagram) ──
 app.post("/transcribe-url", async (req, res) => {
-  const { email, url } = req.body;
-  if (!isValidEmail(email) || typeof url !== "string" || !url)
-    return res.status(400).json({ success: false, error: "Valid email aur URL required" });
+  const { url } = req.body;
+  if (typeof url !== "string" || !url)
+    return res.status(400).json({ success: false, error: "Please provide a video URL." });
 
   const isYouTube   = url.includes("youtube.com") || url.includes("youtu.be");
   const isInstagram = url.includes("instagram.com");
   if (!isYouTube && !isInstagram)
-    return res.status(400).json({ success: false, error: "Sirf YouTube aur Instagram URLs supported hain" });
+    return res.status(400).json({ success: false, error: "Only YouTube and Instagram URLs are supported." });
 
-  const user    = await User.findOne({ email });
+  // FIX: identity from session, not from a client-supplied email — see /transcribe above.
+  const email   = getSessionEmail(req);
+  const user    = email ? await User.findOne({ email }) : null;
   const isGuest = !user;
 
   if (isGuest) {
     const { allowed } = await checkGuestLimit(req);
-    if (!allowed) return res.status(403).json({ success: false, loginRequired: true, forceLogin: true, error: "3 free previews khatam. Login karo!" });
+    if (!allowed) return res.status(403).json({ success: false, loginRequired: true, forceLogin: true, error: "You've used all 3 free previews. Please log in to continue." });
   } else {
     const limitCheck = await checkTranscriptLimit(user);
     if (!limitCheck.allowed) return res.status(403).json({ success: false, error: limitCheck.error });
@@ -591,7 +651,7 @@ app.post("/transcribe-url", async (req, res) => {
 
       const transcriptArr = await YoutubeTranscript.fetchTranscript(videoId);
       if (!transcriptArr?.length)
-        return res.status(400).json({ success: false, error: "Is video mein transcript nahi hai" });
+        return res.status(400).json({ success: false, error: "This video doesn't have any captions available." });
 
       const transcript = transcriptArr.map(i => i.text).join(" ").replace(/\s+/g, " ").trim();
 
@@ -602,7 +662,7 @@ app.post("/transcribe-url", async (req, res) => {
 
       return res.json(buildResponse(transcript, "youtube-captions"));
     } catch (error) {
-      return res.status(500).json({ success: false, error: "YouTube transcript fetch nahi hua: " + error.message });
+      return res.status(500).json({ success: false, error: "Couldn't fetch the YouTube transcript: " + error.message });
     }
   }
 
@@ -626,7 +686,7 @@ app.post("/transcribe-url", async (req, res) => {
     return res.json(buildResponse(transcription.text, "groq-whisper"));
   } catch (error) {
     if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
-    return res.status(500).json({ success: false, error: "Instagram video nahi mila: " + error.message });
+    return res.status(500).json({ success: false, error: "Couldn't fetch that Instagram video: " + error.message });
   }
 });
 
@@ -654,9 +714,9 @@ async function checkClipLimit(user) {
   if (isNewMonth(user.lastClipDate)) usedMonth = 0;
 
   if (usedDay >= limits.clipDay)
-    return { allowed: false, error: `Daily clip limit reached (${limits.clipDay}/day). Kal aao ya upgrade karo!` };
+    return { allowed: false, error: `Daily clip limit reached (${limits.clipDay}/day). Come back tomorrow or upgrade your plan.` };
   if (usedMonth >= limits.clipMonth)
-    return { allowed: false, error: `Monthly clip limit reached (${limits.clipMonth}/month). Plan upgrade karo!` };
+    return { allowed: false, error: `Monthly clip limit reached (${limits.clipMonth}/month). Upgrade your plan for more.` };
 
   return { allowed: true };
 }
@@ -688,31 +748,33 @@ app.get("/clip-status/:jobId", (req, res) => {
   res.json({ success: true, ...job });
 });
 
-app.post("/cut-clips", async (req, res) => {
-  const { ytUrl, email, fcmToken } = req.body;
+app.post("/cut-clips", requireAuth, async (req, res) => {
+  const { ytUrl, fcmToken } = req.body;
+  const email = req.authEmail; // FIX: from session, not from the request body
 
-  if (typeof ytUrl !== "string" || !ytUrl) return res.status(400).json({ success: false, error: "YouTube URL required" });
-  if (!isValidEmail(email)) return res.status(401).json({ success: false, loginRequired: true, error: "Login required" });
+  if (typeof ytUrl !== "string" || !ytUrl) return res.status(400).json({ success: false, error: "Please provide a YouTube URL." });
 
   const user = await User.findOne({ email });
-  if (!user) return res.status(401).json({ success: false, loginRequired: true, error: "User not found" });
+  if (!user) return res.status(401).json({ success: false, loginRequired: true, error: "Account not found. Please log in again." });
 
   const plan = getEffectivePlan(user);
   if (plan === "free")
-    return res.status(403).json({ success: false, error: "Free plan mein clips available nahi. Upgrade karo!" });
+    return res.status(403).json({ success: false, error: "Clips aren't available on the free plan. Please upgrade to continue." });
 
   const limitCheck = await checkClipLimit(user);
   if (!limitCheck.allowed)
     return res.status(403).json({ success: false, error: limitCheck.error });
 
-  // Duration check — plan ki maxVideoMinutes limit se lamba video EC2 ko bhejne se pehle hi reject karo
+  // Duration check — reject videos longer than the plan's maxVideoMinutes
+  // before forwarding to EC2, so we don't waste minutes processing a video
+  // that will just be rejected anyway.
   const maxMinutes = PLAN_LIMITS[plan].maxVideoMinutes;
   const durationSec = await getYouTubeDurationSeconds(ytUrl);
   if (durationSec !== null && durationSec > maxMinutes * 60) {
     const videoMinutes = Math.ceil(durationSec / 60);
     return res.status(403).json({
       success: false,
-      error: `Video ${videoMinutes} min ka hai. ${plan} plan mein max ${maxMinutes} min tak allowed hai. Chota video try karo ya upgrade karo!`,
+      error: `This video is ${videoMinutes} min long. The ${plan} plan supports videos up to ${maxMinutes} min. Try a shorter video or upgrade your plan.`,
     });
   }
 
@@ -732,7 +794,7 @@ app.post("/cut-clips", async (req, res) => {
       );
 
       if (!ec2Response.data?.success) {
-        clipJobs.set(jobId, { status: "error", error: ec2Response.data?.error || "Clip generation failed" });
+        clipJobs.set(jobId, { status: "error", error: ec2Response.data?.error || "Clip generation failed. Please try again." });
         return scheduleJobCleanup(jobId);
       }
 
@@ -764,11 +826,11 @@ app.post("/cut-clips", async (req, res) => {
 
 // Last 24h of clip history for a user — lets the "Recent Clips" section
 // survive a page refresh/back-navigation instead of vanishing.
-app.get("/clip-history/:email", async (req, res) => {
+app.get("/clip-history", requireAuth, async (req, res) => {
   try {
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const jobs = await ClipJob.find({
-      userEmail: req.params.email,
+      userEmail: req.authEmail, // FIX: session identity, not a URL param anyone could change
       createdAt: { $gte: since }
     }).sort({ createdAt: -1 });
 
@@ -791,9 +853,15 @@ app.get("/clip-history/:email", async (req, res) => {
 
 // Frontend calls this right when a download starts — schedule the actual
 // S3 delete 5 min later, matching the "downloaded clips delete in 5 minutes" promise.
-app.post("/clip-downloaded", async (req, res) => {
+app.post("/clip-downloaded", requireAuth, async (req, res) => {
   const { s3Key } = req.body;
-  if (!s3Key) return res.status(400).json({ success: false, error: "s3Key required" });
+  if (!s3Key) return res.status(400).json({ success: false, error: "Missing clip reference." });
+
+  // FIX: only the clip's owner can trigger its early deletion — otherwise
+  // anyone who obtained an s3Key could force another user's clip to be
+  // deleted 5 minutes early.
+  const owned = await ClipJob.findOne({ userEmail: req.authEmail, "clips.s3Key": s3Key });
+  if (!owned) return res.status(404).json({ success: false, error: "Clip not found." });
 
   res.json({ success: true }); // ack immediately, deletion happens in the background
 
@@ -871,11 +939,11 @@ const PLAN_PRICING = {
   agency:  { m: 599, y: 499 }
 };
 
-app.post("/create-order", async (req, res) => {
+app.post("/create-order", requireAuth, async (req, res) => {
   try {
-    const { plan, billing, email } = req.body;
-    if (!PLAN_PRICING[plan]) return res.status(400).json({ success: false, error: "Invalid plan" });
-    if (!isValidEmail(email)) return res.status(400).json({ success: false, error: "Valid email required" });
+    const { plan, billing } = req.body;
+    const email = req.authEmail; // FIX: session identity, not a client-supplied email
+    if (!PLAN_PRICING[plan]) return res.status(400).json({ success: false, error: "Invalid plan." });
 
     const isYearly = billing === "yearly";
     // Yearly: user ko poore saal ka amount ek saath charge hota hai (discounted per-month rate * 12)
@@ -892,7 +960,7 @@ app.post("/create-order", async (req, res) => {
     });
     res.json({ success: true, order, key: process.env.RAZORPAY_KEY_ID });
   } catch (err) {
-    res.status(500).json({ success: false, error: "Order create failed" });
+    res.status(500).json({ success: false, error: "Could not create the order. Please try again." });
   }
 });
 
@@ -901,7 +969,7 @@ app.post("/verify-payment", async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     if (typeof razorpay_order_id !== "string" || typeof razorpay_payment_id !== "string" || typeof razorpay_signature !== "string")
-      return res.status(400).json({ success: false, error: "Invalid payment data" });
+      return res.status(400).json({ success: false, error: "We could not verify this payment. Please contact support." });
 
     const expectedSig = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -909,7 +977,7 @@ app.post("/verify-payment", async (req, res) => {
       .digest("hex");
 
     if (expectedSig !== razorpay_signature)
-      return res.status(400).json({ success: false, error: "Invalid payment signature" });
+      return res.status(400).json({ success: false, error: "Payment verification failed. Please contact support if the amount was deducted." });
 
     // FIX: plan/billing/email ab client body se NAHI, Razorpay order ke locked
     // notes se liye jaate hain. Pehle client body se trust karte the — koi bhi
@@ -918,14 +986,14 @@ app.post("/verify-payment", async (req, res) => {
     // genuine hone ko proves karta hai, requested plan ko nahi).
     const order = await razorpay.orders.fetch(razorpay_order_id);
     if (!order || order.status !== "paid")
-      return res.status(400).json({ success: false, error: "Order not paid" });
+      return res.status(400).json({ success: false, error: "This order has not been paid yet." });
 
     const plan    = order.notes?.plan;
     const billing = order.notes?.billing;
     const email   = order.notes?.email;
 
     if (!isValidEmail(email))
-      return res.status(400).json({ success: false, error: "Order has no valid email on file" });
+      return res.status(400).json({ success: false, error: "We could not verify who this order belongs to. Please contact support." });
 
     const validPlans = ["starter", "pro", "agency"];
     if (!validPlans.includes(plan))
@@ -958,9 +1026,9 @@ app.post("/verify-payment", async (req, res) => {
 
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
 
-    res.json({ success: true, message: `${plan} plan activate ho gaya!`, plan, planExpiresAt: planExpiry });
+    res.json({ success: true, message: `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan activated successfully!`, plan, planExpiresAt: planExpiry });
   } catch (err) {
-    res.status(500).json({ success: false, error: "Payment verification failed" });
+    res.status(500).json({ success: false, error: "Something went wrong while verifying your payment. Please contact support." });
   }
 });
 
@@ -968,9 +1036,9 @@ app.post("/verify-payment", async (req, res) => {
 //  MISC ROUTES
 // ════════════════════════════════
 
-app.get("/user-plan/:email", async (req, res) => {
+app.get("/user-plan", requireAuth, async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.params.email });
+    const user = await User.findOne({ email: req.authEmail }); // FIX: session identity, not a URL param
     if (!user) return res.status(404).json({ success: false });
 
     const plan   = getEffectivePlan(user);
@@ -1000,11 +1068,11 @@ app.get("/user-plan/:email", async (req, res) => {
   }
 });
 
-app.get("/history/:email", async (req, res) => {
+app.get("/history", requireAuth, async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.params.email });
-    if (!user) return res.status(404).json({ success: false, error: "User not found" });
-    const reels = await Reel.find({ userEmail: req.params.email }).sort({ createdAt: -1 });
+    // FIX: session identity, not a URL param — this used to let anyone
+    // read any user's saved transcripts by guessing/knowing their email.
+    const reels = await Reel.find({ userEmail: req.authEmail }).sort({ createdAt: -1 });
     res.json({ success: true, data: reels });
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
@@ -1019,10 +1087,10 @@ app.get("/admin/users", adminAuth, async (req, res) => {
 app.post("/admin/add-credit", adminAuth, async (req, res) => {
   try {
     const { email, credits } = req.body;
-    if (!isValidEmail(email) || !credits) return res.status(400).json({ success: false, error: "Valid email aur credits required" });
+    if (!isValidEmail(email) || !credits) return res.status(400).json({ success: false, error: "A valid email and credit amount are required." });
     const user = await User.findOneAndUpdate({ email }, { $inc: { credits: parseInt(credits) } }, { new: true });
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
-    res.json({ success: true, message: `${credits} credits add kiye`, user });
+    res.json({ success: true, message: `${credits} credits added successfully.`, user });
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
@@ -1060,7 +1128,7 @@ app.post("/admin/set-plan", adminAuth, async (req, res) => {
     );
 
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
-    res.json({ success: true, message: `${plan} plan diya gaya`, user });
+    res.json({ success: true, message: `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan assigned successfully.`, user });
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
