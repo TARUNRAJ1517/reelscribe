@@ -3,114 +3,140 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Terms of Service – ReelScribe</title>
+<title>Terms of Service — ReelScribe</title>
+<meta name="description" content="ReelScribe's terms of service — account rules, plans and usage limits, content policy, and your responsibilities as a user.">
+<link rel="canonical" href="https://reelscribe.site/terms.html">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-*{ margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
-body{ background:#0b0718; color:white; max-width:480px; margin:0 auto; }
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0e0d10; --s1: #161418; --s2: #1c191e;
+  --border: #2a262b; --border2: #38333a;
+  --red: #ff3b30; --text: #f5f2ee; --sub: #a39d95; --muted: #665f5c;
+}
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'Archivo', -apple-system, sans-serif;
+  max-width: 480px; margin: 0 auto;
+  -webkit-font-smoothing: antialiased;
+}
+.mono { font-family: 'IBM Plex Mono', monospace; }
+.nav {
+  position: sticky; top: 0; z-index: 999;
+  background: rgba(14,13,16,0.9); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 20px;
+}
+.nav-logo { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 7px; }
+.nav-logo .ndot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); }
+.nav-back {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; color: var(--sub);
+  background: none; border: none; cursor: pointer;
+  font-family: 'Archivo', sans-serif; transition: color .2s;
+}
+.nav-back svg { width: 14px; height: 14px; }
+.nav-back:hover { color: var(--text); }
 
-.header{
-    position:sticky; top:0; z-index:999;
-    background:rgba(11,7,24,.95);
-    backdrop-filter:blur(12px);
-    border-bottom:1px solid #1a1730;
-    display:flex; justify-content:space-between;
-    align-items:center; padding:14px 20px;
-}
-.logo{
-    font-size:22px; font-weight:bold;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-    cursor:pointer;
-}
-.backBtn{
-    background:#121026; border:1px solid #2b224a;
-    border-radius:10px; color:white;
-    font-size:15px; cursor:pointer; padding:8px 14px;
-}
+.main { padding: 30px 22px 36px; }
+.page-title { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+.last-updated { color: var(--muted); font-size: 12px; margin-bottom: 26px; font-family: 'IBM Plex Mono', monospace; }
+.section { margin-bottom: 14px; background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+.section h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: var(--red); }
+.section p { font-size: 13px; color: var(--sub); line-height: 1.7; }
+.section a { color: var(--red); }
 
-.main{ padding:20px; }
-
-.pageTitle{
-    font-size:24px; font-weight:bold; margin-bottom:6px;
-    background:linear-gradient(90deg,#8b5cf6,#ec4899);
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-}
-
-.lastUpdated{
-    color:#8d8aa5; font-size:12px; margin-bottom:24px;
-}
-
-.section{
-    background:#121026; border:1px solid #2b224a;
-    border-radius:18px; padding:18px; margin-bottom:14px;
-}
-
-.section h3{
-    font-size:15px; margin-bottom:10px; color:white;
-}
-
-.section p{
-    font-size:13px; color:#8d8aa5; line-height:1.7;
-}
-
-footer{
-    margin-top:40px; padding:30px 20px;
-    border-top:1px solid #1a1730; text-align:center;
-}
+footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
+.foot-logo { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
+.foot-logo .fdot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
+.foot-tag { font-size: 11px; color: var(--muted); margin-bottom: 20px; font-family: 'IBM Plex Mono', monospace; }
+.foot-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 20px; }
+.foot-links a { color: var(--muted); font-size: 12px; text-decoration: none; }
+.foot-links a:hover { color: var(--sub); }
+.foot-sep { height: 1px; background: var(--border); margin-bottom: 16px; }
+.foot-copy { font-size: 11px; color: var(--muted); text-align: center; font-family: 'IBM Plex Mono', monospace; }
 </style>
 </head>
 <body>
 
-<div class="header">
-    <div class="logo" onclick="window.location.href='/'">🚀 ReelScribe</div>
-    <button class="backBtn" onclick="window.history.back()">← Back</button>
-</div>
+<nav class="nav">
+  <div class="nav-logo"><span class="ndot"></span>ReelScribe</div>
+  <button class="nav-back" onclick="window.location.href='/'">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3L5 8l5 5"/></svg>
+    Home
+  </button>
+</nav>
 
 <div class="main">
+  <div class="page-title">Terms of Service</div>
+  <div class="last-updated">Last updated: August 2026</div>
 
-    <div class="pageTitle">Terms of Service</div>
-    <div class="lastUpdated">Last updated: June 2026</div>
+  <div class="section">
+    <h3>1. Use of Service</h3>
+    <p>ReelScribe is an AI-powered transcription and clipping tool. You may only use it on content you have the legal right to transcribe or repurpose — transcribing private or copyright-protected content without permission is prohibited.</p>
+  </div>
 
-    <div class="section">
-        <h3>1. Service ka Use</h3>
-        <p>ReelScribe ek AI-powered transcript tool hai. Aap sirf legal aur public content ke liye is service ka use kar sakte hain. Private ya copyright-protected content ka transcript banana prohibited hai.</p>
-    </div>
+  <div class="section">
+    <h3>2. Your Account</h3>
+    <p>A valid email (verified via one-time code) or Google account is required to create an account. You're responsible for keeping your account secure. Account sharing is not permitted.</p>
+  </div>
 
-    <div class="section">
-        <h3>2. User Account</h3>
-        <p>Account banane ke liye valid Google account zaroori hai. Aap apne account ki security ke liye khud zimmedar hain. Account sharing allowed nahi hai.</p>
-    </div>
+  <div class="section">
+    <h3>3. Plans & Usage Limits</h3>
+    <p>Each plan (Free, Starter, Pro, Agency) includes a fixed number of transcripts and clips per day and per month, along with a maximum video length, as shown on our <a href="/pricing.html">Pricing page</a>. Paid plans renew monthly or yearly depending on your chosen billing cycle and are non-refundable once activated.</p>
+  </div>
 
-    <div class="section">
-        <h3>3. Credits System</h3>
-        <p>Har transcript ke liye 2 credits katenge. Credits ek baar khareedne ke baad expire nahi hote. Credits refundable nahi hain agar service galti se use ho jaye.</p>
-    </div>
+  <div class="section">
+    <h3>4. Content Policy</h3>
+    <p>You may not use ReelScribe to transcribe or generate clips from illegal, hateful, or harmful content. We reserve the right to suspend accounts that violate this policy.</p>
+  </div>
 
-    <div class="section">
-        <h3>4. Content Policy</h3>
-        <p>Aap kisi bhi illegal, hateful, ya harmful content ka transcript nahi kar sakte. ReelScribe aise accounts ko suspend karne ka adhikar rakhta hai jo policy violate karte hain.</p>
-    </div>
+  <div class="section">
+    <h3>5. Service Availability</h3>
+    <p>We aim to keep ReelScribe available at all times, but occasional downtime may occur. Instagram URL support depends on a third-party API and may be temporarily unavailable.</p>
+  </div>
 
-    <div class="section">
-        <h3>5. Service Availability</h3>
-        <p>Hum 24/7 service dene ki koshish karte hain lekin downtime ho sakta hai. Instagram URL feature third-party API pe dependent hai jo kabhi kabhi kaam na kare.</p>
-    </div>
+  <div class="section">
+    <h3>6. Termination</h3>
+    <p>You may stop using ReelScribe and delete your account at any time. We may suspend or terminate accounts that violate these terms, including abuse of usage limits, fraudulent payments, or content policy violations. Paid plan time remaining is not refunded on termination for a violation.</p>
+  </div>
 
-    <div class="section">
-        <h3>6. Changes</h3>
-        <p>Hum in terms ko kabhi bhi update kar sakte hain. Continue use karna matlab aap updated terms se agree karte hain.</p>
-    </div>
+  <div class="section">
+    <h3>7. Disclaimer & Limitation of Liability</h3>
+    <p>ReelScribe is provided "as is" without warranties of any kind. Transcripts and clips are AI-generated and may contain errors — review them before relying on or publishing them. To the extent permitted by law, ReelScribe is not liable for indirect, incidental, or consequential damages arising from your use of the service.</p>
+  </div>
 
-    <div class="section">
-        <h3>7. Contact</h3>
-        <p>Koi bhi query ke liye Instagram pe DM karein: <span style="color:#8b5cf6;">@tarunraj1517</span></p>
-    </div>
+  <div class="section">
+    <h3>8. Governing Law</h3>
+    <p>These terms are governed by the laws of India, without regard to conflict-of-law principles.</p>
+  </div>
 
+  <div class="section">
+    <h3>9. Changes to These Terms</h3>
+    <p>We may update these terms from time to time. Continued use of ReelScribe after a change means you accept the updated terms.</p>
+  </div>
+
+  <div class="section">
+    <h3>10. Contact</h3>
+    <p>Questions about these terms? Reach out via <a href="/contact.html">our contact page</a> or on Instagram at <a href="https://www.instagram.com/tarunraj1517/" target="_blank" rel="noopener">@tarunraj1517</a>.</p>
+  </div>
 </div>
 
 <footer>
-    <p style="color:#3d3a52; font-size:13px; margin-bottom:10px;">© 2026 ReelScribe. All rights reserved.</p>
-    <p style="color:#3d3a52; font-size:13px;">Transcribe · Repurpose · Scale</p>
+  <div class="foot-logo"><span class="fdot"></span>ReelScribe</div>
+  <div class="foot-tag">Transcribe · Repurpose · Scale</div>
+  <div class="foot-links">
+    <a href="/about.html">About</a>
+    <a href="/pricing.html">Pricing</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+  <div class="foot-sep"></div>
+  <p class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</p>
 </footer>
 
 </body>
