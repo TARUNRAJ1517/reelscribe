@@ -3,153 +3,145 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Login – ReelScribe</title>
+<title>Log In — ReelScribe</title>
+<link rel="canonical" href="https://reelscribe.site/login.html">
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
-  --bg: #09070f; --card: #111020; --card2: #17142a;
-  --border: #201c38; --border2: #2c2650;
-  --red: #ff3b30;
-  --text: #f0eaff; --sub: #8a7fab; --muted: #3d3660;
-  --grad: #ff3b30;
+  --bg: #0e0d10; --s1: #161418; --s2: #1c191e;
+  --border: #2a262b; --border2: #38333a;
+  --red: #ff3b30; --text: #f5f2ee; --sub: #a39d95; --muted: #665f5c;
 }
 body {
   background: var(--bg); color: var(--text);
-  font-family: 'Inter', sans-serif; max-width: 480px; margin: 0 auto;
-  min-height: 100vh; display: flex; flex-direction: column;
+  font-family: 'Archivo', -apple-system, sans-serif;
+  max-width: 480px; margin: 0 auto; min-height: 100vh;
+  display: flex; flex-direction: column;
   -webkit-font-smoothing: antialiased;
 }
+.mono { font-family: 'IBM Plex Mono', monospace; }
+
 .nav {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 22px; border-bottom: 1px solid var(--border);
+  padding: 13px 20px; border-bottom: 1px solid var(--border);
 }
-.nav-logo {
-  font-size: 18px; font-weight: 900; letter-spacing: -0.5px;
-  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
+.nav-logo { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 7px; }
+.nav-logo .ndot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); }
 .nav-back {
   display: flex; align-items: center; gap: 6px;
   font-size: 13px; font-weight: 600; color: var(--sub);
   background: none; border: none; cursor: pointer;
-  font-family: 'Inter', sans-serif; transition: color .2s;
+  font-family: 'Archivo', sans-serif; transition: color .2s;
 }
 .nav-back svg { width: 14px; height: 14px; }
 .nav-back:hover { color: var(--text); }
 
-.main {
-  flex: 1; display: flex; flex-direction: column;
-  justify-content: center; padding: 24px 22px 32px;
-  position: relative; overflow: hidden;
-}
-.main::before {
-  content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
-  width: 400px; height: 400px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,59,48,0.08), transparent 65%);
-  pointer-events: none;
-}
+.main { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 24px 22px 32px; }
+
 .tabs {
-  display: flex; background: var(--card);
-  border: 1px solid var(--border2); border-radius: 12px;
-  padding: 3px; margin-bottom: 22px;
+  display: flex; background: var(--s1); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 3px; margin-bottom: 24px;
 }
 .tab-btn {
-  flex: 1; padding: 8px; border-radius: 9px; border: none;
+  flex: 1; padding: 9px; border-radius: 5px; border: none;
   background: transparent; color: var(--muted);
-  font-size: 13px; font-weight: 700; cursor: pointer;
-  font-family: 'Inter', sans-serif; transition: all .2s;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif; transition: all .2s;
 }
-.tab-btn.active { background: var(--grad); color: white; }
+.tab-btn.active { background: var(--red); color: #1a0a08; }
 
-.login-heading { margin-bottom: 20px; }
-.login-h1 { font-size: 26px; font-weight: 900; letter-spacing: -1px; line-height: 1.1; margin-bottom: 4px; }
-.login-h1 span { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.login-sub { font-size: 13px; color: var(--sub); line-height: 1.5; }
+.login-heading { margin-bottom: 22px; }
+.login-h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.15; margin-bottom: 6px; }
+.login-h1 em { font-style: normal; color: var(--red); }
+.login-sub { font-size: 13px; color: var(--sub); line-height: 1.6; }
 
 .google-btn {
-  width: 100%; padding: 13px; border-radius: 13px;
-  background: white; color: #1a1a2e; border: none;
-  font-size: 14px; font-weight: 700; cursor: pointer;
-  font-family: 'Inter', sans-serif;
+  width: 100%; padding: 13px; border-radius: 6px;
+  background: white; color: #1a1a1a; border: none;
+  font-size: 13.5px; font-weight: 600; cursor: pointer;
+  font-family: 'Archivo', sans-serif;
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  transition: opacity .2s; margin-bottom: 16px;
+  transition: opacity .2s; margin-bottom: 18px;
 }
-.google-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
-.google-btn:hover { opacity: 0.92; }
+.google-btn svg { width: 18px; height: 18px; }
+.google-btn:hover { opacity: 0.9; }
 
-.divider { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.divider { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
 .divider-line { flex: 1; height: 1px; background: var(--border); }
-.divider-text { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+.divider-text { font-size: 10.5px; font-weight: 600; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; }
 
 .field { margin-bottom: 12px; }
 .field-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
-  text-transform: uppercase; color: var(--muted);
-  margin-bottom: 6px; display: block;
+  font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 7px; display: block;
+  font-family: 'IBM Plex Mono', monospace;
 }
 .field-wrap {
-  display: flex; align-items: center;
-  background: var(--card); border: 1px solid var(--border2);
-  border-radius: 12px; overflow: hidden; transition: border-color .2s;
+  display: flex; align-items: center; background: var(--s1);
+  border: 1px solid var(--border2); border-radius: 6px;
+  overflow: hidden; transition: border-color .2s;
 }
-.field-wrap:focus-within { border-color: var(--red); }
-.field-icon { padding: 0 12px; color: var(--muted); display: flex; align-items: center; flex-shrink: 0; }
-.field-icon svg { width: 16px; height: 16px; }
+.field-wrap:focus-within { border-color: var(--red); box-shadow: 0 0 0 3px rgba(255,59,48,0.12); }
+.field-icon { padding: 0 12px; color: var(--muted); display: flex; align-items: center; }
+.field-icon svg { width: 15px; height: 15px; }
 .field-input {
-  flex: 1; padding: 13px 12px 13px 0;
-  background: transparent; border: none; outline: none;
-  color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif;
+  flex: 1; padding: 13px 12px 13px 0; background: transparent; border: none; outline: none;
+  color: var(--text); font-size: 14px; font-family: 'Archivo', sans-serif;
 }
 .field-input::placeholder { color: var(--muted); }
 
 .otp-row { display: flex; gap: 8px; }
 .otp-row .field-wrap { flex: 1; }
 .otp-send-btn {
-  padding: 0 14px; border: none; border-radius: 12px;
-  background: var(--grad); color: white;
-  font-size: 12px; font-weight: 700; cursor: pointer;
-  font-family: 'Inter', sans-serif; white-space: nowrap; transition: opacity .2s;
+  padding: 0 16px; border: none; border-radius: 6px;
+  background: var(--red); color: #1a0a08;
+  font-size: 11.5px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif; white-space: nowrap; transition: opacity .2s;
 }
-.otp-send-btn:hover { opacity: 0.85; }
+.otp-send-btn:hover { opacity: 0.88; }
 .otp-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* ── SMALL OTP BOXES ── */
-.otp-boxes { display: flex; gap: 6px; margin-bottom: 12px; }
-.otp-box {
-  flex: 1; height: 44px; background: var(--card);
-  border: 1px solid var(--border2); border-radius: 10px;
-  text-align: center; font-size: 18px; font-weight: 800;
-  color: var(--text); outline: none; font-family: 'Inter', sans-serif;
-  transition: border-color .2s;
+.otp-input {
+  width: 100%; padding: 14px; background: var(--s1);
+  border: 1px solid var(--border2); border-radius: 6px;
+  text-align: center; font-size: 20px; font-weight: 700; letter-spacing: 8px;
+  color: var(--text); outline: none; font-family: 'IBM Plex Mono', monospace;
+  transition: border-color .2s; margin-bottom: 12px;
 }
-.otp-box:focus { border-color: var(--red); }
+.otp-input:focus { border-color: var(--red); }
 
 .submit-btn {
-  width: 100%; padding: 13px; border: none; border-radius: 13px;
-  background: var(--grad); color: white;
-  font-size: 15px; font-weight: 800; cursor: pointer;
-  font-family: 'Inter', sans-serif; letter-spacing: -0.2px;
-  transition: opacity .2s; margin-top: 4px;
+  width: 100%; padding: 14px; border: none; border-radius: 6px;
+  background: var(--red); color: #1a0a08; font-size: 13.5px; font-weight: 600;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif; transition: opacity .2s; margin-top: 4px;
 }
-.submit-btn:hover { opacity: 0.85; }
+.submit-btn:hover { opacity: 0.88; }
 
 .status-msg {
-  text-align: center; font-size: 13px; font-weight: 600;
-  padding: 10px; border-radius: 10px; margin-top: 10px; display: none;
+  text-align: center; font-size: 12.5px; font-weight: 600;
+  padding: 10px; border-radius: 6px; margin-top: 10px; display: none;
 }
-.status-msg.success { background: rgba(34,197,94,0.1); color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
-.status-msg.error { background: rgba(248,113,113,0.1); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
+.status-msg.success { background: rgba(80,200,120,0.1); color: #6fe6a3; border: 1px solid rgba(80,200,120,0.25); }
+.status-msg.error { background: rgba(255,59,48,0.1); color: #ff8078; border: 1px solid rgba(255,59,48,0.25); }
 
-.bottom-text { text-align: center; font-size: 13px; color: var(--muted); margin-top: 16px; line-height: 1.7; }
+.bottom-text { text-align: center; font-size: 12.5px; color: var(--muted); margin-top: 18px; line-height: 1.7; }
 .bottom-text span { color: var(--red); font-weight: 600; cursor: pointer; }
 
-.resend-row { text-align: center; font-size: 12px; color: var(--muted); margin-top: 8px; display: none; }
+.resend-row { text-align: center; font-size: 11.5px; color: var(--muted); margin-top: 8px; display: none; }
 .resend-row span { color: var(--red); font-weight: 600; cursor: pointer; }
 
-footer { padding: 16px 22px; border-top: 1px solid var(--border); text-align: center; }
-footer p { font-size: 11px; color: var(--muted); }
+.email-confirm { font-size: 12px; color: var(--sub); margin-bottom: 12px; }
+.email-confirm strong { color: var(--text); }
+
+.legal-note { text-align: center; font-size: 10.5px; color: var(--muted); margin-top: 18px; line-height: 1.6; }
+.legal-note a { color: var(--muted); text-decoration: underline; }
+
+footer { padding: 18px 22px; border-top: 1px solid var(--border); text-align: center; }
+footer p { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
 footer a { color: var(--muted); text-decoration: none; margin: 0 8px; }
 footer a:hover { color: var(--sub); }
 </style>
@@ -157,25 +149,24 @@ footer a:hover { color: var(--sub); }
 <body>
 
 <nav class="nav">
+  <div class="nav-logo"><span class="ndot"></span>ReelScribe</div>
   <button class="nav-back" onclick="window.location.href='/'">
     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3L5 8l5 5"/></svg>
-    Back
+    Home
   </button>
-  <div class="nav-logo">ReelScribe</div>
-  <div style="width:52px"></div>
 </nav>
 
 <div class="main">
   <div class="tabs">
-    <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
-    <button class="tab-btn" id="tabSignup" onclick="switchTab('signup')">Create Account</button>
+    <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">Log In</button>
+    <button class="tab-btn" id="tabSignup" onclick="switchTab('signup')">Sign Up</button>
   </div>
 
   <!-- LOGIN -->
   <div id="loginView">
     <div class="login-heading">
-      <div class="login-h1">Welcome <span>Back.</span></div>
-      <p class="login-sub">Sign in to access your transcripts and clips.</p>
+      <div class="login-h1">Welcome <em>back.</em></div>
+      <p class="login-sub">Log in to access your transcripts and clips.</p>
     </div>
 
     <button class="google-btn" onclick="googleLogin()">
@@ -193,34 +184,31 @@ footer a:hover { color: var(--sub); }
             <div class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
             <input class="field-input" type="email" id="loginEmail" placeholder="you@example.com">
           </div>
-          <button class="otp-send-btn" id="loginSendOtp" onclick="sendLoginOtp()">Send OTP</button>
+          <button class="otp-send-btn" id="loginSendOtp" onclick="sendLoginOtp()">Send Code</button>
         </div>
       </div>
       <div class="status-msg" id="loginStep1Status"></div>
     </div>
 
     <div id="loginStep2" style="display:none">
-      <p style="font-size:12px;color:var(--sub);margin-bottom:10px;">📧 We've sent a verification code to <strong id="loginEmailShow" style="color:var(--text)"></strong></p>
+      <p class="email-confirm">A verification code has been sent to <strong id="loginEmailShow"></strong></p>
       <div class="field">
-        <label class="field-label">Enter OTP</label>
-        <div class="field-wrap">
-          <div class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8"/></svg></div>
-          <input class="field-input" type="tel" id="o1" maxlength="6" placeholder="Please enter the 6-digit OTP" style="letter-spacing:4px;font-size:18px;font-weight:800;">
-        </div>
+        <label class="field-label">Enter Code</label>
+        <input class="otp-input" type="tel" id="loginOtp" maxlength="6" placeholder="000000" inputmode="numeric">
       </div>
-      <button class="submit-btn" onclick="verifyLoginOtp()">Sign In →</button>
-      <div class="resend-row" id="loginResend">OTP not received? <span onclick="sendLoginOtp()">Resend</span></div>
+      <button class="submit-btn" onclick="verifyLoginOtp()">Log In</button>
+      <div class="resend-row" id="loginResend">Didn't get a code? <span onclick="sendLoginOtp()">Resend</span></div>
       <div class="status-msg" id="loginStep2Status"></div>
     </div>
 
-    <div class="bottom-text">Don't have an account? <span onclick="switchTab('signup')">Create Account →</span></div>
+    <div class="bottom-text">Don't have an account? <span onclick="switchTab('signup')">Create one</span></div>
   </div>
 
   <!-- SIGNUP -->
   <div id="signupView" style="display:none">
     <div class="login-heading">
-      <div class="login-h1">Create <span>Account.</span></div>
-      <p class="login-sub">Free forever · No credit card required.</p>
+      <div class="login-h1">Create an <em>account.</em></div>
+      <p class="login-sub">Free to start — no credit card required.</p>
     </div>
 
     <button class="google-btn" onclick="googleLogin()">
@@ -238,37 +226,33 @@ footer a:hover { color: var(--sub); }
             <div class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
             <input class="field-input" type="email" id="signupEmail" placeholder="you@example.com">
           </div>
-          <button class="otp-send-btn" id="signupSendOtp" onclick="sendSignupOtp()">Send OTP</button>
+          <button class="otp-send-btn" id="signupSendOtp" onclick="sendSignupOtp()">Send Code</button>
         </div>
       </div>
       <div class="status-msg" id="signupStep1Status"></div>
     </div>
 
     <div id="signupStep2" style="display:none">
-      <p style="font-size:12px;color:var(--sub);margin-bottom:10px;">📧 A verification code has been sent to <strong id="signupEmailShow" style="color:var(--text)"></strong></p>
+      <p class="email-confirm">A verification code has been sent to <strong id="signupEmailShow"></strong></p>
       <div class="field">
-        <label class="field-label">Enter OTP</label>
-        <div class="field-wrap">
-          <div class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8"/></svg></div>
-          <input class="field-input" type="tel" id="s1" maxlength="6" placeholder="Enter 6 digit OTP" style="letter-spacing:4px;font-size:18px;font-weight:800;">
-        </div>
+        <label class="field-label">Enter Code</label>
+        <input class="otp-input" type="tel" id="signupOtp" maxlength="6" placeholder="000000" inputmode="numeric">
       </div>
-      <button class="submit-btn" onclick="verifySignupOtp()">Create Account →</button>
-      <div class="resend-row" id="signupResend">Haven't received your OTP? <span onclick="sendSignupOtp()">Resend Code</span></div>
+      <button class="submit-btn" onclick="verifySignupOtp()">Create Account</button>
+      <div class="resend-row" id="signupResend">Didn't get a code? <span onclick="sendSignupOtp()">Resend</span></div>
       <div class="status-msg" id="signupStep2Status"></div>
     </div>
 
-    <div class="bottom-text">Already have an account? <span onclick="switchTab('login')">Sign In →</span></div>
+    <div class="bottom-text">Already have an account? <span onclick="switchTab('login')">Log in</span></div>
   </div>
 
-  <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:16px;">
-    By continuing, you agree to ReelScribe's <a href="/terms.html" style="color:var(--muted);text-decoration:underline">Terms</a> and <a href="/privacy.html" style="color:var(--muted);text-decoration:underline">Privacy Policy</a>
+  <div class="legal-note">
+    By continuing, you agree to ReelScribe's <a href="/terms.html">Terms of Service</a> and <a href="/privacy.html">Privacy Policy</a>.
   </div>
 </div>
 
 <footer>
   <p><a href="/about.html">About</a><a href="/contact.html">Contact</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a></p>
-  <p style="margin-top:8px">© 2026 ReelScribe</p>
 </footer>
 
 <script>
@@ -279,23 +263,20 @@ function switchTab(tab) {
   document.getElementById('tabLogin').classList.toggle('active', isLogin);
   document.getElementById('tabSignup').classList.toggle('active', !isLogin);
 }
+
 const nextParam = new URLSearchParams(window.location.search).get('next');
 const nextPath = (nextParam && nextParam.startsWith('/')) ? nextParam : '/dashboard.html';
 
 function googleLogin() { window.location.href = '/auth/google?next=' + encodeURIComponent(nextPath); }
+
 function showStatus(id, msg, type) {
   const el = document.getElementById(id);
   el.innerText = msg; el.className = 'status-msg ' + type; el.style.display = 'block';
 }
 
-function otpNext(current, nextId) { if (current.value.length === 1) document.getElementById(nextId)?.focus(); }
-function otpBack(e, current, prevId) { if (e.key === 'Backspace' && !current.value) document.getElementById(prevId)?.focus(); }
-function otpNextS(current, nextId) { if (current.value.length === 1) document.getElementById(nextId)?.focus(); }
-function otpBackS(e, current, prevId) { if (e.key === 'Backspace' && !current.value) document.getElementById(prevId)?.focus(); }
-
 async function sendLoginOtp() {
   const email = document.getElementById('loginEmail').value.trim();
-  if (!email || !email.includes('@')) { showStatus('loginStep1Status', '❌ Please enter a valid email', 'error'); return; }
+  if (!email || !email.includes('@')) { showStatus('loginStep1Status', 'Please enter a valid email address.', 'error'); return; }
   const btn = document.getElementById('loginSendOtp');
   btn.disabled = true; btn.innerText = 'Sending...';
   try {
@@ -306,34 +287,34 @@ async function sendLoginOtp() {
       document.getElementById('loginStep2').style.display = 'block';
       document.getElementById('loginEmailShow').innerText = email;
       document.getElementById('loginResend').style.display = 'block';
-      document.getElementById('o1').focus();
+      document.getElementById('loginOtp').focus();
     } else {
-      showStatus('loginStep1Status', '❌ ' + (data.message || 'Failed to send OTP'), 'error');
-      btn.disabled = false; btn.innerText = 'Send OTP';
+      showStatus('loginStep1Status', data.message || 'Could not send the code. Please try again.', 'error');
+      btn.disabled = false; btn.innerText = 'Send Code';
     }
-  } catch (e) { showStatus('loginStep1Status', '❌ Server error, try again', 'error'); btn.disabled = false; btn.innerText = 'Send OTP'; }
+  } catch (e) { showStatus('loginStep1Status', 'Server error, please try again.', 'error'); btn.disabled = false; btn.innerText = 'Send Code'; }
 }
 
 async function verifyLoginOtp() {
   const email = document.getElementById('loginEmail').value.trim();
-  const otp = document.getElementById('o1').value.trim();
-  if (otp.length < 6) { showStatus('loginStep2Status', '❌ Please enter the 6-digit OTP', 'error'); return; }
+  const otp = document.getElementById('loginOtp').value.trim();
+  if (otp.length < 6) { showStatus('loginStep2Status', 'Please enter the full 6-digit code.', 'error'); return; }
   try {
     const res = await fetch('/verify-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, otp }) });
     const data = await res.json();
     if (data.success) {
-      localStorage.setItem('userEmail', email);
-      showStatus('loginStep2Status', '✅ Login successful!', 'success');
-      setTimeout(() => { window.location.href = nextPath; }, 1000);
+      localStorage.setItem('userEmail', email); // display only — the server session (set on verify) is what actually authenticates you
+      showStatus('loginStep2Status', 'Logged in successfully!', 'success');
+      setTimeout(() => { window.location.href = nextPath; }, 800);
     } else {
-      showStatus('loginStep2Status', '❌ ' + (data.message || 'Invalid OTP'), 'error');
+      showStatus('loginStep2Status', data.message || 'Invalid code.', 'error');
     }
-  } catch (e) { showStatus('loginStep2Status', '❌ Server error, try again', 'error'); }
+  } catch (e) { showStatus('loginStep2Status', 'Server error, please try again.', 'error'); }
 }
 
 async function sendSignupOtp() {
   const email = document.getElementById('signupEmail').value.trim();
-  if (!email || !email.includes('@')) { showStatus('signupStep1Status', '❌ Please enter a valid email', 'error'); return; }
+  if (!email || !email.includes('@')) { showStatus('signupStep1Status', 'Please enter a valid email address.', 'error'); return; }
   const btn = document.getElementById('signupSendOtp');
   btn.disabled = true; btn.innerText = 'Sending...';
   try {
@@ -344,29 +325,29 @@ async function sendSignupOtp() {
       document.getElementById('signupStep2').style.display = 'block';
       document.getElementById('signupEmailShow').innerText = email;
       document.getElementById('signupResend').style.display = 'block';
-      document.getElementById('s1').focus();
+      document.getElementById('signupOtp').focus();
     } else {
-      showStatus('signupStep1Status', '❌ ' + (data.message || 'Failed to send OTP'), 'error');
-      btn.disabled = false; btn.innerText = 'Send OTP';
+      showStatus('signupStep1Status', data.message || 'Could not send the code. Please try again.', 'error');
+      btn.disabled = false; btn.innerText = 'Send Code';
     }
-  } catch (e) { showStatus('signupStep1Status', '❌ Server error, try again', 'error'); btn.disabled = false; btn.innerText = 'Send OTP'; }
+  } catch (e) { showStatus('signupStep1Status', 'Server error, please try again.', 'error'); btn.disabled = false; btn.innerText = 'Send Code'; }
 }
 
 async function verifySignupOtp() {
   const email = document.getElementById('signupEmail').value.trim();
-  const otp = document.getElementById('s1').value.trim();
-  if (otp.length < 6) { showStatus('signupStep2Status', '❌ Please enter the 6-digit OTP', 'error'); return; }
+  const otp = document.getElementById('signupOtp').value.trim();
+  if (otp.length < 6) { showStatus('signupStep2Status', 'Please enter the full 6-digit code.', 'error'); return; }
   try {
     const res = await fetch('/verify-otp', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, otp }) });
     const data = await res.json();
     if (data.success) {
       localStorage.setItem('userEmail', email);
-      showStatus('signupStep2Status', '✅ Account created successfully!', 'success');
-      setTimeout(() => { window.location.href = nextPath; }, 1000);
+      showStatus('signupStep2Status', 'Account created!', 'success');
+      setTimeout(() => { window.location.href = nextPath; }, 800);
     } else {
-      showStatus('signupStep2Status', '❌ ' + (data.message || 'Invalid OTP'), 'error');
+      showStatus('signupStep2Status', data.message || 'Invalid code.', 'error');
     }
-  } catch (e) { showStatus('signupStep2Status', '❌ Server error, try again', 'error'); }
+  } catch (e) { showStatus('signupStep2Status', 'Server error, please try again.', 'error'); }
 }
 
 const urlTab = new URLSearchParams(window.location.search).get('tab');
