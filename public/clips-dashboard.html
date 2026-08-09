@@ -5,303 +5,266 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Clips Dashboard – ReelScribe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg: #09070f;
-  --card: #111020;
-  --card2: #17142a;
-  --border: #201c38;
-  --border2: #2c2650;
-  --purple: #8b5cf6;
-  --pink: #ec4899;
-  --text: #f0eaff;
-  --sub: #8a7fab;
-  --muted: #3d3660;
-  --grad: linear-gradient(135deg, #8b5cf6, #ec4899);
+  --bg: #0e0d10;
+  --s1: #161418;
+  --s2: #1c191e;
+  --border: #2a262b;
+  --border2: #38333a;
+  --red: #ff3b30;
+  --text: #f5f2ee;
+  --sub: #a39d95;
+  --muted: #665f5c;
 }
 
 html { scroll-behavior: smooth; }
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Archivo', -apple-system, sans-serif;
   max-width: 480px; margin: 0 auto;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
+.mono { font-family: 'IBM Plex Mono', monospace; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
 /* NAV */
 .nav {
   position: sticky; top: 0; z-index: 999;
-  background: rgba(9,7,15,0.92);
+  background: rgba(14,13,16,0.92);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center;
   justify-content: space-between;
   padding: 13px 20px;
 }
-.nav-logo {
-  font-size: 18px; font-weight: 900; letter-spacing: -0.5px;
-  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
+.nav-logo { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 7px; }
+.nav-logo .ndot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
 .nav-right { display: flex; align-items: center; gap: 10px; }
 .nav-plan-badge {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
   text-transform: uppercase; padding: 4px 10px;
-  border-radius: 100px; border: 1px solid var(--border2);
-  color: var(--sub); background: var(--card);
+  border-radius: 3px; border: 1px solid var(--border2);
+  color: var(--sub); background: var(--s1);
+  font-family: 'IBM Plex Mono', monospace;
 }
-.nav-plan-badge.paid { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); color: var(--purple); }
+.nav-plan-badge.paid { background: rgba(255,59,48,0.08); border-color: rgba(255,59,48,0.3); color: var(--red); }
 .nav-menu { background: none; border: none; color: var(--sub); font-size: 20px; cursor: pointer; }
 
 /* DRAWER */
-.drawer-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.7); z-index: 9998; backdrop-filter: blur(6px);
-}
+.drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 9998; backdrop-filter: blur(6px); }
 .drawer-overlay.active { display: block; }
 .drawer {
   position: fixed; top: 0; right: -320px;
   width: 78%; max-width: 290px; height: 100%;
-  background: #0e0c1c; border-left: 1px solid var(--border2);
+  background: var(--s1); border-left: 1px solid var(--border2);
   padding: 0; transition: right .3s ease;
   z-index: 9999; display: flex; flex-direction: column;
 }
 .drawer.active { right: 0; }
-.drawer-head {
-  padding: 28px 22px 20px;
-  border-bottom: 1px solid var(--border);
-}
+.drawer-head { padding: 28px 22px 20px; border-bottom: 1px solid var(--border); }
 .drawer-avatar {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: var(--grad);
+  width: 48px; height: 48px; border-radius: 6px;
+  background: var(--s2); border: 1px solid var(--border2);
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px; font-weight: 900; color: white;
-  margin-bottom: 12px;
+  font-size: 18px; font-weight: 700; color: var(--red);
+  margin-bottom: 12px; font-family: 'IBM Plex Mono', monospace;
 }
-.drawer-name { font-size: 16px; font-weight: 800; margin-bottom: 3px; }
+.drawer-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
 .drawer-email { font-size: 12px; color: var(--muted); word-break: break-all; margin-bottom: 12px; }
 .drawer-plan-row {
   display: flex; align-items: center; justify-content: space-between;
-  background: var(--card); border: 1px solid var(--border2);
-  border-radius: 10px; padding: 10px 14px;
+  background: var(--s2); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 10px 14px;
 }
-.drawer-plan-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-.drawer-plan-value { font-size: 13px; font-weight: 800; color: var(--purple); }
-.drawer-body { flex: 1; padding: 16px 22px; display: flex; flex-direction: column; gap: 8px; }
+.drawer-plan-label { font-size: 10.5px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; font-family: 'IBM Plex Mono', monospace; }
+.drawer-plan-value { font-size: 13px; font-weight: 700; color: var(--red); }
+.drawer-body { flex: 1; padding: 16px 22px; display: flex; flex-direction: column; gap: 6px; }
 .drawer-link {
   display: flex; align-items: center; gap: 10px;
-  padding: 12px 14px; border-radius: 12px;
+  padding: 12px 14px; border-radius: 6px;
   background: transparent; border: 1px solid transparent;
-  color: var(--sub); font-size: 14px; font-weight: 600;
-  cursor: pointer; font-family: 'Inter', sans-serif;
+  color: var(--sub); font-size: 13.5px; font-weight: 500;
+  cursor: pointer; font-family: 'Archivo', sans-serif;
   transition: all .2s; text-decoration: none;
 }
 .drawer-link svg { width: 16px; height: 16px; flex-shrink: 0; }
-.drawer-link:hover { background: var(--card); border-color: var(--border); color: var(--text); }
-.drawer-link-danger { color: #f87171; }
-.drawer-link-danger:hover { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.2); color: #f87171; }
+.drawer-link:hover { background: var(--s2); border-color: var(--border); color: var(--text); }
+.drawer-link-danger { color: #ff6b5f; }
+.drawer-link-danger:hover { background: rgba(255,59,48,0.08); border-color: rgba(255,59,48,0.2); color: #ff6b5f; }
 .drawer-foot { padding: 16px 22px; border-top: 1px solid var(--border); }
 .drawer-upgrade {
-  width: 100%; padding: 13px; border: none; border-radius: 12px;
-  background: var(--grad); color: white; font-size: 14px; font-weight: 700;
-  cursor: pointer; font-family: 'Inter', sans-serif;
+  width: 100%; padding: 13px; border: none; border-radius: 6px;
+  background: var(--red); color: #1a0a08; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif;
 }
 
 /* SECTION LABEL */
 .sec-label {
   display: flex; align-items: center; gap: 8px;
-  font-size: 10px; font-weight: 700; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--purple); margin-bottom: 14px;
+  font-size: 10.5px; font-weight: 500; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--red); margin-bottom: 14px;
+  font-family: 'IBM Plex Mono', monospace;
 }
-.sec-label::before {
-  content: ''; display: block;
-  width: 24px; height: 2px; background: var(--purple); flex-shrink: 0;
-}
+.sec-label::before { content: ''; display: block; width: 14px; height: 1px; background: var(--border2); flex-shrink: 0; }
 
 /* MAIN */
 .main { padding: 24px 20px; }
 
 /* WELCOME STRIP */
-.welcome-strip {
-  background: var(--card); border: 1px solid var(--border2);
-  border-radius: 18px; padding: 20px;
-  margin-bottom: 20px; position: relative; overflow: hidden;
-}
-.welcome-strip::before {
-  content: '';
-  position: absolute; top: -40px; right: -40px;
-  width: 180px; height: 180px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(139,92,246,0.1), transparent 65%);
-  pointer-events: none;
-}
-.welcome-greeting { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
-.welcome-name { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 14px; }
+.welcome-strip { background: var(--s1); border: 1px solid var(--border2); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+.welcome-greeting { font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; font-family: 'IBM Plex Mono', monospace; }
+.welcome-name { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 14px; }
 .welcome-stats { display: flex; gap: 10px; }
-.welcome-stat {
-  flex: 1; background: var(--card2); border: 1px solid var(--border);
-  border-radius: 12px; padding: 12px;
-}
-.welcome-stat-num { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; color: var(--purple); }
-.welcome-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+.welcome-stat { flex: 1; background: var(--s2); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+.welcome-stat-num { font-size: 19px; font-weight: 700; letter-spacing: -0.4px; color: var(--red); }
+.welcome-stat-label { font-size: 9.5px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
 
 /* GENERATE CARD */
-.generate-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 18px; padding: 20px; margin-bottom: 16px;
-}
-.generate-card-title { font-size: 15px; font-weight: 800; margin-bottom: 14px; }
+.generate-card { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.generate-card-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
 .generate-input-row {
   display: flex; align-items: center; gap: 8px;
-  background: var(--card2); border: 1px solid var(--border2);
-  border-radius: 14px; padding: 6px 6px 6px 14px;
+  background: var(--s2); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 6px 6px 6px 14px;
+  transition: border-color .2s, box-shadow .2s;
 }
+.generate-input-row:focus-within { border-color: var(--red); box-shadow: 0 0 0 3px rgba(255,59,48,0.12); }
 .generate-input-row svg { width: 16px; height: 16px; color: var(--muted); flex-shrink: 0; }
-.generate-input-row input {
-  flex: 1; background: none; border: none; outline: none;
-  color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif;
-  min-width: 0;
-}
+.generate-input-row input { flex: 1; background: none; border: none; outline: none; color: var(--text); font-size: 13px; font-family: 'Archivo', sans-serif; min-width: 0; }
 .generate-btn {
-  padding: 12px 18px; border: none; border-radius: 10px;
-  background: var(--grad); color: white; font-size: 13px; font-weight: 800;
-  cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap;
-  display: flex; align-items: center; gap: 4px;
+  padding: 12px 18px; border: none; border-radius: 4px;
+  background: var(--red); color: #1a0a08; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif; white-space: nowrap;
+  transition: opacity .2s;
 }
+.generate-btn:hover { opacity: .88; }
 
-/* CLIP CARDS (result + history reuse this) */
-.clip-card {
-  background: var(--card2); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px; margin-bottom: 10px;
-}
+/* CLIP CARDS */
+.clip-card { background: var(--s2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
 .clip-card:last-child { margin-bottom: 0; }
-.clip-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+.clip-title { font-size: 13.5px; font-weight: 700; margin-bottom: 4px; }
 .clip-reason { font-size: 12px; color: var(--sub); line-height: 1.6; margin-bottom: 10px; }
 .clip-meta { display: flex; align-items: center; justify-content: space-between; }
-.clip-duration { font-size: 11px; color: var(--muted); font-weight: 700; }
+.clip-duration { font-size: 11px; color: var(--muted); font-weight: 500; font-family: 'IBM Plex Mono', monospace; }
 .clip-download-btn {
-  padding: 8px 16px; border-radius: 9px;
-  background: var(--grad); color: white; font-size: 12px; font-weight: 700;
-  text-decoration: none; font-family: 'Inter', sans-serif;
+  padding: 8px 16px; border-radius: 4px;
+  background: var(--red); color: #1a0a08; font-size: 11.5px; font-weight: 600;
+  letter-spacing: 0.3px; text-transform: uppercase;
+  text-decoration: none; font-family: 'Archivo', sans-serif;
 }
 
 /* PROCESSING STATE */
 .processing-box { text-align: center; padding: 24px 16px; }
 .processing-spinner {
-  width: 40px; height: 40px; border-radius: 50%;
+  width: 36px; height: 36px; border-radius: 50%;
   border: 3px solid var(--border2);
-  border-top-color: var(--purple);
+  border-top-color: var(--red);
   margin: 0 auto 16px; animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-.processing-title { font-size: 14px; font-weight: 800; margin-bottom: 8px; }
+.processing-title { font-size: 13.5px; font-weight: 700; margin-bottom: 8px; }
 .processing-sub { font-size: 12px; color: var(--sub); line-height: 1.7; }
 
 /* QUICK ACTIONS */
 .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
 .quick-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 16px; cursor: pointer;
-  transition: border-color .2s; position: relative;
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; cursor: pointer;
+  transition: border-color .2s, transform .2s;
 }
-.quick-card:hover { border-color: rgba(139,92,246,0.4); }
+.quick-card:hover { border-color: var(--border2); transform: translateY(-2px); }
 .quick-icon {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: var(--card2); border: 1px solid var(--border2);
+  width: 34px; height: 34px; border-radius: 6px;
+  background: var(--s2); border: 1px solid var(--border2);
   display: flex; align-items: center; justify-content: center;
   margin-bottom: 10px;
 }
-.quick-icon svg { width: 16px; height: 16px; color: var(--purple); }
-.quick-title { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
+.quick-icon svg { width: 15px; height: 15px; color: var(--red); }
+.quick-title { font-size: 12.5px; font-weight: 700; margin-bottom: 3px; }
 .quick-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
 
 /* HISTORY */
-.history-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 18px; padding: 20px; margin-bottom: 16px;
-}
+.history-card { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
 .history-head { display: flex; align-items: center; justify-content: space-between; }
-.history-title { font-size: 15px; font-weight: 800; }
+.history-title { font-size: 14px; font-weight: 700; }
 .history-toggle {
   background: none; border: 1px solid var(--border2);
-  border-radius: 8px; color: var(--muted);
-  font-size: 11px; font-weight: 700; padding: 5px 10px;
-  cursor: pointer; font-family: 'Inter', sans-serif; transition: all .2s;
+  border-radius: 4px; color: var(--muted);
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase;
+  padding: 5px 10px; cursor: pointer; font-family: 'Archivo', sans-serif; transition: all .2s;
 }
-.history-toggle:hover { border-color: var(--purple); color: var(--text); }
+.history-toggle:hover { border-color: var(--red); color: var(--text); }
 .history-list { margin-top: 14px; display: none; }
 .history-item {
-  background: var(--card2); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px; margin-bottom: 8px;
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px; margin-bottom: 8px;
   cursor: pointer; transition: border-color .2s;
 }
 .history-item:last-child { margin-bottom: 0; }
-.history-item:hover { border-color: rgba(139,92,246,0.3); }
+.history-item:hover { border-color: var(--border2); }
 .history-item-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.history-item-date { font-size: 10px; color: var(--muted); font-weight: 600; }
+.history-item-date { font-size: 10px; color: var(--muted); font-weight: 500; font-family: 'IBM Plex Mono', monospace; }
 .history-item-source {
-  font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.4px;
   text-transform: uppercase; padding: 2px 8px;
-  border-radius: 100px; background: rgba(139,92,246,0.08);
-  border: 1px solid rgba(139,92,246,0.15); color: var(--purple);
+  border-radius: 3px; background: rgba(255,59,48,0.08);
+  border: 1px solid rgba(255,59,48,0.2); color: var(--red);
+  font-family: 'IBM Plex Mono', monospace;
 }
-.history-item-preview { font-size: 13px; color: var(--text); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.history-item-preview { font-size: 13px; color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
 .history-item-url { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .history-empty { text-align: center; padding: 20px 0; font-size: 13px; color: var(--muted); }
 .history-item-clips { margin-top: 12px; display: none; padding-top: 12px; border-top: 1px solid var(--border); }
 
 /* UPGRADE BANNER */
 .upgrade-banner {
-  background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(236,72,153,0.08));
-  border: 1px solid rgba(139,92,246,0.2);
-  border-radius: 18px; padding: 22px 20px;
+  background: #131013;
+  border: 1px solid rgba(255,59,48,0.3);
+  border-radius: 10px; padding: 22px 20px;
   margin-bottom: 20px; text-align: center;
 }
-.upgrade-banner h3 { font-size: 18px; font-weight: 900; letter-spacing: -0.3px; margin-bottom: 6px; }
-.upgrade-banner p { font-size: 13px; color: var(--sub); margin-bottom: 16px; line-height: 1.6; }
+.upgrade-banner h3 { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 6px; }
+.upgrade-banner p { font-size: 12.5px; color: var(--sub); margin-bottom: 16px; line-height: 1.6; }
 .upgrade-btn {
-  width: 100%; padding: 13px; border: none; border-radius: 12px;
-  background: var(--grad); color: white; font-size: 14px; font-weight: 700;
-  cursor: pointer; font-family: 'Inter', sans-serif;
+  width: 100%; padding: 13px; border: none; border-radius: 6px;
+  background: var(--red); color: #1a0a08; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif;
 }
 
 /* LOGIN WALL */
-.login-wall {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 18px; padding: 26px 20px; text-align: center;
-  margin-bottom: 20px;
-}
+.login-wall { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 26px 20px; text-align: center; margin-bottom: 20px; }
 .login-wall p { font-size: 13px; color: var(--sub); margin-bottom: 16px; line-height: 1.6; }
 .login-wall-btn {
-  padding: 12px 24px; border: none; border-radius: 12px;
-  background: var(--grad); color: white; font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: 'Inter', sans-serif;
+  padding: 12px 24px; border: none; border-radius: 6px;
+  background: var(--red); color: #1a0a08; font-size: 12.5px; font-weight: 600;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif;
 }
 
 /* FOOTER */
 footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
-.foot-logo {
-  font-size: 15px; font-weight: 900;
-  background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  margin-bottom: 4px;
-}
-.foot-tag { font-size: 11px; color: var(--muted); margin-bottom: 16px; }
+.foot-logo { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
+.foot-logo .fdot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
+.foot-tag { font-size: 11px; color: var(--muted); margin-bottom: 16px; font-family: 'IBM Plex Mono', monospace; }
 .foot-links { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 16px; }
 .foot-links a { color: var(--muted); font-size: 12px; text-decoration: none; transition: color .2s; }
 .foot-links a:hover { color: var(--sub); }
 .foot-sep { height: 1px; background: var(--border); margin-bottom: 14px; }
-.foot-copy { font-size: 11px; color: var(--muted); text-align: center; }
+.foot-copy { font-size: 11px; color: var(--muted); text-align: center; font-family: 'IBM Plex Mono', monospace; }
 
 /* CAPTION STYLES — COMING SOON */
 .caption-promo { margin-bottom: 20px; }
-.caption-heading { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.15; margin-bottom: 3px; }
-.caption-heading-ghost {
-  font-size: 22px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.15; margin-bottom: 12px;
-  color: transparent; -webkit-text-stroke: 1px var(--border2);
-}
+.caption-heading { font-size: 21px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.2; margin-bottom: 12px; }
+.caption-heading em { font-style: normal; color: var(--red); }
 .caption-sub { font-size: 12.5px; color: var(--sub); line-height: 1.6; margin-bottom: 16px; }
 
 .marquee-wrap {
@@ -309,57 +272,43 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
-.marquee-track { display: flex; gap: 12px; width: max-content; animation: scrollLeft 28s linear infinite; }
-.marquee-track.reverse { animation: scrollRight 28s linear infinite; }
+.marquee-track { display: flex; gap: 12px; width: max-content; animation: scrollLeft 26s linear infinite; }
+.marquee-track.reverse { animation: scrollRight 26s linear infinite; }
 @keyframes scrollLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @keyframes scrollRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 
-.caption-card { flex-shrink: 0; width: 132px; border-radius: 14px; overflow: hidden; background: var(--card); border: 1px solid var(--border); }
-.caption-preview {
-  height: 100px; background: #000; display: flex; align-items: center; justify-content: center; padding: 8px;
-  background-image:
-    radial-gradient(circle at 30% 20%, rgba(139,92,246,0.18), transparent 60%),
-    radial-gradient(circle at 70% 80%, rgba(236,72,153,0.14), transparent 60%);
-}
-.caption-preview span { font-size: 13px; font-weight: 800; letter-spacing: -0.2px; text-align: center; }
-.caption-label-bar { display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 8px 10px; background: var(--card2); border-top: 1px solid var(--border); }
-.caption-name { font-size: 9.5px; font-weight: 700; color: var(--text); letter-spacing: 0.2px; }
+.caption-card { flex-shrink: 0; width: 128px; border-radius: 8px; overflow: hidden; background: var(--s1); border: 1px solid var(--border); }
+.caption-preview { height: 96px; background: #000; display: flex; align-items: center; justify-content: center; padding: 8px; }
+.caption-preview span { font-size: 12.5px; font-weight: 700; letter-spacing: -0.2px; text-align: center; color: #fff; }
+.caption-label-bar { display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 8px 10px; background: var(--s2); border-top: 1px solid var(--border); }
+.caption-name { font-size: 9.5px; font-weight: 600; color: var(--text); letter-spacing: 0.2px; }
 .soon-badge {
-  font-size: 7.5px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase;
-  background: var(--grad); color: white; padding: 3px 6px; border-radius: 100px; flex-shrink: 0;
+  font-size: 7.5px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
+  background: var(--red); color: #1a0a08; padding: 3px 6px; border-radius: 2px; flex-shrink: 0;
+  font-family: 'IBM Plex Mono', monospace;
 }
-
-.style-bold-pop span { color: #fff; }
-.style-bold-pop .accent { color: var(--pink); }
-.style-neon-glow span { color: #fff; text-shadow: 0 0 10px var(--purple), 0 0 20px var(--purple); }
-.style-karaoke span { color: var(--muted); }
-.style-karaoke .filled { color: var(--pink); text-shadow: 0 0 8px rgba(236,72,153,0.6); }
 .style-outline span { color: transparent; -webkit-text-stroke: 1.3px #fff; }
-.style-minimal span { color: #fff; background: rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 6px; font-size: 11px; }
-.style-gradient span { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.style-cinematic span { color: #fff; font-style: italic; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; font-size: 10.5px; }
-.style-red-glow span { color: #fff; text-shadow: 0 0 10px #ec4899, 0 0 22px #ec4899; }
-.style-word-pop span { color: #fff; }
-.style-word-pop .accent { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; padding: 2px 4px; }
-.style-boxed span { background: #fff; color: #09070f; padding: 4px 9px; border-radius: 5px; font-size: 11px; }
-.style-typewriter span { color: #fff; font-family: monospace; letter-spacing: 0.5px; font-size: 11px; }
-.style-classic-bold span { color: #fff; -webkit-text-stroke: 2px #000; paint-order: stroke fill; font-size: 14px; }
-.style-yellow-highlight span { background: #ffe135; color: #09070f; padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-.style-meme span { font-family: 'Inter', sans-serif; text-transform: uppercase; color: #fff; -webkit-text-stroke: 1.8px #000; paint-order: stroke fill; font-size: 13px; }
+.style-red span { color: #fff; text-shadow: 0 0 10px var(--red), 0 0 20px var(--red); }
+.style-boxed span { background: #fff; color: #0e0d10; padding: 4px 9px; border-radius: 3px; font-size: 11px; }
+.style-mono span { color: #fff; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; font-size: 11px; }
+.style-classic span { color: #fff; -webkit-text-stroke: 2px #000; paint-order: stroke fill; font-size: 14px; }
+.style-highlight span { background: var(--red); color: #1a0a08; padding: 4px 8px; border-radius: 3px; font-size: 11px; }
+.style-karaoke span { color: var(--muted); }
+.style-karaoke .filled { color: var(--red); }
+.style-minimal span { color: #fff; background: rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 4px; font-size: 11px; }
 .style-bounce span { color: #fff; display: inline-block; animation: bouncePreview 1.2s ease-in-out infinite; }
 @keyframes bouncePreview { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-.style-duotone span { color: var(--pink); text-shadow: 2px 2px 0 var(--purple); }
 .style-shake span { color: #fff; display: inline-block; animation: shakePreview 0.35s ease-in-out infinite; }
 @keyframes shakePreview { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
 
 .caption-cta {
   margin-top: 14px; padding: 14px 16px;
-  background: var(--card); border: 1px dashed var(--border2);
-  border-radius: 14px; display: flex; align-items: center; gap: 12px;
+  background: var(--s1); border: 1px dashed var(--border2);
+  border-radius: 8px; display: flex; align-items: center; gap: 12px;
 }
-.caption-cta-icon { width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0; background: var(--grad); display: flex; align-items: center; justify-content: center; }
-.caption-cta-icon svg { width: 18px; height: 18px; color: white; }
-.caption-cta-text h4 { font-size: 13px; font-weight: 800; margin-bottom: 2px; }
+.caption-cta-icon { width: 36px; height: 36px; border-radius: 6px; flex-shrink: 0; background: var(--s2); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; }
+.caption-cta-icon svg { width: 17px; height: 17px; color: var(--red); }
+.caption-cta-text h4 { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
 .caption-cta-text p { font-size: 11.5px; color: var(--sub); line-height: 1.4; }
 </style>
 </head>
@@ -371,7 +320,7 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
 <!-- Drawer -->
 <div class="drawer" id="drawer">
   <div class="drawer-head">
-    <div class="drawer-avatar" id="drawerAvatar">U</div>
+    <div class="drawer-avatar mono" id="drawerAvatar">U</div>
     <div class="drawer-name" id="drawerName">User</div>
     <div class="drawer-email" id="drawerEmail">Loading...</div>
     <div class="drawer-plan-row">
@@ -408,10 +357,10 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
 
 <!-- NAV -->
 <nav class="nav">
-  <div class="nav-logo">ReelScribe</div>
+  <div class="nav-logo"><span class="ndot"></span>ReelScribe</div>
   <div class="nav-right">
     <div class="nav-plan-badge" id="navPlanBadge">Free</div>
-    <button class="nav-menu" onclick="openDrawer()">☰</button>
+    <button class="nav-menu" onclick="openDrawer()" aria-label="Open menu">☰</button>
   </div>
 </nav>
 
@@ -450,7 +399,7 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
     <div class="generate-input-row">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
       <input type="text" id="clipUrl" placeholder="https://youtube.com/watch?v=...">
-      <button class="generate-btn" onclick="generateClips()">Generate ↗</button>
+      <button class="generate-btn" onclick="generateClips()">Generate</button>
     </div>
   </div>
 
@@ -464,149 +413,52 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
   <!-- Caption Styles — Coming Soon -->
   <div class="sec-label">Coming Soon</div>
   <div class="caption-promo">
-    <div class="caption-heading">Caption Styles.</div>
-    <div class="caption-heading-ghost">Built Right In.</div>
+    <h2 class="caption-heading">Caption styles. Built <em>right in.</em></h2>
     <p class="caption-sub">Burned-in captions for every clip — pick a style and it's done. No editing app needed.</p>
 
     <!-- Row 1: scrolls left -->
     <div class="marquee-wrap">
       <div class="marquee-track">
-        <div class="caption-card">
-          <div class="caption-preview style-bold-pop"><span>BOLD<span class="accent">POP</span></span></div>
-          <div class="caption-label-bar"><span class="caption-name">Bold Pop</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-neon-glow"><span>NEON GLOW</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Neon Glow</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Karaoke</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-outline"><span>OUTLINE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Outline</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-word-pop"><span>WORD <span class="accent">POP</span></span></div>
-          <div class="caption-label-bar"><span class="caption-name">Word Pop</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-classic-bold"><span>CLASSIC</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Classic Bold</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-meme"><span>MEME</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Meme Impact</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-bounce"><span>BOUNCE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Bounce</span><span class="soon-badge">Soon</span></div>
-        </div>
+        <div class="caption-card"><div class="caption-preview style-red"><span>BOLD POP</span></div><div class="caption-label-bar"><span class="caption-name">Bold Pop</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-red"><span>NEON GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Neon Glow</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div><div class="caption-label-bar"><span class="caption-name">Karaoke</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-outline"><span>OUTLINE</span></div><div class="caption-label-bar"><span class="caption-name">Outline</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-mono"><span>WORD POP</span></div><div class="caption-label-bar"><span class="caption-name">Word Pop</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-classic"><span>CLASSIC</span></div><div class="caption-label-bar"><span class="caption-name">Classic Bold</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-classic"><span>MEME</span></div><div class="caption-label-bar"><span class="caption-name">Meme Impact</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-bounce"><span>BOUNCE</span></div><div class="caption-label-bar"><span class="caption-name">Bounce</span><span class="soon-badge">Soon</span></div></div>
         <!-- duplicate set for seamless loop -->
-        <div class="caption-card">
-          <div class="caption-preview style-bold-pop"><span>BOLD<span class="accent">POP</span></span></div>
-          <div class="caption-label-bar"><span class="caption-name">Bold Pop</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-neon-glow"><span>NEON GLOW</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Neon Glow</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Karaoke</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-outline"><span>OUTLINE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Outline</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-word-pop"><span>WORD <span class="accent">POP</span></span></div>
-          <div class="caption-label-bar"><span class="caption-name">Word Pop</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-classic-bold"><span>CLASSIC</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Classic Bold</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-meme"><span>MEME</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Meme Impact</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-bounce"><span>BOUNCE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Bounce</span><span class="soon-badge">Soon</span></div>
-        </div>
+        <div class="caption-card"><div class="caption-preview style-red"><span>BOLD POP</span></div><div class="caption-label-bar"><span class="caption-name">Bold Pop</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-red"><span>NEON GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Neon Glow</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div><div class="caption-label-bar"><span class="caption-name">Karaoke</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-outline"><span>OUTLINE</span></div><div class="caption-label-bar"><span class="caption-name">Outline</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-mono"><span>WORD POP</span></div><div class="caption-label-bar"><span class="caption-name">Word Pop</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-classic"><span>CLASSIC</span></div><div class="caption-label-bar"><span class="caption-name">Classic Bold</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-classic"><span>MEME</span></div><div class="caption-label-bar"><span class="caption-name">Meme Impact</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-bounce"><span>BOUNCE</span></div><div class="caption-label-bar"><span class="caption-name">Bounce</span><span class="soon-badge">Soon</span></div></div>
       </div>
     </div>
 
     <!-- Row 2: scrolls right -->
     <div class="marquee-wrap">
       <div class="marquee-track reverse">
-        <div class="caption-card">
-          <div class="caption-preview style-minimal"><span>Minimal Clean</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Minimal Clean</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-gradient"><span>GRADIENT</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Gradient Fill</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-cinematic"><span>Cinematic</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Cinematic</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-red-glow"><span>RED GLOW</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Red Glow</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-boxed"><span>BOXED</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Boxed</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-yellow-highlight"><span>HIGHLIGHT</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Yellow Highlight</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-duotone"><span>DUOTONE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Duotone</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-shake"><span>SHAKE IT</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Shake</span><span class="soon-badge">Soon</span></div>
-        </div>
+        <div class="caption-card"><div class="caption-preview style-minimal"><span>Minimal Clean</span></div><div class="caption-label-bar"><span class="caption-name">Minimal Clean</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-mono"><span>GRADIENT</span></div><div class="caption-label-bar"><span class="caption-name">Gradient Fill</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-minimal"><span>Cinematic</span></div><div class="caption-label-bar"><span class="caption-name">Cinematic</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-red"><span>RED GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Red Glow</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-boxed"><span>BOXED</span></div><div class="caption-label-bar"><span class="caption-name">Boxed</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-highlight"><span>HIGHLIGHT</span></div><div class="caption-label-bar"><span class="caption-name">Highlight</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-classic"><span>DUOTONE</span></div><div class="caption-label-bar"><span class="caption-name">Duotone</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-shake"><span>SHAKE IT</span></div><div class="caption-label-bar"><span class="caption-name">Shake</span><span class="soon-badge">Soon</span></div></div>
         <!-- duplicate set for seamless loop -->
-        <div class="caption-card">
-          <div class="caption-preview style-minimal"><span>Minimal Clean</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Minimal Clean</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-gradient"><span>GRADIENT</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Gradient Fill</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-cinematic"><span>Cinematic</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Cinematic</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-red-glow"><span>RED GLOW</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Red Glow</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-boxed"><span>BOXED</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Boxed</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-yellow-highlight"><span>HIGHLIGHT</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Yellow Highlight</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-duotone"><span>DUOTONE</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Duotone</span><span class="soon-badge">Soon</span></div>
-        </div>
-        <div class="caption-card">
-          <div class="caption-preview style-shake"><span>SHAKE IT</span></div>
-          <div class="caption-label-bar"><span class="caption-name">Shake</span><span class="soon-badge">Soon</span></div>
-        </div>
+        <div class="caption-card"><div class="caption-preview style-minimal"><span>Minimal Clean</span></div><div class="caption-label-bar"><span class="caption-name">Minimal Clean</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-mono"><span>GRADIENT</span></div><div class="caption-label-bar"><span class="caption-name">Gradient Fill</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-minimal"><span>Cinematic</span></div><div class="caption-label-bar"><span class="caption-name">Cinematic</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-red"><span>RED GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Red Glow</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-boxed"><span>BOXED</span></div><div class="caption-label-bar"><span class="caption-name">Boxed</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-highlight"><span>HIGHLIGHT</span></div><div class="caption-label-bar"><span class="caption-name">Highlight</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-classic"><span>DUOTONE</span></div><div class="caption-label-bar"><span class="caption-name">Duotone</span><span class="soon-badge">Soon</span></div></div>
+        <div class="caption-card"><div class="caption-preview style-shake"><span>SHAKE IT</span></div><div class="caption-label-bar"><span class="caption-name">Shake</span><span class="soon-badge">Soon</span></div></div>
       </div>
     </div>
 
@@ -625,30 +477,22 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
   <div class="sec-label">Quick Actions</div>
   <div class="quick-actions">
     <div class="quick-card" onclick="window.location.href='/dashboard.html'">
-      <div class="quick-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      </div>
+      <div class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
       <div class="quick-title">Transcript Dashboard</div>
       <div class="quick-desc">Switch to transcript tools</div>
     </div>
     <div class="quick-card" onclick="window.location.href='/pricing.html'">
-      <div class="quick-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-      </div>
+      <div class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
       <div class="quick-title">Upgrade Plan</div>
       <div class="quick-desc">Get more clips & transcripts</div>
     </div>
     <div class="quick-card" onclick="window.location.href='/contact.html'">
-      <div class="quick-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      </div>
+      <div class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
       <div class="quick-title">Support</div>
       <div class="quick-desc">Contact us anytime</div>
     </div>
     <div class="quick-card" onclick="window.location.href='/'">
-      <div class="quick-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      </div>
+      <div class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
       <div class="quick-title">Home</div>
       <div class="quick-desc">Back to main site</div>
     </div>
@@ -656,7 +500,7 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
 
   <!-- Upgrade Banner (free users) -->
   <div class="upgrade-banner" id="upgradeBanner" style="display:none">
-    <h3>Unlock More Power 🚀</h3>
+    <h3>Unlock More Power</h3>
     <p>Get AI clip generation, 30+ transcripts/month, and priority processing — starting at just ₹149/mo.</p>
     <button class="upgrade-btn" onclick="window.location.href='/pricing.html'">View Plans →</button>
   </div>
@@ -677,7 +521,7 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
 
 <!-- FOOTER -->
 <footer>
-  <div class="foot-logo">ReelScribe</div>
+  <div class="foot-logo"><span class="fdot"></span>ReelScribe</div>
   <div class="foot-tag">Transcribe & clip any video instantly.</div>
   <div class="foot-links">
     <a href="/about.html">About</a>
@@ -687,10 +531,15 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
     <a href="/privacy.html">Privacy</a>
   </div>
   <div class="foot-sep"></div>
-  <p class="foot-copy">© 2026 ReelScribe. All rights reserved.</p>
+  <p class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</p>
 </footer>
 
 <script>
+/* ── AUTH NOTE (same open issue as homepage) ─────────────────────────
+   userEmail localStorage se aa raha hai bina server-side verification
+   ke. Pakka fix backend session/cookie system maangta hai — abhi
+   frontend se sirf UI/UX polish ho sakta hai, security fix nahi.
+──────────────────────────────────────────────────────────────────── */
 const email = localStorage.getItem("userEmail") || "";
 const isGuest = !email || email === "guest@example.com";
 const userEmail = email;
@@ -714,6 +563,11 @@ function closeDrawer() {
   document.getElementById("drawer").classList.remove("active");
   document.getElementById("drawerOverlay").classList.remove("active");
 }
+// FIX: Escape key se bhi drawer band ho jayega (pehle sirf overlay click)
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeDrawer();
+});
+
 function logout() {
   localStorage.removeItem("userEmail");
   window.location.href = "/";
