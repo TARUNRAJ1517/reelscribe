@@ -535,21 +535,33 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
 </footer>
 
 <script>
-/* ── AUTH NOTE (same open issue as homepage) ─────────────────────────
-   userEmail localStorage se aa raha hai bina server-side verification
-   ke. Pakka fix backend session/cookie system maangta hai — abhi
-   frontend se sirf UI/UX polish ho sakta hai, security fix nahi.
+/* ── AUTH NOTE ──────────────────────────────────────────────────────
+   FIXED: identity now comes from the server session (see /me), not
+   from localStorage. localStorage is kept only to show the email in
+   the UI instantly on load — it carries no authentication weight.
 ──────────────────────────────────────────────────────────────────── */
-const email = localStorage.getItem("userEmail") || "";
-const isGuest = !email || email === "guest@example.com";
-const userEmail = email;
+let email = localStorage.getItem("userEmail") || "";
+let isGuest = true;
+let userEmail = "";
 
-const nameStr = isGuest ? "Guest" : email.split("@")[0];
-const avatarStr = nameStr.charAt(0).toUpperCase();
-document.getElementById("welcomeName").innerText = isGuest ? "Guest User" : nameStr;
-document.getElementById("drawerName").innerText = nameStr;
-document.getElementById("drawerEmail").innerText = isGuest ? "Not logged in" : email;
-document.getElementById("drawerAvatar").innerText = avatarStr;
+async function resolveIdentity() {
+  try {
+    const res = await fetch("/me");
+    const data = await res.json();
+    isGuest = !data.loggedIn;
+    email = data.email || "";
+    userEmail = email;
+    if (email) localStorage.setItem("userEmail", email);
+    else localStorage.removeItem("userEmail");
+  } catch (e) { isGuest = !email; userEmail = email; }
+
+  const nameStr = isGuest ? "Guest" : email.split("@")[0];
+  const avatarStr = nameStr.charAt(0).toUpperCase();
+  document.getElementById("welcomeName").innerText = isGuest ? "Guest User" : nameStr;
+  document.getElementById("drawerName").innerText = nameStr;
+  document.getElementById("drawerEmail").innerText = isGuest ? "Not logged in" : email;
+  document.getElementById("drawerAvatar").innerText = avatarStr;
+}
 
 let clipHistoryOpen = false;
 let clipHistoryLoaded = false;
@@ -563,12 +575,12 @@ function closeDrawer() {
   document.getElementById("drawer").classList.remove("active");
   document.getElementById("drawerOverlay").classList.remove("active");
 }
-// FIX: Escape key se bhi drawer band ho jayega (pehle sirf overlay click)
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape') closeDrawer();
 });
 
-function logout() {
+async function logout() {
+  try { await fetch("/logout", { method: "POST" }); } catch (e) {}
   localStorage.removeItem("userEmail");
   window.location.href = "/";
 }
@@ -579,11 +591,13 @@ function applyAccessState(){
   const generateCard = document.getElementById("generateCard");
 
   if (isGuest) {
-    loginWallText.innerText = "Login karo Cut Clips use karne ke liye.";
+    loginWallText.innerText = "Please log in to use Cut Clips.";
+    document.getElementById("loginWallBtn").innerText = "Log In →";
+    document.getElementById("loginWallBtn").onclick = () => window.location.href = "/login.html?next=" + encodeURIComponent(location.pathname);
     loginWall.style.display = "block";
     generateCard.style.display = "none";
   } else if (currentPlan === "free") {
-    loginWallText.innerText = "Free plan mein Cut Clips available nahi. Upgrade karo!";
+    loginWallText.innerText = "Cut Clips isn't available on the Free plan. Upgrade to unlock it.";
     document.getElementById("loginWallBtn").innerText = "Upgrade Plan →";
     document.getElementById("loginWallBtn").onclick = () => window.location.href = "/pricing.html";
     loginWall.style.display = "block";
@@ -597,7 +611,7 @@ function applyAccessState(){
 async function loadUserPlan() {
   if (isGuest) { applyAccessState(); return; }
   try {
-    const res = await fetch("/user-plan/" + encodeURIComponent(email));
+    const res = await fetch("/user-plan");
     const data = await res.json();
     if (data.success && data.plan) {
       currentPlan = data.plan;
@@ -637,14 +651,14 @@ function toggleClipHistory(){
 async function loadClipHistory(){
   const list = document.getElementById('clipHistoryList');
   if(isGuest){
-    list.innerHTML = '<div class="history-empty">Login karo history dekhne ke liye</div>';
+    list.innerHTML = '<div class="history-empty">Log in to see your clip history.</div>';
     return;
   }
   try {
-    const res = await fetch(`/clip-history/${encodeURIComponent(userEmail)}`);
+    const res = await fetch(`/clip-history`);
     const data = await res.json();
     if(!data.success || !data.data || data.data.length === 0){
-      list.innerHTML = '<div class="history-empty">📭 Koi history nahi hai</div>';
+      list.innerHTML = '<div class="history-empty">📭 No clip history yet.</div>';
       document.getElementById("statClipsHistory").innerText = "0";
       return;
     }
@@ -687,7 +701,7 @@ async function loadClipHistory(){
       list.appendChild(item);
     });
   } catch(e){
-    list.innerHTML = '<div class="history-empty">❌ History load nahi hui</div>';
+    list.innerHTML = '<div class="history-empty">❌ Could not load your history.</div>';
   }
 }
 
@@ -753,7 +767,7 @@ async function generateClips(){
     const res = await fetch("/cut-clips", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ytUrl: url, email: userEmail })
+      body: JSON.stringify({ ytUrl: url })
     });
     const data = await res.json();
 
@@ -803,6 +817,7 @@ async function generateClips(){
     document.getElementById("clipUrl").value = incomingUrl;
   }
 
+  await resolveIdentity();
   await loadUserPlan();
 
   // Clean the URL so a refresh/back doesn't re-trigger processing
