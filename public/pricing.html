@@ -401,10 +401,16 @@ function toggleBilling() {
 }
 
 async function buyPlan(plan) {
-  const email = localStorage.getItem("userEmail");
-  if (!email || email === "guest@example.com") {
-    alert("Plan kharidne ke liye pehle login karein!");
-    window.location.href = "/";
+  let loggedIn = false, email = "";
+  try {
+    const me = await fetch("/me").then(r => r.json());
+    loggedIn = !!me.loggedIn;
+    email = me.email || "";
+  } catch (e) {}
+
+  if (!loggedIn) {
+    alert("Please log in before purchasing a plan.");
+    window.location.href = "/login.html?next=/pricing.html";
     return;
   }
 
@@ -414,13 +420,13 @@ async function buyPlan(plan) {
     const res = await fetch("/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan, billing, email })
+      body: JSON.stringify({ plan, billing })
     });
 
     const data = await res.json();
 
     if (!data.success) {
-      alert(data.error || "Order create failed");
+      alert(data.error || "Could not create the order. Please try again.");
       return;
     }
 
@@ -444,13 +450,13 @@ async function buyPlan(plan) {
           const result = await verify.json();
 
           if (result.success) {
-            alert("✅ Payment Successful! " + plan.toUpperCase() + " plan activate ho gaya!");
+            alert("Payment successful! Your " + plan.toUpperCase() + " plan is now active.");
             location.href = "/dashboard.html";
           } else {
-            alert("❌ Payment verification failed. Support se contact karein.");
+            alert("Payment verification failed. Please contact support.");
           }
         } catch (e) {
-          alert("❌ Verification error. Support se contact karein.");
+          alert("Verification error. Please contact support.");
         }
       },
 
