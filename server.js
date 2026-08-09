@@ -43,11 +43,15 @@ const INTERNAL_KEY  = process.env.INTERNAL_SECRET; // shared secret with EC2
 // ── Plan limits (same as EC2) ──
 // maxVideoMinutes: sabse zaroori limit — bina isके koi bhi user 3-4 ghante ka
 // podcast daal sakta tha jisse EC2 pe processing bahut lambi chalti ya timeout/crash ho jata
+//
+// FIX: clipDay / clipMonth ab exactly pricing.html ke promise se match karte hain —
+// pehle Starter 15/month, Pro 40/month, Agency 80/month de rahe the (promise se zyada generous).
+// Ab: Starter 2/day · 10/month | Pro 5/day · 15/month | Agency 15/day · 60/month
 const PLAN_LIMITS = {
   free:    { transcriptDay: 2,  transcriptMonth: 5,  clipDay: 0,  clipMonth: 0,  maxMB: 100,  maxVideoMinutes: 0   },
-  starter: { transcriptDay: 5,  transcriptMonth: 20, clipDay: 3,  clipMonth: 15, maxMB: 500,  maxVideoMinutes: 40  },
-  pro:     { transcriptDay: 10, transcriptMonth: 50, clipDay: 8,  clipMonth: 40, maxMB: 1024, maxVideoMinutes: 70  },
-  agency:  { transcriptDay: 20, transcriptMonth: 100,clipDay: 15, clipMonth: 80, maxMB: 2048, maxVideoMinutes: 120 },
+  starter: { transcriptDay: 5,  transcriptMonth: 20, clipDay: 2,  clipMonth: 10, maxMB: 500,  maxVideoMinutes: 40  },
+  pro:     { transcriptDay: 10, transcriptMonth: 50, clipDay: 5,  clipMonth: 15, maxMB: 1024, maxVideoMinutes: 70  },
+  agency:  { transcriptDay: 20, transcriptMonth: 100,clipDay: 15, clipMonth: 60, maxMB: 2048, maxVideoMinutes: 120 },
 };
 
 // ════════════════════════════════
@@ -626,7 +630,7 @@ app.post("/transcribe-url", async (req, res) => {
 
 app.get("/debug-version", (req, res) => {
   res.json({
-    version: "clips-fix-v2-with-logs",
+    version: "clips-fix-v3-plan-limits-match-pricing",
     ec2Url: EC2_URL,
     hasInternalKey: !!INTERNAL_KEY,
     time: new Date().toISOString(),
