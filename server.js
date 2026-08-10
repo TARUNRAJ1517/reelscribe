@@ -758,7 +758,7 @@ app.get("/clip-status/:jobId", (req, res) => {
 });
 
 app.post("/cut-clips", requireAuth, async (req, res) => {
-  const { ytUrl, fcmToken } = req.body;
+  const { ytUrl, fcmToken, captionSettings } = req.body;
   const email = req.authEmail; // FIX: from session, not from the request body
 
   if (typeof ytUrl !== "string" || !ytUrl) return res.status(400).json({ success: false, error: "Please provide a YouTube URL." });
@@ -798,7 +798,7 @@ app.post("/cut-clips", requireAuth, async (req, res) => {
     try {
       const ec2Response = await axios.post(
         `${EC2_URL}/analyze-video`,
-        { url: ytUrl },
+        { url: ytUrl, captionSettings },
         { headers: { "x-internal-key": INTERNAL_KEY }, timeout: 900000 }
       );
 
