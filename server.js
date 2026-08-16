@@ -27,7 +27,7 @@ const ClipJob     = require("./models/Clip");
 const AdminLog    = require("./models/AdminLog");
 const Razorpay    = require("razorpay");
 const crypto      = require("crypto");
-const FormData    = require("form-data"); // FIX: needed for multipart forward to EC2
+const FormData    = require("form-data");
 
 const resend  = new Resend(process.env.RESEND_API_KEY);
 const app     = express();
@@ -37,19 +37,9 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// FIX: EC2_URL / INTERNAL_KEY moved up — must exist before any route uses them
-const EC2_URL       = process.env.EC2_URL;         // e.g. http://13.206.252.122:4000
-const INTERNAL_KEY  = process.env.INTERNAL_SECRET; // shared secret with EC2
+const EC2_URL       = process.env.EC2_URL;
+const INTERNAL_KEY  = process.env.INTERNAL_SECRET;
 
-// ── Plan limits (same as EC2) ──
-// maxVideoMinutes: sabse zaroori limit — bina isके koi bhi user 3-4 ghante ka
-// podcast daal sakta tha jisse EC2 pe processing bahut lambi chalti ya timeout/crash ho jata
-//
-// FIX: clipDay / clipMonth ab exactly pricing.html ke promise se match karte hain —
-// pehle Starter 15/month, Pro 40/month, Agency 80/month de rahe the (promise se zyada generous).
-// Ab: Starter 2/day · 10/month | Pro 5/day · 15/month | Agency 15/day · 60/month
-// FIX: transcriptMonth ab pricing.html ke promise se match karta hai —
-// pehle Starter 20, Pro 50, Agency 100 the (page pe 30/60/150 likha tha).
 const PLAN_LIMITS = {
   free:    { transcriptDay: 2,  transcriptMonth: 5,   clipDay: 0,  clipMonth: 0,  maxMB: 100,  maxVideoMinutes: 0   },
   starter: { transcriptDay: 5,  transcriptMonth: 30,  clipDay: 2,  clipMonth: 10, maxMB: 500,  maxVideoMinutes: 40  },
@@ -57,15 +47,6 @@ const PLAN_LIMITS = {
   agency:  { transcriptDay: 20, transcriptMonth: 150, clipDay: 15, clipMonth: 60, maxMB: 2048, maxVideoMinutes: 120 },
 };
 
-// ════════════════════════════════
-//  MIDDLEWARE — must be registered before any route
-//  FIX: cors() + express.json() were previously defined AFTER
-//  /proxy-upload, so that route never got CORS headers
-// ════════════════════════════════
-// FIX: trust the first proxy hop (Render's own load balancer) so req.ip
-// resolves to the real client IP. Without this, req.ip / any header read
-// from x-forwarded-for could be spoofed by the client — that broke both
-// the admin brute-force block and the guest preview limiter below.
 app.set("trust proxy", 1);
 
 app.use(cors({
@@ -82,21 +63,12 @@ app.use(session({
     httpOnly: true,
     secure: true,
     sameSite: "lax",
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    maxAge: 30 * 24 * 60 * 60 * 1000,
   },
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ════════════════════════════════
-//  SESSION-BASED IDENTITY
-//  FIX: every protected route used to trust a plain `email` string sent
-//  by the client (from localStorage / query param / form body). Anyone
-//  could call e.g. /history/someone-else@email.com and read that
-//  person's data, or spend their monthly quota. Identity is now resolved
-//  from the signed session cookie set at login, and client-supplied
-//  emails are only used for guest bootstrap and login itself.
-// ════════════════════════════════
 function getSessionEmail(req) {
   return (req.user && req.user.email) || req.session?.userEmail || null;
 }
@@ -108,11 +80,6 @@ function requireAuth(req, res, next) {
   next();
 }
 
-// ════════════════════════════════
-//  PROXY UPLOAD ROUTE — forwards large video uploads to EC2
-//  FIX: duplicate `const multer = require('multer')` removed —
-//  reusing the single top-level `multer` import instead.
-// ════════════════════════════════
 const uploadProxy = multer({ dest: "/tmp/", limits: { fileSize: 2 * 1024 * 1024 * 1024 } });
 
 app.post("/proxy-upload", uploadProxy.single("video"), async (req, res) => {
@@ -138,27 +105,22 @@ app.post("/proxy-upload", uploadProxy.single("video"), async (req, res) => {
   }
 });
 
-// ── Uploads folder ──
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
-// ── MongoDB ──
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.log("❌ MongoDB Error:", err));
 
 const otpStore = {};
 
-// ── OTP rate limiting (in-memory) ──
-// Bina isके /send-otp aur /verify-otp par unlimited attempts allowed the —
-// 6-digit OTP ko brute-force karna theoretically possible tha.
-const otpSendLimiter   = {}; // key: email  -> { count, windowStart }
-const otpVerifyAttempts = {}; // key: email -> { count, windowStart }
+const otpSendLimiter   = {};
+const otpVerifyAttempts = {};
 
-const OTP_SEND_MAX_PER_WINDOW   = 3;          // max 3 OTP requests
-const OTP_SEND_WINDOW_MS        = 15 * 60 * 1000; // per 15 minutes
-const OTP_VERIFY_MAX_ATTEMPTS   = 5;          // max 5 wrong tries
-const OTP_VERIFY_WINDOW_MS      = 15 * 60 * 1000; // per 15 minutes
+const OTP_SEND_MAX_PER_WINDOW   = 3;
+const OTP_SEND_WINDOW_MS        = 15 * 60 * 1000;
+const OTP_VERIFY_MAX_ATTEMPTS   = 5;
+const OTP_VERIFY_WINDOW_MS      = 15 * 60 * 1000;
 
 function checkOtpSendLimit(email) {
   const now = Date.now();
@@ -189,14 +151,12 @@ function checkOtpVerifyLimit(email) {
   return { allowed: true };
 }
 
-// Periodic cleanup so these objects don't grow forever
 setInterval(() => {
   const now = Date.now();
   for (const k in otpSendLimiter)    if (now - otpSendLimiter[k].windowStart > OTP_SEND_WINDOW_MS) delete otpSendLimiter[k];
   for (const k in otpVerifyAttempts) if (now - otpVerifyAttempts[k].windowStart > OTP_VERIFY_WINDOW_MS) delete otpVerifyAttempts[k];
 }, 10 * 60 * 1000);
 
-// ── Passport ──
 passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
   try { done(null, await User.findById(id)); } catch (err) { done(err, null); }
@@ -214,26 +174,21 @@ passport.use(new GoogleStrategy({
   } catch (err) { return done(err, null); }
 }));
 
-// ── Multer (for transcription only — small files) ──
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename:    (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
 });
-const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } }); // 25MB for transcription
+const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } });
 
-// ── Admin auth (with IP-based rate limiting against brute-force) ──
-const adminAuthAttempts = {}; // key: IP -> { count, windowStart, blockedUntil }
+const adminAuthAttempts = {};
 const ADMIN_MAX_ATTEMPTS  = 5;
-const ADMIN_WINDOW_MS     = 15 * 60 * 1000; // 15 min
-const ADMIN_BLOCK_MS      = 30 * 60 * 1000; // block for 30 min after too many fails
+const ADMIN_WINDOW_MS     = 15 * 60 * 1000;
+const ADMIN_BLOCK_MS      = 30 * 60 * 1000;
 
 function adminAuth(req, res, next) {
-  // Session takes priority — set once by POST /admin/login, so the admin
-  // key itself doesn't need to be resent (and re-typed into a JS variable
-  // that lives in the page) on every single request.
   if (req.session?.isAdmin) return next();
 
-  const ip  = req.ip || "unknown"; // FIX: was reading a spoofable header directly
+  const ip  = req.ip || "unknown";
   const now = Date.now();
   const rec = adminAuthAttempts[ip];
 
@@ -242,9 +197,6 @@ function adminAuth(req, res, next) {
     return res.status(429).json({ success: false, error: `Too many incorrect attempts. Please try again in ${waitMin} minute${waitMin === 1 ? "" : "s"}.` });
   }
 
-  // Fallback: a raw key header still works too, kept only for backward
-  // compatibility with any existing integration — the session path above
-  // is what the admin panel itself uses now.
   if (req.headers["x-admin-key"] !== process.env.ADMIN_SECRET) {
     if (!rec || now - rec.windowStart > ADMIN_WINDOW_MS) {
       adminAuthAttempts[ip] = { count: 1, windowStart: now, blockedUntil: null };
@@ -255,11 +207,10 @@ function adminAuth(req, res, next) {
     return res.status(401).json({ success: false, error: "Unauthorized" });
   }
 
-  delete adminAuthAttempts[ip]; // success -> reset
+  delete adminAuthAttempts[ip];
   next();
 }
 
-// Periodic cleanup
 setInterval(() => {
   const now = Date.now();
   for (const k in adminAuthAttempts) {
@@ -268,27 +219,17 @@ setInterval(() => {
   }
 }, 10 * 60 * 1000);
 
-// ── Internal auth (EC2 ↔ Render) ──
 function internalAuth(req, res, next) {
   if (req.headers["x-internal-key"] !== INTERNAL_KEY)
     return res.status(401).json({ success: false, error: "Unauthorized" });
   next();
 }
 
-// ── Email validation (NoSQL injection guard) ──
-// req.body.email seedha MongoDB queries (findOne/findOneAndUpdate) mein use hota hai.
-// Bina type-check ke agar attacker email ki jagah JSON object bheje (e.g. {"$ne": null}),
-// Mongo usse query operator maan leta hai — arbitrary user match/update ho sakta hai.
-// Yeh function ensure karta hai email hamesha ek simple string hi ho.
 function isValidEmail(email) {
   return typeof email === "string" &&
     email.length > 0 && email.length < 255 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
-
-// ════════════════════════════════
-//  HELPERS
-// ════════════════════════════════
 
 function isNewDay(lastDate) {
   if (!lastDate) return true;
@@ -302,8 +243,7 @@ function isNewMonth(lastDate) {
 }
 
 async function checkGuestLimit(req) {
-  const ip = req.ip; // FIX: req.ip (with trust proxy set above) instead of a raw,
-                      // spoofable x-forwarded-for header
+  const ip = req.ip;
   let guest = await GuestUsage.findOne({ ip });
   if (!guest) guest = await GuestUsage.create({ ip, previewCount: 0 });
   if (guest.previewCount >= 3) return { allowed: false };
@@ -338,8 +278,6 @@ function downloadVideo(videoUrl, outputPath) {
   });
 }
 
-// ── Effective plan: paid plan sirf tab tak valid hai jab tak planExpiresAt na nikal jaye ──
-// Isse purchase ke baad plan hamesha ke liye "unlimited" nahi ho jata — expiry ke baad free pe reset ho jata hai
 function getEffectivePlan(user) {
   const plan = user.plan || "free";
   if (plan === "free") return "free";
@@ -358,10 +296,6 @@ function getYouTubeVideoId(url) {
   return null;
 }
 
-// ── Fetch YouTube video duration (seconds), no API key needed ──
-// Watch page HTML mein "lengthSeconds" field embedded hota hai — usko scrape karte hain.
-// Isse "Cut Clips" pe bhejne se PEHLE check kar sakte hain ki video plan ki duration limit mein fit hota hai ya nahi
-// (varna EC2 pe koi 3-4 ghante ka podcast chala jaye to processing bahut lambi ho jati ya timeout ho jata)
 async function getYouTubeDurationSeconds(url) {
   const videoId = getYouTubeVideoId(url);
   if (!videoId) return null;
@@ -374,11 +308,10 @@ async function getYouTubeDurationSeconds(url) {
     return match ? parseInt(match[1], 10) : null;
   } catch (e) {
     console.error("YouTube duration fetch failed:", e.message);
-    return null; // fetch fail ho to block nahi karenge, EC2 apni taraf se handle karega
+    return null;
   }
 }
 
-// ── Check transcript limits ──
 async function checkTranscriptLimit(user) {
   const plan   = getEffectivePlan(user);
   const limits = PLAN_LIMITS[plan];
@@ -397,7 +330,6 @@ async function checkTranscriptLimit(user) {
   return { allowed: true };
 }
 
-// ── Update transcript usage ──
 async function updateTranscriptUsage(user) {
   const now = new Date();
   const resetDay   = isNewDay(user.lastTranscriptDate);
@@ -411,24 +343,16 @@ async function updateTranscriptUsage(user) {
   });
 }
 
-// ════════════════════════════════
-//  INTERNAL ROUTES (EC2 ↔ Render)
-// ════════════════════════════════
-
-// EC2 pulls user data for plan check
 app.get("/internal/user-limits/:email", internalAuth, async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.email });
     if (!user) return res.status(404).json({ success: false });
-    // effectivePlan: EC2 side should use this instead of user.plan directly,
-    // so an expired paid plan doesn't keep granting paid limits forever
     res.json({ success: true, user, effectivePlan: getEffectivePlan(user) });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// EC2 updates usage after processing
 app.post("/internal/update-usage", internalAuth, async (req, res) => {
   try {
     const { email, type } = req.body;
@@ -454,15 +378,8 @@ app.post("/internal/update-usage", internalAuth, async (req, res) => {
   }
 });
 
-// ════════════════════════════════
-//  AUTH ROUTES
-// ════════════════════════════════
-
 app.get("/test", (req, res) => res.send("TEST ROUTE WORKING"));
 app.get("/auth/google", (req, res, next) => {
-  // Pass "next" through Google's own state param instead of the session —
-  // session cookies aren't guaranteed to survive the round-trip to Google
-  // and back, but Google echoes the state param back to us verbatim.
   const next_ = req.query.next;
   const state = (typeof next_ === "string" && next_.startsWith("/")) ? next_ : "/dashboard.html";
   passport.authenticate("google", { scope: ["profile", "email"], state })(req, res, next);
@@ -470,9 +387,6 @@ app.get("/auth/google", (req, res, next) => {
 app.get("/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    // FIX: identity for every future request now comes from this session,
-    // not from the "?email=" value appended below (that value is kept only
-    // so the UI can show the signed-in email — it carries no auth weight).
     req.session.userEmail = req.user.email;
     const state_ = req.query.state;
     const dest = (typeof state_ === "string" && state_.startsWith("/")) ? state_ : "/dashboard.html";
@@ -481,18 +395,15 @@ app.get("/auth/google/callback",
   }
 );
 
-// ── Log out — clears the session so protected routes stop resolving to this user ──
 app.post("/logout", (req, res) => {
   req.session.destroy(() => res.json({ success: true }));
 });
 
-// ── Who am I — lets the frontend know the *real*, server-verified identity ──
 app.get("/me", (req, res) => {
   const email = getSessionEmail(req);
   res.json({ success: true, loggedIn: !!email, email: email || null });
 });
 
-// ── Send OTP ──
 app.post("/send-otp", async (req, res) => {
   try {
     const { email } = req.body;
@@ -527,7 +438,6 @@ app.post("/send-otp", async (req, res) => {
   }
 });
 
-// ── Verify OTP ──
 app.post("/verify-otp", async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -546,8 +456,6 @@ app.post("/verify-otp", async (req, res) => {
     let user = await User.findOne({ email });
     if (!user) user = await User.create({ name: email.split("@")[0], email, credits: 5 });
 
-    // FIX: this is the moment identity is actually established server-side.
-    // Every protected route below trusts this session, not a client-sent email.
     req.session.userEmail = email;
 
     res.json({ success: true, user });
@@ -556,18 +464,10 @@ app.post("/verify-otp", async (req, res) => {
   }
 });
 
-// ════════════════════════════════
-//  TRANSCRIPTION ROUTES
-// ════════════════════════════════
-
-// ── Transcribe uploaded file ──
 app.post("/transcribe", upload.single("video"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, error: "No file was uploaded." });
 
-    // FIX: identity now comes from the session, never from req.body.email —
-    // a logged-in user's quota and history can no longer be spent/read by
-    // anyone who simply sends a different email in the request body.
     const email   = getSessionEmail(req);
     const user    = email ? await User.findOne({ email }) : null;
     const isGuest = !user;
@@ -615,7 +515,6 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
   }
 });
 
-// ── Transcribe URL (YouTube captions / Instagram) ──
 app.post("/transcribe-url", async (req, res) => {
   const { url } = req.body;
   if (typeof url !== "string" || !url)
@@ -626,7 +525,6 @@ app.post("/transcribe-url", async (req, res) => {
   if (!isYouTube && !isInstagram)
     return res.status(400).json({ success: false, error: "Only YouTube and Instagram URLs are supported." });
 
-  // FIX: identity from session, not from a client-supplied email — see /transcribe above.
   const email   = getSessionEmail(req);
   const user    = email ? await User.findOne({ email }) : null;
   const isGuest = !user;
@@ -652,7 +550,6 @@ app.post("/transcribe-url", async (req, res) => {
     };
   }
 
-  // ── YouTube captions ──
   if (isYouTube) {
     try {
       const videoId = getYouTubeVideoId(url);
@@ -675,7 +572,6 @@ app.post("/transcribe-url", async (req, res) => {
     }
   }
 
-  // ── Instagram ──
   const outputPath = path.join(__dirname, "uploads", `${Date.now()}_insta.mp4`);
   try {
     const videoUrl = await getInstagramVideoUrl(url);
@@ -701,16 +597,12 @@ app.post("/transcribe-url", async (req, res) => {
 
 app.get("/debug-version", (req, res) => {
   res.json({
-    version: "clips-fix-v3-plan-limits-match-pricing",
+    version: "clips-fix-v4-plan-aware-analysis",
     ec2Url: EC2_URL,
     hasInternalKey: !!INTERNAL_KEY,
     time: new Date().toISOString(),
   });
 });
-
-// ════════════════════════════════
-//  CLIPS ROUTE — Forward to EC2, wait for the pipeline, return clips
-// ════════════════════════════════
 
 async function checkClipLimit(user) {
   const plan   = getEffectivePlan(user);
@@ -742,11 +634,8 @@ async function updateClipUsage(user) {
   });
 }
 
-// In-memory job store for clip generation (survives only while the server
-// process is running — fine for now since jobs are short-lived, minutes not days).
 const clipJobs = new Map();
 
-// Clean up old finished/errored jobs after 30 min so this Map doesn't grow forever.
 function scheduleJobCleanup(jobId) {
   setTimeout(() => clipJobs.delete(jobId), 30 * 60 * 1000);
 }
@@ -759,7 +648,7 @@ app.get("/clip-status/:jobId", (req, res) => {
 
 app.post("/cut-clips", requireAuth, async (req, res) => {
   const { ytUrl, fcmToken, captionSettings } = req.body;
-  const email = req.authEmail; // FIX: from session, not from the request body
+  const email = req.authEmail;
 
   if (typeof ytUrl !== "string" || !ytUrl) return res.status(400).json({ success: false, error: "Please provide a YouTube URL." });
 
@@ -774,9 +663,6 @@ app.post("/cut-clips", requireAuth, async (req, res) => {
   if (!limitCheck.allowed)
     return res.status(403).json({ success: false, error: limitCheck.error });
 
-  // Duration check — reject videos longer than the plan's maxVideoMinutes
-  // before forwarding to EC2, so we don't waste minutes processing a video
-  // that will just be rejected anyway.
   const maxMinutes = PLAN_LIMITS[plan].maxVideoMinutes;
   const durationSec = await getYouTubeDurationSeconds(ytUrl);
   if (durationSec !== null && durationSec > maxMinutes * 60) {
@@ -787,9 +673,6 @@ app.post("/cut-clips", requireAuth, async (req, res) => {
     });
   }
 
-  // Respond immediately with a jobId — the browser (and Cloudflare/Render's
-  // proxy in between) never has to hold a connection open for the 2-5 min
-  // the actual pipeline takes. Processing continues in the background below.
   const jobId = crypto.randomUUID();
   clipJobs.set(jobId, { status: "processing" });
   res.json({ success: true, jobId });
@@ -798,7 +681,7 @@ app.post("/cut-clips", requireAuth, async (req, res) => {
     try {
       const ec2Response = await axios.post(
         `${EC2_URL}/analyze-video`,
-        { url: ytUrl, captionSettings },
+        { url: ytUrl, captionSettings, plan },
         { headers: { "x-internal-key": INTERNAL_KEY }, timeout: 900000 }
       );
 
@@ -812,8 +695,6 @@ app.post("/cut-clips", requireAuth, async (req, res) => {
       clipJobs.set(jobId, { status: "done", clips });
       scheduleJobCleanup(jobId);
 
-      // Save to history so it's still visible after a refresh/back-navigation,
-      // and so the cleanup sweep below knows what to actually delete from S3.
       if (clips.length > 0) {
         await ClipJob.create({
           userEmail: email,
@@ -833,17 +714,14 @@ app.post("/cut-clips", requireAuth, async (req, res) => {
   })();
 });
 
-// Last 24h of clip history for a user — lets the "Recent Clips" section
-// survive a page refresh/back-navigation instead of vanishing.
 app.get("/clip-history", requireAuth, async (req, res) => {
   try {
     const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const jobs = await ClipJob.find({
-      userEmail: req.authEmail, // FIX: session identity, not a URL param anyone could change
+      userEmail: req.authEmail,
       createdAt: { $gte: since }
     }).sort({ createdAt: -1 });
 
-    // Hide clips already deleted (post-download 5-min cleanup) from the list.
     const data = jobs
       .map(j => ({
         _id: j._id,
@@ -860,26 +738,21 @@ app.get("/clip-history", requireAuth, async (req, res) => {
   }
 });
 
-// Frontend calls this right when a download starts — schedule the actual
-// S3 delete 5 min later, matching the "downloaded clips delete in 5 minutes" promise.
 app.post("/clip-downloaded", requireAuth, async (req, res) => {
   const { s3Key } = req.body;
   if (!s3Key) return res.status(400).json({ success: false, error: "Missing clip reference." });
 
-  // FIX: only the clip's owner can trigger its early deletion — otherwise
-  // anyone who obtained an s3Key could force another user's clip to be
-  // deleted 5 minutes early.
   const owned = await ClipJob.findOne({ userEmail: req.authEmail, "clips.s3Key": s3Key });
   if (!owned) return res.status(404).json({ success: false, error: "Clip not found." });
 
-  res.json({ success: true }); // ack immediately, deletion happens in the background
+  res.json({ success: true });
 
   try {
     await ClipJob.updateOne(
       { "clips.s3Key": s3Key },
       { $set: { "clips.$.downloaded": true, "clips.$.downloadedAt": new Date() } }
     );
-  } catch (e) { /* non-fatal — the periodic sweep below will still catch it eventually */ }
+  } catch (e) {}
 
   setTimeout(async () => {
     try {
@@ -889,13 +762,10 @@ app.post("/clip-downloaded", requireAuth, async (req, res) => {
         { "clips.s3Key": s3Key },
         { $set: { "clips.$.deleted": true } }
       );
-    } catch (e) { /* the periodic sweep below is the safety net if this fails */ }
+    } catch (e) {}
   }, 5 * 60 * 1000);
 });
 
-// ── Real cleanup sweep — actually enforces both promises the UI makes:
-// "clips auto-delete after 24h" and "downloaded clips delete in 5 min".
-// Runs every 15 min; each key deletion is best-effort/independent.
 async function runClipCleanupSweep() {
   try {
     const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -929,7 +799,6 @@ async function runClipCleanupSweep() {
       );
     }
 
-    // Fully-expired job docs (24h+) can just be removed outright.
     await ClipJob.deleteMany({ createdAt: { $lt: dayAgo } });
   } catch (e) {
     console.error("Clip cleanup sweep failed:", e.message);
@@ -937,11 +806,6 @@ async function runClipCleanupSweep() {
 }
 setInterval(runClipCleanupSweep, 15 * 60 * 1000);
 
-// ════════════════════════════════
-//  PAYMENT ROUTES
-// ════════════════════════════════
-
-// Monthly price aur yearly price (per-month-when-billed-annually) — pricing.html ke `prices` object se match hona chahiye
 const PLAN_PRICING = {
   starter: { m: 149, y: 124 },
   pro:     { m: 299, y: 249 },
@@ -951,20 +815,16 @@ const PLAN_PRICING = {
 app.post("/create-order", requireAuth, async (req, res) => {
   try {
     const { plan, billing } = req.body;
-    const email = req.authEmail; // FIX: session identity, not a client-supplied email
+    const email = req.authEmail;
     if (!PLAN_PRICING[plan]) return res.status(400).json({ success: false, error: "Invalid plan." });
 
     const isYearly = billing === "yearly";
-    // Yearly: user ko poore saal ka amount ek saath charge hota hai (discounted per-month rate * 12)
     const amountRupees = isYearly ? PLAN_PRICING[plan].y * 12 : PLAN_PRICING[plan].m;
 
     const order = await razorpay.orders.create({
       amount:   amountRupees * 100,
       currency: "INR",
       receipt:  `receipt_${Date.now()}`,
-      // FIX: plan/billing/email locked into the order itself — /verify-payment
-      // reads these back from Razorpay instead of trusting the client's body,
-      // so a tampered client request can't buy a cheap plan and activate an expensive one.
       notes:    { plan, billing: isYearly ? "yearly" : "monthly", email },
     });
     res.json({ success: true, order, key: process.env.RAZORPAY_KEY_ID });
@@ -988,11 +848,6 @@ app.post("/verify-payment", async (req, res) => {
     if (expectedSig !== razorpay_signature)
       return res.status(400).json({ success: false, error: "Payment verification failed. Please contact support if the amount was deducted." });
 
-    // FIX: plan/billing/email ab client body se NAHI, Razorpay order ke locked
-    // notes se liye jaate hain. Pehle client body se trust karte the — koi bhi
-    // Starter order pay karke response body mein plan:"agency" bhej sakta tha
-    // aur ₹149 mein Agency plan activate ho jata (signature check sirf payment
-    // genuine hone ko proves karta hai, requested plan ko nahi).
     const order = await razorpay.orders.fetch(razorpay_order_id);
     if (!order || order.status !== "paid")
       return res.status(400).json({ success: false, error: "This order has not been paid yet." });
@@ -1041,19 +896,14 @@ app.post("/verify-payment", async (req, res) => {
   }
 });
 
-// ════════════════════════════════
-//  MISC ROUTES
-// ════════════════════════════════
-
 app.get("/user-plan", requireAuth, async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.authEmail }); // FIX: session identity, not a URL param
+    const user = await User.findOne({ email: req.authEmail });
     if (!user) return res.status(404).json({ success: false });
 
     const plan   = getEffectivePlan(user);
     const limits = PLAN_LIMITS[plan];
 
-    // Reset if new day/month
     const transcriptDay   = isNewDay(user.lastTranscriptDate)       ? 0 : (user.transcriptsUsedToday || 0);
     const transcriptMonth = isNewMonth(user.lastTranscriptResetDate) ? 0 : (user.transcriptsUsedMonth || 0);
     const clipDay         = isNewDay(user.lastClipDate)              ? 0 : (user.clipsUsedToday || 0);
@@ -1079,15 +929,11 @@ app.get("/user-plan", requireAuth, async (req, res) => {
 
 app.get("/history", requireAuth, async (req, res) => {
   try {
-    // FIX: session identity, not a URL param — this used to let anyone
-    // read any user's saved transcripts by guessing/knowing their email.
     const reels = await Reel.find({ userEmail: req.authEmail }).sort({ createdAt: -1 });
     res.json({ success: true, data: reels });
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
-// Fire-and-forget audit log write — never blocks or fails the actual
-// admin action, since a logging hiccup should never break a real request.
 function logAdminAction(action, targetEmail, details, req) {
   AdminLog.create({ action, targetEmail: targetEmail || null, details: details || "", ip: req.ip || "" })
     .catch(() => {});
@@ -1185,7 +1031,6 @@ app.post("/admin/add-credit", adminAuth, async (req, res) => {
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
-// Admin manually kisi user ko plan de sakta hai (bina payment ke) — jaise complimentary/trial plans
 app.post("/admin/set-plan", adminAuth, async (req, res) => {
   try {
     const { email, plan, durationDays } = req.body;
@@ -1196,7 +1041,7 @@ app.post("/admin/set-plan", adminAuth, async (req, res) => {
 
     let planExpiry = null;
     if (plan !== "free") {
-      const days = parseInt(durationDays) || 30; // default 30 din agar kuch na diya ho
+      const days = parseInt(durationDays) || 30;
       planExpiry = new Date();
       planExpiry.setDate(planExpiry.getDate() + days);
     }
