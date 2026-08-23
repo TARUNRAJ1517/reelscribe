@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Clips Dashboard – ReelScribe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0e0d10;
+  --s1: #161418;
+  --s2: #1c191e;
+  --border: #2a262b;
+  --border2: #38333a;
+  --red: #ff3b30;
+  --text: #f5f2ee;
+  --sub: #a39d95;
+  --muted: #665f5c;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Archivo', -apple-system, sans-serif;
+  max-width: 480px; margin: 0 auto;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.mono { font-family: 'IBM Plex Mono', monospace; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+/* NAV */
+.nav {
+  position: sticky; top: 0; z-index: 999;
+  background: rgba(14,13,16,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px;
+}
+.nav-logo { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 7px; }
+.nav-logo .ndot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.nav-plan-badge {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+  text-transform: uppercase; padding: 4px 10px;
+  border-radius: 3px; border: 1px solid var(--border2);
+  color: var(--sub); background: var(--s1);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.nav-plan-badge.paid { background: rgba(255,59,48,0.08); border-color: rgba(255,59,48,0.3); color: var(--red); }
+.nav-menu { background: none; border: none; color: var(--sub); font-size: 20px; cursor: pointer; }
+
+/* DRAWER */
+.drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 9998; backdrop-filter: blur(6px); }
+.drawer-overlay.active { display: block; }
+.drawer {
+  position: fixed; top: 0; right: -320px;
+  width: 78%; max-width: 290px; height: 100%;
+  background: var(--s1); border-left: 1px solid var(--border2);
+  padding: 0; transition: right .3s ease;
+  z-index: 9999; display: flex; flex-direction: column;
+}
+.drawer.active { right: 0; }
+.drawer-head { padding: 28px 22px 20px; border-bottom: 1px solid var(--border); }
+.drawer-avatar {
+  width: 48px; height: 48px; border-radius: 6px;
+  background: var(--s2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700; color: var(--red);
+  margin-bottom: 12px; font-family: 'IBM Plex Mono', monospace;
+}
+.drawer-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+.drawer-email { font-size: 12px; color: var(--muted); word-break: break-all; margin-bottom: 12px; }
+.drawer-plan-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--s2); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 10px 14px;
+}
+.drawer-plan-label { font-size: 10.5px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; font-family: 'IBM Plex Mono', monospace; }
+.drawer-plan-value { font-size: 13px; font-weight: 700; color: var(--red); }
+.drawer-body { flex: 1; padding: 16px 22px; display: flex; flex-direction: column; gap: 6px; }
+.drawer-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: 6px;
+  background: transparent; border: 1px solid transparent;
+  color: var(--sub); font-size: 13.5px; font-weight: 500;
+  cursor: pointer; font-family: 'Archivo', sans-serif;
+  transition: all .2s; text-decoration: none;
+}
+.drawer-link svg { width: 16px; height: 16px; flex-shrink: 0; }
+.drawer-link:hover { background: var(--s2); border-color: var(--border); color: var(--text); }
+.drawer-link-danger { color: #ff6b5f; }
+.drawer-link-danger:hover { background: rgba(255,59,48,0.08); border-color: rgba(255,59,48,0.2); color: #ff6b5f; }
+.drawer-foot { padding: 16px 22px; border-top: 1px solid var(--border); }
+.drawer-upgrade {
+  width: 100%; padding: 13px; border: none; border-radius: 6px;
+  background: var(--red); color: #1a0a08; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif;
+}
+
+/* SECTION LABEL */
+.sec-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 10.5px; font-weight: 500; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--red); margin-bottom: 14px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.sec-label::before { content: ''; display: block; width: 14px; height: 1px; background: var(--border2); flex-shrink: 0; }
+
+/* MAIN */
+.main { padding: 24px 20px; }
+
+/* WELCOME STRIP */
+.welcome-strip { background: var(--s1); border: 1px solid var(--border2); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+.welcome-greeting { font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; font-family: 'IBM Plex Mono', monospace; }
+.welcome-name { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 14px; }
+.welcome-stats { display: flex; gap: 10px; }
+.welcome-stat { flex: 1; background: var(--s2); border: 1px solid var(--border); border-radius: 6px; padding: 12px; }
+.welcome-stat-num { font-size: 19px; font-weight: 700; letter-spacing: -0.4px; color: var(--red); }
+.welcome-stat-label { font-size: 9.5px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 2px; font-family: 'IBM Plex Mono', monospace; }
+
+/* GENERATE / WORKFLOW */
+.generate-card { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.generate-card-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; }
+.workflow-step {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  font-size: 10px; font-weight: 600; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--red); font-family: 'IBM Plex Mono', monospace;
+}
+.workflow-step-num {
+  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,59,48,.10); border: 1px solid rgba(255,59,48,.3);
+  color: var(--red); font-size: 10px;
+}
+.generate-input-row {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--s2); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 6px 14px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.generate-input-row:focus-within { border-color: var(--red); box-shadow: 0 0 0 3px rgba(255,59,48,0.12); }
+.generate-input-row svg { width: 16px; height: 16px; color: var(--muted); flex-shrink: 0; }
+.generate-input-row input { flex: 1; background: none; border: none; outline: none; color: var(--text); font-size: 13px; font-family: 'Archivo', sans-serif; min-width: 0; }
+.generate-btn {
+  width: 100%; margin-top: 18px; padding: 14px 18px; border: none; border-radius: 6px;
+  background: var(--red); color: #1a0a08; font-size: 13px; font-weight: 700;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif;
+  transition: opacity .2s, transform .1s, box-shadow .2s;
+  box-shadow: 0 6px 20px rgba(255,59,48,.16);
+}
+.generate-btn:hover { opacity: .9; box-shadow: 0 8px 24px rgba(255,59,48,.22); }
+.generate-btn:active { transform: scale(.985); }
+.generate-btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+
+.workflow-divider {
+  height: 1px; background: var(--border); margin: 4px 0 20px;
+}
+.workflow-generate {
+  margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border);
+}
+.workflow-generate-label {
+  font-size: 11px; color: var(--sub); line-height: 1.5; margin-bottom: 10px;
+}
+@media (max-width: 360px) {
+  .generate-input-row { padding-left: 11px; padding-right: 11px; }
+  .generate-input-row input { font-size: 12px; }
+  .generate-btn { padding: 13px 14px; }
+}
+
+/* CLIP CARDS */
+.clip-card { background: var(--s2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+.clip-card:last-child { margin-bottom: 0; }
+.clip-title { font-size: 13.5px; font-weight: 700; margin-bottom: 4px; }
+.clip-reason { font-size: 12px; color: var(--sub); line-height: 1.6; margin-bottom: 10px; }
+.clip-meta { display: flex; align-items: center; justify-content: space-between; }
+.clip-duration { font-size: 11px; color: var(--muted); font-weight: 500; font-family: 'IBM Plex Mono', monospace; }
+.clip-download-btn {
+  padding: 8px 16px; border-radius: 4px;
+  background: var(--red); color: #1a0a08; font-size: 11.5px; font-weight: 600;
+  letter-spacing: 0.3px; text-transform: uppercase;
+  text-decoration: none; font-family: 'Archivo', sans-serif;
+}
+
+/* PROCESSING STATE */
+.processing-box { text-align: center; padding: 24px 16px; }
+.processing-spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid var(--border2);
+  border-top-color: var(--red);
+  margin: 0 auto 16px; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.processing-title { font-size: 13.5px; font-weight: 700; margin-bottom: 8px; }
+.processing-sub { font-size: 12px; color: var(--sub); line-height: 1.7; }
+
+/* QUICK ACTIONS */
+.quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.quick-card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; cursor: pointer;
+  transition: border-color .2s, transform .2s;
+}
+.quick-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.quick-icon {
+  width: 34px; height: 34px; border-radius: 6px;
+  background: var(--s2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 10px;
+}
+.quick-icon svg { width: 15px; height: 15px; color: var(--red); }
+.quick-title { font-size: 12.5px; font-weight: 700; margin-bottom: 3px; }
+.quick-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* HISTORY */
+.history-card { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.history-head { display: flex; align-items: center; justify-content: space-between; }
+.history-title { font-size: 14px; font-weight: 700; }
+.history-toggle {
+  background: none; border: 1px solid var(--border2);
+  border-radius: 4px; color: var(--muted);
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase;
+  padding: 5px 10px; cursor: pointer; font-family: 'Archivo', sans-serif; transition: all .2s;
+}
+.history-toggle:hover { border-color: var(--red); color: var(--text); }
+.history-list { margin-top: 14px; display: none; }
+.history-item {
+  background: var(--s2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px; margin-bottom: 8px;
+  cursor: pointer; transition: border-color .2s;
+}
+.history-item:last-child { margin-bottom: 0; }
+.history-item:hover { border-color: var(--border2); }
+.history-item-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.history-item-date { font-size: 10px; color: var(--muted); font-weight: 500; font-family: 'IBM Plex Mono', monospace; }
+.history-item-source {
+  font-size: 9px; font-weight: 600; letter-spacing: 0.4px;
+  text-transform: uppercase; padding: 2px 8px;
+  border-radius: 3px; background: rgba(255,59,48,0.08);
+  border: 1px solid rgba(255,59,48,0.2); color: var(--red);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.history-item-preview { font-size: 13px; color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.history-item-url { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-empty { text-align: center; padding: 20px 0; font-size: 13px; color: var(--muted); }
+.history-item-clips { margin-top: 12px; display: none; padding-top: 12px; border-top: 1px solid var(--border); }
+
+/* UPGRADE BANNER */
+.upgrade-banner {
+  background: #131013;
+  border: 1px solid rgba(255,59,48,0.3);
+  border-radius: 10px; padding: 22px 20px;
+  margin-bottom: 20px; text-align: center;
+}
+.upgrade-banner h3 { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 6px; }
+.upgrade-banner p { font-size: 12.5px; color: var(--sub); margin-bottom: 16px; line-height: 1.6; }
+.upgrade-btn {
+  width: 100%; padding: 13px; border: none; border-radius: 6px;
+  background: var(--red); color: #1a0a08; font-size: 13px; font-weight: 600;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif;
+}
+
+/* LOGIN WALL */
+.login-wall { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 26px 20px; text-align: center; margin-bottom: 20px; }
+.login-wall p { font-size: 13px; color: var(--sub); margin-bottom: 16px; line-height: 1.6; }
+.login-wall-btn {
+  padding: 12px 24px; border: none; border-radius: 6px;
+  background: var(--red); color: #1a0a08; font-size: 12.5px; font-weight: 600;
+  letter-spacing: 0.4px; text-transform: uppercase;
+  cursor: pointer; font-family: 'Archivo', sans-serif;
+}
+
+/* FOOTER */
+footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
+.foot-logo { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
+.foot-logo .fdot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
+.foot-tag { font-size: 11px; color: var(--muted); margin-bottom: 16px; font-family: 'IBM Plex Mono', monospace; }
+.foot-links { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 16px; }
+.foot-links a { color: var(--muted); font-size: 12px; text-decoration: none; transition: color .2s; }
+.foot-links a:hover { color: var(--sub); }
+.foot-sep { height: 1px; background: var(--border); margin-bottom: 14px; }
+.foot-copy { font-size: 11px; color: var(--muted); text-align: center; font-family: 'IBM Plex Mono', monospace; }
+
+/* CAPTION PICKER — LIVE, WORKING */
+.caption-promo { margin-bottom: 20px; }
+.caption-heading { font-size: 21px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.2; margin-bottom: 6px; }
+.caption-heading em { font-style: normal; color: var(--red); }
+.caption-sub { font-size: 12.5px; color: var(--sub); line-height: 1.6; margin-bottom: 16px; }
+
+.cp-preview {
+  border-radius: 10px; overflow: hidden; border: 1px solid var(--border2);
+  background: #000; aspect-ratio: 16/9; position: relative; margin-bottom: 14px;
+}
+.cp-preview::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 30% 25%, rgba(255,59,48,0.14), transparent 50%), linear-gradient(160deg, #1a1517, #08070a);
+}
+.cp-preview-tag {
+  position: absolute; top: 9px; left: 11px; z-index: 3;
+  font-size: 8px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  color: rgba(255,255,255,0.4); font-family: 'IBM Plex Mono', monospace;
+}
+.cp-words {
+  position: absolute; left: 12px; right: 12px; z-index: 2;
+  display: flex; flex-wrap: wrap; gap: 6px 8px; justify-content: center;
+  transition: top .25s ease, bottom .25s ease, transform .25s ease;
+}
+.cp-word { font-size: 20px; font-weight: 800; line-height: 1.3; }
+
+.cp-tabbar {
+  display: flex; gap: 4px; background: var(--s1); border: 1px solid var(--border);
+  border-radius: 10px; padding: 4px; margin-bottom: 16px;
+}
+.cp-tab {
+  flex: 1; text-align: center; padding: 9px 4px 8px; border-radius: 7px;
+  font-size: 11px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase;
+  color: var(--sub); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: color .15s, border-color .15s;
+}
+.cp-tab.active { color: var(--text); border-color: var(--red); }
+.cp-tab:active { transform: scale(.97); }
+
+.cp-panel { display: none; }
+.cp-panel.active { display: block; }
+
+.cp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+.cp-tile {
+  position: relative; border-radius: 8px; overflow: hidden;
+  background: var(--s1); border: 1.5px solid var(--border); cursor: pointer;
+  transition: border-color .15s, transform .1s;
+}
+.cp-tile:active { transform: scale(.96); }
+.cp-tile.selected { border-color: var(--red); box-shadow: 0 0 0 1px rgba(255,59,48,.3); }
+.cp-swatch { height: 56px; background: #000; display: flex; align-items: center; justify-content: center; padding: 5px; }
+.cp-swatch span { font-size: 10px; font-weight: 800; text-align: center; }
+.cp-tile-label { padding: 6px 5px; text-align: center; background: var(--s2); border-top: 1px solid var(--border); font-size: 8.5px; font-weight: 600; color: var(--text); }
+.cp-tile.selected .cp-tile-label { color: var(--red); }
+.cp-tile-tag {
+  position: absolute; top: 4px; right: 4px; z-index: 2;
+  font-size: 6.5px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase;
+  background: var(--red); color: #1a0a08; padding: 2px 5px; border-radius: 3px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.style-red span { color: #fff; text-shadow: 0 0 8px var(--red), 0 0 16px var(--red); }
+.style-outline span { color: transparent; -webkit-text-stroke: 1.1px #fff; }
+.style-boxed span { background: #fff; color: #0e0d10; padding: 3px 6px; border-radius: 3px; }
+.style-mono span { color: #fff; font-family: 'IBM Plex Mono', monospace; }
+.style-classic span { color: #fff; -webkit-text-stroke: 1.5px #000; paint-order: stroke fill; }
+.style-highlight span { background: var(--red); color: #1a0a08; padding: 3px 6px; border-radius: 3px; }
+.style-karaoke span { color: var(--muted); }
+.style-karaoke .filled { color: var(--red); }
+.style-minimal span { color: #fff; background: rgba(255,255,255,0.08); padding: 3px 6px; border-radius: 4px; }
+.style-cyan span { color: #3ce6e6; text-shadow: 0 0 8px rgba(60,230,230,.6); }
+.style-gold span { color: #ffd93c; }
+.style-gradient span { background: linear-gradient(135deg,#ff3b30,#ff9a3c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.style-white span { color: #fff; }
+
+.cp-anim-block { margin-top: 22px; }
+.cp-anim-block:first-of-type { margin-top: 20px; }
+.cp-mode-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+.cp-mode-btn {
+  background: var(--s1); border: 1.5px solid var(--border); color: var(--sub);
+  border-radius: 8px; padding: 12px 4px; font-size: 11px; font-weight: 700;
+  letter-spacing: .3px; text-transform: uppercase; font-family: 'Archivo', sans-serif;
+  cursor: pointer; transition: border-color .15s, color .15s, background .15s;
+}
+.cp-mode-btn.selected { border-color: var(--red); color: var(--red); background: rgba(255,59,48,0.08); }
+.cp-mode-btn:active { transform: scale(.97); }
+.cp-mode-desc { font-size: 11.5px; color: var(--sub); line-height: 1.5; }
+
+.cp-words-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 10px; }
+.cp-num-btn {
+  background: var(--s1); border: 1.5px solid var(--border); color: var(--sub);
+  border-radius: 8px; padding: 10px 0; font-size: 13px; font-weight: 700;
+  font-family: 'IBM Plex Mono', monospace; cursor: pointer; transition: border-color .15s, color .15s;
+}
+.cp-num-btn.selected { border-color: var(--red); color: var(--red); background: rgba(255,59,48,0.08); }
+.cp-num-btn:active { transform: scale(.94); }
+
+.cp-toggle-card { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-top: 22px; }
+.cp-toggle-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cp-toggle-title-row { display: flex; align-items: center; gap: 7px; }
+.cp-toggle-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.cp-new-badge {
+  font-size: 8.5px; font-weight: 800; letter-spacing: .3px; text-transform: uppercase;
+  background: var(--red); color: #1a0a08; padding: 2px 6px; border-radius: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.cp-toggle-desc { font-size: 11.5px; color: var(--sub); line-height: 1.5; margin-top: 5px; }
+.cp-switch { position: relative; display: inline-block; width: 42px; height: 24px; flex-shrink: 0; }
+.cp-switch input { opacity: 0; width: 0; height: 0; }
+.cp-switch-track { position: absolute; inset: 0; background: var(--border2); border-radius: 24px; cursor: pointer; transition: background .2s; }
+.cp-switch-track::before { content: ''; position: absolute; height: 18px; width: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s; }
+.cp-switch input:checked + .cp-switch-track { background: var(--red); }
+.cp-switch input:checked + .cp-switch-track::before { transform: translateX(18px); }
+
+.cp-subpos-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.cp-subpos-row .cp-label { font-size: 12px; color: var(--sub); flex-shrink: 0; }
+.cp-subpos-buttons { display: flex; gap: 8px; flex: 1; }
+.cp-subpos-btn {
+  flex: 1; background: var(--bg); border: 1.5px solid var(--border); color: var(--sub);
+  border-radius: 7px; padding: 8px 0; font-size: 11.5px; font-weight: 600;
+  font-family: 'Archivo', sans-serif; cursor: pointer; transition: border-color .15s, color .15s;
+}
+.cp-subpos-btn.selected { border-color: var(--red); color: var(--red); background: rgba(255,59,48,0.08); }
+.cp-subpos-btn:active { transform: scale(.96); }
+.cp-subpos-buttons.disabled .cp-subpos-btn { opacity: .4; pointer-events: none; }
+
+.cp-pos-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 18px; }
+.cp-pos-btn {
+  background: var(--s1); border: 1.5px solid var(--border); color: var(--sub);
+  border-radius: 8px; padding: 11px 4px; font-size: 10.5px; font-weight: 600;
+  font-family: 'Archivo', sans-serif; cursor: pointer; transition: border-color .15s, color .15s;
+}
+.cp-pos-btn.selected { border-color: var(--red); color: var(--red); background: rgba(255,59,48,0.08); }
+.cp-pos-btn:active { transform: scale(.96); }
+
+.cp-custom-controls { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+.cp-slider-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.cp-slider-label-row span:first-child { font-size: 11px; color: var(--sub); font-weight: 500; }
+.cp-slider-label-row span:last-child { font-size: 13px; font-weight: 700; color: var(--text); font-family: 'IBM Plex Mono', monospace; }
+.cp-custom-controls input[type="range"] {
+  -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px;
+  background: linear-gradient(to right, var(--red) 0%, var(--red) var(--fill, 45%), var(--border2) var(--fill, 45%), var(--border2) 100%);
+  margin: 6px 0 8px; cursor: pointer;
+}
+.cp-custom-controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 17px; height: 17px; border-radius: 50%;
+  background: #fff; border: 3px solid var(--red); cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+.cp-custom-controls input[type="range"]::-moz-range-thumb {
+  width: 17px; height: 17px; border-radius: 50%;
+  background: #fff; border: 3px solid var(--red); cursor: pointer;
+}
+.cp-slider-range-labels { display: flex; justify-content: space-between; font-size: 9.5px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+
+.cp-output-group { margin-bottom: 20px; }
+.cp-output-group:last-child { margin-bottom: 0; }
+.cp-output-group .sec-label { margin-bottom: 10px; }
+
+.cp-summary {
+  display: flex; align-items: center; gap: 8px; margin-top: 12px;
+  padding: 10px 12px; background: var(--s1); border: 1px solid var(--border);
+  border-radius: 8px; font-size: 11px; color: var(--sub);
+}
+.cp-summary strong { color: var(--text); font-weight: 600; }
+
+@keyframes cpBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes cpShake { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+@keyframes cpGlow {
+  0%, 100% { text-shadow: 0 0 6px rgba(255,59,48,.4); }
+  50% { text-shadow: 0 0 18px rgba(255,59,48,.9), 0 0 30px rgba(255,59,48,.5); }
+}
+</style>
+</head>
+<body>
+
+<!-- Drawer Overlay -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- Drawer -->
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-avatar mono" id="drawerAvatar">U</div>
+    <div class="drawer-name" id="drawerName">User</div>
+    <div class="drawer-email" id="drawerEmail">Loading...</div>
+    <div class="drawer-plan-row">
+      <span class="drawer-plan-label">Current Plan</span>
+      <span class="drawer-plan-value" id="drawerPlan">Free</span>
+    </div>
+  </div>
+  <div class="drawer-body">
+    <a class="drawer-link" href="/dashboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Transcript Dashboard
+    </a>
+    <a class="drawer-link" href="/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </a>
+    <a class="drawer-link" href="/pricing.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Pricing & Plans
+    </a>
+    <a class="drawer-link" href="/contact.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Support
+    </a>
+    <button class="drawer-link drawer-link-danger" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
+  </div>
+  <div class="drawer-foot">
+    <button class="drawer-upgrade" onclick="window.location.href='/pricing.html'">Upgrade Plan →</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo"><span class="ndot"></span>ReelScribe</div>
+  <div class="nav-right">
+    <div class="nav-plan-badge" id="navPlanBadge">Free</div>
+    <button class="nav-menu" onclick="openDrawer()" aria-label="Open menu">☰</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- Welcome -->
+  <div class="welcome-strip">
+    <div class="welcome-greeting">Cut Clips</div>
+    <div class="welcome-name" id="welcomeName">Loading...</div>
+    <div class="welcome-stats">
+      <div class="welcome-stat">
+        <div class="welcome-stat-num" id="statClipsLeft">—</div>
+        <div class="welcome-stat-label">Clips Left Today</div>
+      </div>
+      <div class="welcome-stat">
+        <div class="welcome-stat-num" id="statClipsHistory">—</div>
+        <div class="welcome-stat-label">Videos (24h)</div>
+      </div>
+      <div class="welcome-stat">
+        <div class="welcome-stat-num" id="statPlan">Free</div>
+        <div class="welcome-stat-label">Plan</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Login wall (guests / free plan) -->
+  <div class="login-wall" id="loginWall" style="display:none;">
+    <p id="loginWallText">Login karo Cut Clips use karne ke liye.</p>
+    <button class="login-wall-btn" id="loginWallBtn" onclick="window.location.href='/login.html?next=/clips-dashboard.html'">Login Karo →</button>
+  </div>
+
+  <!-- Step 1: YouTube source -->
+  <div class="generate-card" id="generateCard">
+    <div class="workflow-step"><span class="workflow-step-num">1</span> Video source</div>
+    <div class="generate-card-title">Paste a YouTube link</div>
+    <div class="generate-input-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <input type="text" id="clipUrl" placeholder="https://youtube.com/watch?v=...">
+    </div>
+  </div>
+
+  <!-- Caption Picker — LIVE -->
+  <div class="sec-label" id="captionPickerLabel" style="display:none;">Caption Style</div>
+  <div class="caption-promo" id="captionPickerSection" style="display:none;">
+    <div class="workflow-step"><span class="workflow-step-num">2</span> Customize captions</div>
+    <h2 class="caption-heading">Caption styles. Built <em>right in.</em></h2>
+    <p class="caption-sub">Pick a style, animation and position — it's applied to your next generated clip automatically.</p>
+
+    <div class="cp-preview">
+      <div class="cp-preview-tag">Preview</div>
+      <div class="cp-words" id="cpWords"></div>
+    </div>
+
+    <div class="cp-tabbar" id="cpTabbar">
+      <div class="cp-tab active" data-tab="style">Style</div>
+      <div class="cp-tab" data-tab="animation">Animation</div>
+      <div class="cp-tab" data-tab="position">Position</div>
+      <div class="cp-tab" data-tab="output">Output</div>
+    </div>
+
+    <!-- STYLE -->
+    <div class="cp-panel active" id="cp-panel-style">
+      <div class="cp-grid" id="cpStyleGrid"></div>
+    </div>
+
+    <!-- ANIMATION -->
+    <div class="cp-panel" id="cp-panel-animation">
+      <div class="cp-grid" id="cpAnimGrid"></div>
+
+      <div class="cp-anim-block">
+        <div class="sec-label">Caption Mode</div>
+        <div class="cp-mode-buttons" id="cpModeButtons">
+          <button class="cp-mode-btn" data-mode="wordpop">Word Pop</button>
+          <button class="cp-mode-btn" data-mode="karaoke">Karaoke</button>
+          <button class="cp-mode-btn selected" data-mode="standard">Standard</button>
+        </div>
+        <p class="cp-mode-desc" id="cpModeDesc">Chunk-by-chunk traditional captions.</p>
+      </div>
+
+      <div class="cp-anim-block">
+        <div class="sec-label">Max Words Per Line</div>
+        <div class="cp-words-row" id="cpWordsRow">
+          <button class="cp-num-btn" data-n="2">2</button>
+          <button class="cp-num-btn" data-n="3">3</button>
+          <button class="cp-num-btn selected" data-n="4">4</button>
+          <button class="cp-num-btn" data-n="5">5</button>
+          <button class="cp-num-btn" data-n="6">6</button>
+          <button class="cp-num-btn" data-n="7">7</button>
+        </div>
+      </div>
+
+      <div class="cp-toggle-card">
+        <div class="cp-toggle-head">
+          <div>
+            <div class="cp-toggle-title-row">
+              <span class="cp-toggle-title">Auto Emoji Reactions</span>
+              <span class="cp-new-badge">New</span>
+            </div>
+            <p class="cp-toggle-desc">Auto-detects emotion → adds 🔥😱🧠🤑⚠️🏆❤️😂 and more</p>
+          </div>
+          <label class="cp-switch">
+            <input type="checkbox" id="cpEmojiToggle" checked>
+            <span class="cp-switch-track"></span>
+          </label>
+        </div>
+        <div class="cp-subpos-row">
+          <span class="cp-label">Position:</span>
+          <div class="cp-subpos-buttons" id="cpSubposButtons">
+            <button class="cp-subpos-btn" data-subpos="start">start</button>
+            <button class="cp-subpos-btn selected" data-subpos="end">end</button>
+            <button class="cp-subpos-btn" data-subpos="none">none</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POSITION -->
+    <div class="cp-panel" id="cp-panel-position">
+      <div class="cp-pos-buttons" id="cpPosButtons">
+        <button class="cp-pos-btn" data-pos="bottom">↓ Bottom</button>
+        <button class="cp-pos-btn" data-pos="center">◎ Center</button>
+        <button class="cp-pos-btn" data-pos="top">↑ Top</button>
+        <button class="cp-pos-btn" data-pos="custom">⚙ Custom</button>
+      </div>
+      <div class="cp-custom-controls" id="cpCustomControls">
+        <div class="cp-slider-label-row">
+          <span>Margin from bottom</span>
+          <span id="cpMarginValue">430px</span>
+        </div>
+        <input type="range" id="cpMarginSlider" min="0" max="960" value="430">
+        <div class="cp-slider-range-labels">
+          <span>Bottom (0)</span>
+          <span>Top (960)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="cp-panel" id="cp-panel-output">
+      <div class="cp-output-group">
+        <div class="sec-label">Aspect Ratio</div>
+        <div class="cp-grid" id="cpRatioGrid"></div>
+      </div>
+      <div class="cp-output-group">
+        <div class="sec-label">Quality</div>
+        <div class="cp-grid" id="cpQualityGrid"></div>
+      </div>
+    </div>
+
+    <div class="cp-summary" id="cpSummary"></div>
+
+    <!-- Step 3: Generate -->
+    <div class="workflow-generate">
+      <div class="workflow-step"><span class="workflow-step-num">3</span> Ready to generate</div>
+      <div class="workflow-generate-label">Your caption settings will be applied automatically to every clip generated from this video.</div>
+      <button class="generate-btn" id="generateClipsBtn" onclick="generateClips()">Generate Clips <span aria-hidden="true">→</span></button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="generate-card" id="clipsResultBox" style="display:none;">
+    <div class="generate-card-title" id="clipsResultTitle">🎬 Your Clips Are Ready!</div>
+    <p id="clipsCount" style="font-size:12px;color:var(--sub);margin-bottom:14px;">— clips generated</p>
+    <div id="clipsList"></div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="sec-label">Quick Actions</div>
+  <div class="quick-actions">
+    <div class="quick-card" onclick="window.location.href='/dashboard.html'">
+      <div class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+      <div class="quick-title">Transcript Dashboard</div>
+      <div class="quick-desc">Switch to transcript tools</div>
+    </div>
+    <div class="quick-card" onclick="window.location.href='/pricing.html'">
+      <div class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+      <div class="quick-title">Upgrade Plan</div>
+      <div class="quick-desc">Get more clips & transcripts</div>
+    </div>
+    <div class="quick-card" onclick="window.location.href='/contact.html'">
+      <div class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="quick-title">Support</div>
+      <div class="quick-desc">Contact us anytime</div>
+    </div>
+    <div class="quick-card" onclick="window.location.href='/'">
+      <div class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <div class="quick-title">Home</div>
+      <div class="quick-desc">Back to main site</div>
+    </div>
+  </div>
+
+  <!-- Upgrade Banner (free users) -->
+  <div class="upgrade-banner" id="upgradeBanner" style="display:none">
+    <h3>Unlock More Power</h3>
+    <p>Get AI clip generation, 30+ transcripts/month, and priority processing — starting at just ₹149/mo.</p>
+    <button class="upgrade-btn" onclick="window.location.href='/pricing.html'">View Plans →</button>
+  </div>
+
+  <!-- History -->
+  <div class="sec-label">History</div>
+  <div class="history-card">
+    <div class="history-head">
+      <div class="history-title">Past Clips</div>
+      <button class="history-toggle" id="clipHistoryToggle" onclick="toggleClipHistory()">Show ▼</button>
+    </div>
+    <div class="history-list" id="clipHistoryList">
+      <div class="history-empty">⏳ Loading...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo"><span class="fdot"></span>ReelScribe</div>
+  <div class="foot-tag">Transcribe & clip any video instantly.</div>
+  <div class="foot-links">
+    <a href="/about.html">About</a>
+    <a href="/pricing.html">Pricing</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+  <div class="foot-sep"></div>
+  <p class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</p>
+</footer>
+
+<script>
+/* ── AUTH NOTE ──────────────────────────────────────────────────────
+   FIXED: identity now comes from the server session (see /me), not
+   from localStorage. localStorage is kept only to show the email in
+   the UI instantly on load — it carries no authentication weight.
+──────────────────────────────────────────────────────────────────── */
+let email = localStorage.getItem("userEmail") || "";
+let isGuest = true;
+let userEmail = "";
+
+async function resolveIdentity() {
+  try {
+    const res = await fetch("/me");
+    const data = await res.json();
+    isGuest = !data.loggedIn;
+    email = data.email || "";
+    userEmail = email;
+    if (email) localStorage.setItem("userEmail", email);
+    else localStorage.removeItem("userEmail");
+  } catch (e) { isGuest = !email; userEmail = email; }
+
+  const nameStr = isGuest ? "Guest" : email.split("@")[0];
+  const avatarStr = nameStr.charAt(0).toUpperCase();
+  document.getElementById("welcomeName").innerText = isGuest ? "Guest User" : nameStr;
+  document.getElementById("drawerName").innerText = nameStr;
+  document.getElementById("drawerEmail").innerText = isGuest ? "Not logged in" : email;
+  document.getElementById("drawerAvatar").innerText = avatarStr;
+}
+
+let clipHistoryOpen = false;
+let clipHistoryLoaded = false;
+let currentPlan = "free";
+
+function openDrawer() {
+  document.getElementById("drawer").classList.add("active");
+  document.getElementById("drawerOverlay").classList.add("active");
+}
+function closeDrawer() {
+  document.getElementById("drawer").classList.remove("active");
+  document.getElementById("drawerOverlay").classList.remove("active");
+}
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeDrawer();
+});
+
+async function logout() {
+  try { await fetch("/logout", { method: "POST" }); } catch (e) {}
+  localStorage.removeItem("userEmail");
+  window.location.href = "/";
+}
+
+function applyAccessState(){
+  const loginWall = document.getElementById("loginWall");
+  const loginWallText = document.getElementById("loginWallText");
+  const generateCard = document.getElementById("generateCard");
+  const captionPickerSection = document.getElementById("captionPickerSection");
+  const captionPickerLabel = document.getElementById("captionPickerLabel");
+
+  if (isGuest) {
+    loginWallText.innerText = "Please log in to use Cut Clips.";
+    document.getElementById("loginWallBtn").innerText = "Log In →";
+    document.getElementById("loginWallBtn").onclick = () => window.location.href = "/login.html?next=" + encodeURIComponent(location.pathname);
+    loginWall.style.display = "block";
+    generateCard.style.display = "none";
+    captionPickerSection.style.display = "none";
+    captionPickerLabel.style.display = "none";
+  } else if (currentPlan === "free") {
+    loginWallText.innerText = "Cut Clips isn't available on the Free plan. Upgrade to unlock it.";
+    document.getElementById("loginWallBtn").innerText = "Upgrade Plan →";
+    document.getElementById("loginWallBtn").onclick = () => window.location.href = "/pricing.html";
+    loginWall.style.display = "block";
+    generateCard.style.display = "none";
+    captionPickerSection.style.display = "none";
+    captionPickerLabel.style.display = "none";
+  } else {
+    loginWall.style.display = "none";
+    generateCard.style.display = "block";
+    captionPickerSection.style.display = "block";
+    captionPickerLabel.style.display = "flex";
+  }
+}
+
+async function loadUserPlan() {
+  if (isGuest) { applyAccessState(); return; }
+  try {
+    const res = await fetch("/user-plan");
+    const data = await res.json();
+    if (data.success && data.plan) {
+      currentPlan = data.plan;
+      const planLabel = data.plan.charAt(0).toUpperCase() + data.plan.slice(1);
+      document.getElementById("statPlan").innerText = planLabel;
+      document.getElementById("drawerPlan").innerText = planLabel;
+      const badge = document.getElementById("navPlanBadge");
+      badge.innerText = planLabel;
+      if (data.plan !== "free") {
+        badge.classList.add("paid");
+      } else {
+        document.getElementById("upgradeBanner").style.display = "block";
+      }
+      if (data.usage) {
+        const left = Math.max(0, (data.usage.clipDayLimit || 0) - (data.usage.clipDay || 0));
+        document.getElementById("statClipsLeft").innerText = data.usage.clipDayLimit ? left : "—";
+      }
+    }
+  } catch (e) {
+    document.getElementById("upgradeBanner").style.display = "block";
+  }
+  applyAccessState();
+}
+
+function toggleClipHistory(){
+  clipHistoryOpen = !clipHistoryOpen;
+  const list = document.getElementById('clipHistoryList');
+  const btn = document.getElementById('clipHistoryToggle');
+  list.style.display = clipHistoryOpen ? 'block' : 'none';
+  btn.innerText = clipHistoryOpen ? 'Hide ▲' : 'Show ▼';
+  if(clipHistoryOpen && !clipHistoryLoaded){
+    loadClipHistory();
+    clipHistoryLoaded = true;
+  }
+}
+
+async function loadClipHistory(){
+  const list = document.getElementById('clipHistoryList');
+  if(isGuest){
+    list.innerHTML = '<div class="history-empty">Log in to see your clip history.</div>';
+    return;
+  }
+  try {
+    const res = await fetch(`/clip-history`);
+    const data = await res.json();
+    if(!data.success || !data.data || data.data.length === 0){
+      list.innerHTML = '<div class="history-empty">📭 No clip history yet.</div>';
+      document.getElementById("statClipsHistory").innerText = "0";
+      return;
+    }
+
+    document.getElementById("statClipsHistory").innerText = data.data.length;
+
+    list.innerHTML = '';
+    data.data.forEach((job, jobIdx) => {
+      const date = new Date(job.createdAt).toLocaleDateString("en-IN", {
+        day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"
+      });
+      const title = job.ytTitle || job.ytUrl;
+
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.innerHTML = `
+        <div class="history-item-top">
+          <div class="history-item-date">${date}</div>
+          <div class="history-item-source">${job.clips.length} clips</div>
+        </div>
+        <div class="history-item-preview">${title}</div>
+        <div class="history-item-url">${job.ytUrl}</div>
+        <div class="history-item-clips" id="historyClips${jobIdx}">
+          ${job.clips.map((clip, i) => `
+            <div class="clip-card">
+              <div class="clip-title">${clip.title || 'Clip ' + (i+1)}</div>
+              <div class="clip-reason">${clip.reason || ''}</div>
+              <div class="clip-meta">
+                <span class="clip-duration">⏱ ${clip.duration}s</span>
+                <a class="clip-download-btn" href="${clip.url}" download="clip_${i+1}.mp4" onclick="event.stopPropagation();notifyDownload('${clip.s3Key}')">Download ↓</a>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      item.onclick = () => {
+        const clipsDiv = document.getElementById(`historyClips${jobIdx}`);
+        clipsDiv.style.display = clipsDiv.style.display === 'block' ? 'none' : 'block';
+      };
+      list.appendChild(item);
+    });
+  } catch(e){
+    list.innerHTML = '<div class="history-empty">❌ Could not load your history.</div>';
+  }
+}
+
+async function notifyDownload(s3Key){
+  try {
+    await fetch('/clip-downloaded', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ s3Key })
+    });
+  } catch(e){}
+}
+
+/* ══════════════ CAPTION PICKER ══════════════ */
+const CP_STYLES = [
+  { name: "Bold Pop",     cls: "style-red",      text: "BOLD",   tag: "Trending" },
+  { name: "Gradient",     cls: "style-gradient",  text: "FIRE",   tag: "Trending" },
+  { name: "Karaoke",      cls: "style-karaoke",   html: '<span class="filled">KAR</span>A' },
+  { name: "Outline",      cls: "style-outline",   text: "EDGE" },
+  { name: "Boxed",        cls: "style-boxed",     text: "BOX" },
+  { name: "Highlight",    cls: "style-highlight", text: "POP" },
+  { name: "Classic Bold", cls: "style-classic",   text: "MEME",   tag: "Popular" },
+  { name: "Minimal",      cls: "style-minimal",   text: "CLEAN" },
+  { name: "Cyan Glow",    cls: "style-cyan",      text: "GLOW" },
+  { name: "Gold Shine",   cls: "style-gold",      text: "GOLD" },
+  { name: "Word Pop Mono",cls: "style-mono",      text: "MONO" },
+  { name: "White Clean",  cls: "style-white",     text: "PLAIN" },
+];
+let cpStyleIdx = 0;
+
+const CP_ANIMS = [
+  { name: "Static",       id: "static",   tag: null },
+  { name: "Word Pop",     id: "wordpop",  tag: "Trending" },
+  { name: "Karaoke Fill", id: "karaoke",  tag: "Trending" },
+  { name: "Bounce",       id: "bounce",   tag: "Popular" },
+  { name: "Shake",        id: "shake" },
+  { name: "Typewriter",   id: "typewriter", tag: "Trending" },
+  { name: "Slide Up",     id: "slideup" },
+  { name: "Scale In",     id: "scalein",  tag: "Popular" },
+  { name: "Glow Pulse",   id: "glowpulse" },
+];
+let cpAnimIdx = 1;
+
+const CP_RATIOS = [
+  { name: "9:16 Reels", cls: "style-white", text: "9:16", tag: "Popular" },
+  { name: "1:1 Square", cls: "style-white", text: "1:1" },
+  { name: "16:9 Wide",  cls: "style-white", text: "16:9" },
+  { name: "4:5 Feed",   cls: "style-white", text: "4:5" },
+];
+let cpRatioIdx = 0;
+
+const CP_QUALITY = [
+  { name: "720p",  cls: "style-white", text: "720p" },
+  { name: "1080p", cls: "style-white", text: "1080p", tag: "Trending" },
+  { name: "4K",     cls: "style-white", text: "4K" },
+];
+let cpQualityIdx = 1;
+
+const CP_MODE_DESC = {
+  wordpop: "One word highlights at a time as it's spoken.",
+  karaoke: "Words fill in colour in sync with the audio.",
+  standard: "Chunk-by-chunk traditional captions.",
+};
+let cpCaptionMode = "standard";
+let cpMaxWords = 4;
+let cpEmojiOn = true;
+let cpEmojiSubpos = "end";
+const CP_REACTION_EMOJIS = ["🔥", "😱", "🧠", "🤑", "⚠️", "🏆", "❤️", "😂"];
+
+let cpPosType = "bottom";
+let cpMarginFromBottom = 430;
+
+function cpRenderStyleGrid(){
+  const grid = document.getElementById("cpStyleGrid");
+  grid.innerHTML = CP_STYLES.map((s, i) => `
+    <div class="cp-tile ${i === cpStyleIdx ? 'selected' : ''}" data-i="${i}">
+      ${s.tag ? `<div class="cp-tile-tag">${s.tag}</div>` : ''}
+      <div class="cp-swatch ${s.cls}"><span>${s.html || s.text}</span></div>
+      <div class="cp-tile-label">${s.name}</div>
+    </div>
+  `).join('');
+  grid.querySelectorAll(".cp-tile").forEach(t => t.addEventListener("click", () => {
+    cpStyleIdx = parseInt(t.dataset.i);
+    cpRenderStyleGrid();
+    cpRenderLive();
+    cpUpdateSummary();
+  }));
+}
+
+function cpRenderAnimGrid(){
+  const grid = document.getElementById("cpAnimGrid");
+  grid.innerHTML = CP_ANIMS.map((a, i) => `
+    <div class="cp-tile ${i === cpAnimIdx ? 'selected' : ''}" data-i="${i}">
+      ${a.tag ? `<div class="cp-tile-tag">${a.tag}</div>` : ''}
+      <div class="cp-swatch style-white"><span style="font-size:9px">${a.name.toUpperCase()}</span></div>
+      <div class="cp-tile-label">${a.name}</div>
+    </div>
+  `).join('');
+  grid.querySelectorAll(".cp-tile").forEach(t => t.addEventListener("click", () => {
+    cpAnimIdx = parseInt(t.dataset.i);
+    cpRenderAnimGrid();
+    cpRenderLive();
+    cpUpdateSummary();
+  }));
+}
+
+function cpRenderSimpleGrid(containerId, items, selectedIdx, onSelect){
+  const grid = document.getElementById(containerId);
+  grid.innerHTML = items.map((it, i) => `
+    <div class="cp-tile ${i === selectedIdx ? 'selected' : ''}" data-i="${i}">
+      ${it.tag ? `<div class="cp-tile-tag">${it.tag}</div>` : ''}
+      <div class="cp-swatch ${it.cls}"><span>${it.text}</span></div>
+      <div class="cp-tile-label">${it.name}</div>
+    </div>
+  `).join('');
+  grid.querySelectorAll(".cp-tile").forEach(t => t.addEventListener("click", () => onSelect(parseInt(t.dataset.i))));
+}
+function cpRenderRatioGrid(){ cpRenderSimpleGrid("cpRatioGrid", CP_RATIOS, cpRatioIdx, (i) => { cpRatioIdx = i; cpRenderRatioGrid(); cpUpdateSummary(); }); }
+function cpRenderQualityGrid(){ cpRenderSimpleGrid("cpQualityGrid", CP_QUALITY, cpQualityIdx, (i) => { cpQualityIdx = i; cpRenderQualityGrid(); cpUpdateSummary(); }); }
+
+document.getElementById("cpTabbar").addEventListener("click", (e) => {
+  const tab = e.target.closest(".cp-tab");
+  if (!tab) return;
+  document.querySelectorAll(".cp-tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".cp-panel").forEach(p => p.classList.remove("active"));
+  tab.classList.add("active");
+  document.getElementById(`cp-panel-${tab.dataset.tab}`).classList.add("active");
+});
+
+document.getElementById("cpModeButtons").addEventListener("click", (e) => {
+  const btn = e.target.closest(".cp-mode-btn");
+  if (!btn) return;
+  cpCaptionMode = btn.dataset.mode;
+  document.querySelectorAll(".cp-mode-btn").forEach(b => b.classList.toggle("selected", b === btn));
+  document.getElementById("cpModeDesc").innerText = CP_MODE_DESC[cpCaptionMode];
+  cpRenderLive();
+  cpUpdateSummary();
+});
+
+document.getElementById("cpWordsRow").addEventListener("click", (e) => {
+  const btn = e.target.closest(".cp-num-btn");
+  if (!btn) return;
+  cpMaxWords = parseInt(btn.dataset.n);
+  document.querySelectorAll(".cp-num-btn").forEach(b => b.classList.toggle("selected", b === btn));
+  cpRenderLive();
+  cpUpdateSummary();
+});
+
+const cpEmojiToggle = document.getElementById("cpEmojiToggle");
+cpEmojiToggle.addEventListener("change", () => {
+  cpEmojiOn = cpEmojiToggle.checked;
+  document.getElementById("cpSubposButtons").classList.toggle("disabled", !cpEmojiOn);
+  cpRenderLive();
+  cpUpdateSummary();
+});
+
+document.getElementById("cpSubposButtons").addEventListener("click", (e) => {
+  const btn = e.target.closest(".cp-subpos-btn");
+  if (!btn || !cpEmojiOn) return;
+  cpEmojiSubpos = btn.dataset.subpos;
+  document.querySelectorAll(".cp-subpos-btn").forEach(b => b.classList.toggle("selected", b === btn));
+  cpRenderLive();
+  cpUpdateSummary();
+});
+
+function cpRenderPosButtons(){
+  document.querySelectorAll(".cp-pos-btn").forEach(b => b.classList.toggle("selected", b.dataset.pos === cpPosType));
+  document.getElementById("cpCustomControls").style.display = cpPosType === "custom" ? "block" : "none";
+}
+document.getElementById("cpPosButtons").addEventListener("click", (e) => {
+  const btn = e.target.closest(".cp-pos-btn");
+  if (!btn) return;
+  cpPosType = btn.dataset.pos;
+  cpRenderPosButtons();
+  cpApplyPosition();
+  cpUpdateSummary();
+});
+
+const cpMarginSlider = document.getElementById("cpMarginSlider");
+const cpMarginValueLabel = document.getElementById("cpMarginValue");
+function cpUpdateSliderFill(){
+  const pct = (cpMarginSlider.value / cpMarginSlider.max) * 100;
+  cpMarginSlider.style.setProperty('--fill', pct + '%');
+}
+cpMarginSlider.addEventListener("input", () => {
+  cpMarginFromBottom = parseInt(cpMarginSlider.value);
+  cpMarginValueLabel.innerText = `${cpMarginFromBottom}px`;
+  cpUpdateSliderFill();
+  cpApplyPosition();
+  cpUpdateSummary();
+});
+
+function cpApplyPosition(){
+  const el = document.getElementById("cpWords");
+  el.style.top = "auto"; el.style.bottom = "auto"; el.style.transform = "none";
+  if (cpPosType === "top") { el.style.top = "10%"; }
+  else if (cpPosType === "center") { el.style.top = "50%"; el.style.transform = "translateY(-50%)"; }
+  else if (cpPosType === "bottom") { el.style.bottom = "8%"; }
+  else if (cpPosType === "custom") {
+    const pct = Math.min(Math.max(cpMarginFromBottom / 960, 0), 1) * 82;
+    el.style.bottom = pct + "%";
+  }
+}
+
+const CP_DEMO_WORDS = ["THIS", "IS", "HOW", "IT", "LOOKS"];
+let cpLiveTimer = null;
+
+function cpRenderLive(){
+  clearInterval(cpLiveTimer);
+  const wrap = document.getElementById("cpWords");
+  const style = CP_STYLES[cpStyleIdx];
+  const anim = CP_ANIMS[cpAnimIdx];
+
+  let words = CP_DEMO_WORDS.slice(0, Math.max(1, Math.min(cpMaxWords, CP_DEMO_WORDS.length)));
+  if (cpEmojiOn && cpEmojiSubpos !== "none") {
+    const emoji = CP_REACTION_EMOJIS[cpStyleIdx % CP_REACTION_EMOJIS.length];
+    words = cpEmojiSubpos === "start" ? [emoji, ...words] : [...words, emoji];
+  }
+
+  wrap.innerHTML = words.map((w, i) => `<span class="cp-word ${style.cls}" data-i="${i}"><span>${w}</span></span>`).join('');
+  cpApplyAnimation(anim.id, wrap);
+  cpApplyPosition();
+}
+
+function cpApplyAnimation(id, wrap){
+  const words = [...wrap.children];
+  if (id === "static") { words.forEach(w => w.style.opacity = "1"); return; }
+
+  if (id === "wordpop" || id === "karaoke") {
+    let active = 0;
+    const tick = () => {
+      words.forEach((w, i) => {
+        const isActive = i === active;
+        w.style.transition = "transform .15s, opacity .15s";
+        w.style.opacity = (id === "karaoke") ? "1" : (isActive ? "1" : "0.35");
+        w.style.transform = isActive ? "scale(1.12)" : "scale(1)";
+        if (id === "karaoke") w.querySelector("span").style.color = i <= active ? "#fff" : "rgba(255,255,255,0.3)";
+      });
+      active = (active + 1) % words.length;
+    };
+    tick();
+    cpLiveTimer = setInterval(tick, 420);
+    return;
+  }
+
+  if (id === "typewriter") {
+    words.forEach(w => w.style.opacity = "0");
+    let shown = 0;
+    const tick = () => { words.forEach((w, i) => { w.style.opacity = i < shown ? "1" : "0"; }); shown = shown >= words.length ? 0 : shown + 1; };
+    tick();
+    cpLiveTimer = setInterval(tick, 380);
+    return;
+  }
+
+  if (id === "bounce") { words.forEach((w, i) => { w.style.opacity = "1"; w.style.animation = `cpBounce 1.1s ease-in-out ${i * 0.1}s infinite`; }); return; }
+  if (id === "shake") { words.forEach((w, i) => { w.style.opacity = "1"; w.style.animation = `cpShake 0.32s ease-in-out ${i * 0.05}s infinite`; }); return; }
+
+  if (id === "slideup") {
+    let idx = 0;
+    words.forEach(w => { w.style.opacity = "0"; w.style.transform = "translateY(10px)"; w.style.transition = "transform .25s, opacity .25s"; });
+    cpLiveTimer = setInterval(() => {
+      words.forEach(w => { w.style.opacity = "0"; w.style.transform = "translateY(10px)"; });
+      words[idx].style.opacity = "1"; words[idx].style.transform = "translateY(0)";
+      idx = (idx + 1) % words.length;
+    }, 450);
+    return;
+  }
+
+  if (id === "scalein") {
+    let idx = 0;
+    words.forEach(w => { w.style.opacity = "0.3"; w.style.transform = "scale(0.85)"; w.style.transition = "transform .2s, opacity .2s"; });
+    cpLiveTimer = setInterval(() => {
+      words.forEach(w => { w.style.opacity = "0.3"; w.style.transform = "scale(0.85)"; });
+      words[idx].style.opacity = "1"; words[idx].style.transform = "scale(1.15)";
+      idx = (idx + 1) % words.length;
+    }, 420);
+    return;
+  }
+
+  if (id === "glowpulse") { words.forEach((w, i) => { w.style.opacity = "1"; w.style.animation = `cpGlow 1.4s ease-in-out ${i * 0.15}s infinite`; }); return; }
+}
+
+function cpGetSettings(){
+  return {
+    style: CP_STYLES[cpStyleIdx].name,
+    animation: CP_ANIMS[cpAnimIdx].name,
+    captionMode: cpCaptionMode,
+    maxWordsPerLine: cpMaxWords,
+    emojiReactions: cpEmojiOn,
+    emojiPosition: cpEmojiOn ? cpEmojiSubpos : "none",
+    position: cpPosType === "custom" ? { type: "custom", marginFromBottom: cpMarginFromBottom } : { type: cpPosType },
+    aspectRatio: CP_RATIOS[cpRatioIdx].text,
+    quality: CP_QUALITY[cpQualityIdx].text,
+  };
+}
+
+function cpUpdateSummary(){
+  const s = cpGetSettings();
+  document.getElementById("cpSummary").innerHTML =
+    `Applying to next clip: <strong>${s.style}</strong> · <strong>${s.animation}</strong> · <strong>${s.aspectRatio}</strong> · <strong>${s.quality}</strong>`;
+}
+
+function cpInit(){
+  cpRenderStyleGrid();
+  cpRenderAnimGrid();
+  cpRenderRatioGrid();
+  cpRenderQualityGrid();
+  cpRenderPosButtons();
+  cpUpdateSliderFill();
+  cpRenderLive();
+  cpUpdateSummary();
+}
+cpInit();
+
+async function generateClips(){
+  const url = document.getElementById("clipUrl").value.trim();
+  if(!url){
+    const input = document.getElementById("clipUrl");
+    input.focus();
+    input.style.borderColor = "var(--red)";
+    setTimeout(() => { input.style.borderColor = ""; }, 1200);
+    alert("Please paste a YouTube URL!");
+    return;
+  }
+  if(isGuest || currentPlan === "free"){ applyAccessState(); return; }
+
+  const resultBox = document.getElementById("clipsResultBox");
+  const clipsList = document.getElementById("clipsList");
+  const generateBtn = document.getElementById("generateClipsBtn");
+  if (generateBtn) {
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = "Processing…";
+  }
+
+  resultBox.style.display = "block";
+  document.getElementById('clipsResultTitle').innerText = "⏳ Processing...";
+  document.getElementById('clipsCount').innerText = "This may take 2–5 minutes. Please wait...";
+  clipsList.innerHTML = `
+    <div class="processing-box">
+      <div class="processing-spinner"></div>
+      <div class="processing-title">AI is finding viral moments</div>
+      <div class="processing-sub">Downloading video → Transcribing → Finding best clips → Cutting & uploading<br><br>Don't close this tab!</div>
+    </div>`;
+
+  resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  function refreshHistoryAfterJob(){
+    clipHistoryLoaded = false;
+    if(clipHistoryOpen){ loadClipHistory(); clipHistoryLoaded = true; }
+  }
+
+  function showError(msg){
+    if (generateBtn) {
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = 'Generate Clips <span aria-hidden="true">→</span>';
+    }
+    document.getElementById('clipsResultTitle').innerText = "❌ Error";
+    document.getElementById('clipsCount').innerText = msg || "Something went wrong";
+    clipsList.innerHTML = '';
+    refreshHistoryAfterJob();
+  }
+
+  function showClips(clips){
+    if (generateBtn) {
+      generateBtn.disabled = false;
+      generateBtn.innerHTML = 'Generate Clips <span aria-hidden="true">→</span>';
+    }
+    document.getElementById('clipsResultTitle').innerText = "🎬 Your Clips Are Ready!";
+    document.getElementById('clipsCount').innerText = `${clips.length} clips generated from your video`;
+    clipsList.innerHTML = clips.map((clip, i) => `
+      <div class="clip-card">
+        <div class="clip-title">${clip.title || 'Clip ' + (i+1)}</div>
+        <div class="clip-reason">${clip.reason || ''}</div>
+        <div class="clip-meta">
+          <span class="clip-duration">⏱ ${clip.duration}s</span>
+          <a class="clip-download-btn" href="${clip.url}" download="clip_${i+1}.mp4" onclick="notifyDownload('${clip.s3Key}')">Download ↓</a>
+        </div>
+      </div>
+    `).join('');
+    refreshHistoryAfterJob();
+  }
+
+  try {
+    const res = await fetch("/cut-clips", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ytUrl: url, captionSettings: cpGetSettings() })
+    });
+    const data = await res.json();
+
+    if(data.loginRequired){
+      applyAccessState();
+      resultBox.style.display = 'none';
+      return;
+    }
+    if(!data.success || !data.jobId){
+      showError(data.error);
+      return;
+    }
+
+    const jobId = data.jobId;
+    const startTime = Date.now();
+    const maxWaitMs = 10 * 60 * 1000;
+
+    const poll = setInterval(async () => {
+      if (Date.now() - startTime > maxWaitMs) {
+        clearInterval(poll);
+        showError("Timed out. Please try again.");
+        return;
+      }
+      try {
+        const statusRes = await fetch(`/clip-status/${jobId}`);
+        const statusData = await statusRes.json();
+        if (!statusData.success) { clearInterval(poll); showError(statusData.error); return; }
+        if (statusData.status === "done") { clearInterval(poll); showClips(statusData.clips || []); }
+        else if (statusData.status === "error") { clearInterval(poll); showError(statusData.error); }
+      } catch (e) { /* transient — retry next tick */ }
+    }, 4000);
+
+  } catch(e){
+    showError("Server error. Please try again.");
+  }
+}
+
+// Init — if we arrived here from the main page with a link already
+// pasted (Generate button on "/"), prefill it and kick off processing
+// automatically as soon as access checks pass.
+(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const incomingUrl = params.get("ytUrl");
+  const autostart = params.get("autostart") === "1";
+
+  if (incomingUrl) {
+    document.getElementById("clipUrl").value = incomingUrl;
+  }
+
+  await resolveIdentity();
+  await loadUserPlan();
+
+  // Clean the URL so a refresh/back doesn't re-trigger processing
+  if (incomingUrl || autostart) {
+    window.history.replaceState({}, document.title, "/clips-dashboard.html");
+  }
+
+  if (incomingUrl && autostart && !isGuest && currentPlan !== "free") {
+    generateClips();
+  }
+})();
+</script>
+</body>
+</html>
