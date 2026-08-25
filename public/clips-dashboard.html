@@ -131,11 +131,19 @@ body::before{
 /* CAPTION PANEL */
 .panel{border:1px solid var(--border); background:var(--s1); position:relative; animation:frameIn .4s ease both; animation-delay:.06s;}
 .panel-pad{padding:14px 16px;}
-.cp-preview{border:1px solid var(--border2); background:#000; aspect-ratio:9/16; position:relative; margin-bottom:14px; overflow:hidden;}
+.cp-master-row{display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:14px; margin-bottom:14px; border-bottom:1px solid var(--border);}
+.cp-master-title{font-size:13px; font-weight:600; color:var(--text);}
+.cp-master-desc{font-size:10.5px; color:var(--muted); margin-top:2px; line-height:1.4;}
+#cpBody{transition:opacity .2s;}
+#cpBody.disabled{opacity:.35; pointer-events:none; filter:grayscale(.6);}
+.cp-off-note{display:none; font-size:11.5px; color:var(--muted); padding:8px 0 2px; text-align:center;}
+.cp-off-note.show{display:block;}
+
+.cp-preview{border:1px solid var(--border2); background:#000; aspect-ratio:9/16; position:relative; margin:0 auto 14px; overflow:hidden; max-width:150px;}
 .cp-preview::before{content:''; position:absolute; inset:0; background:radial-gradient(circle at 30% 25%, rgba(255,59,48,.14), transparent 55%), linear-gradient(165deg,#141416,#000);}
 .cp-preview-tag{position:absolute; top:8px; left:9px; z-index:3; font-size:7.5px; letter-spacing:.6px; text-transform:uppercase; color:rgba(255,255,255,.35); font-family:'IBM Plex Mono',monospace;}
 .cp-words{position:absolute; left:10px; right:10px; z-index:2; bottom:10%; display:flex; flex-wrap:wrap; gap:5px 6px; justify-content:center; transition:top .25s ease, bottom .25s ease, transform .25s ease;}
-.cp-word{font-size:14px; font-weight:800; line-height:1.3;}
+.cp-word{font-size:11px; font-weight:800; line-height:1.3;}
 .style-red span{color:#fff; text-shadow:0 0 8px var(--accent), 0 0 16px var(--accent);}
 .style-outline span{color:transparent; -webkit-text-stroke:1px #fff;}
 .style-boxed span{background:#fff; color:#0a0a0b; padding:2px 5px;}
@@ -159,8 +167,9 @@ body::before{
 .cp-panel.active{display:block; animation:frameIn .25s ease both;}
 
 .cp-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); margin-bottom:14px;}
-.cp-tile{position:relative; background:var(--s1); cursor:pointer; transition:background .15s;}
+.cp-tile{position:relative; background:var(--s1); cursor:pointer; transition:transform .1s, box-shadow .15s;}
 .cp-tile.selected{box-shadow:inset 0 0 0 1.5px var(--accent);}
+.cp-tile:active{transform:scale(.96);}
 .cp-swatch{height:50px; background:#000; display:flex; align-items:center; justify-content:center; padding:4px;}
 .cp-swatch span{font-size:9px; font-weight:700; text-align:center;}
 .cp-tile-label{padding:6px 4px; text-align:center; background:var(--s2); border-top:1px solid var(--border); font-size:8px; font-weight:500;
@@ -173,10 +182,11 @@ body::before{
 .opt-row:first-child{border-top:none;}
 .opt-label{font-size:11.5px; color:var(--text-dim); flex-shrink:0;}
 .opt-value{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;}
-.opt-btn{padding:6px 10px; border:1px solid var(--border2); background:var(--s2); color:var(--text-dim); font-size:10.5px;
-  font-weight:500; cursor:pointer; font-family:'Inter',sans-serif; transition:all .15s;}
-.opt-btn.selected{border-color:var(--accent); color:var(--text); background:var(--accent-dim);}
-.opt-btn:active{opacity:.8;}
+.opt-btn{padding:8px 13px; border:1px solid var(--border2); border-bottom:2.5px solid var(--border2); background:var(--s2); color:var(--text-dim); font-size:11px;
+  font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:all .1s; border-radius:3px; box-shadow:0 1px 0 rgba(0,0,0,.3);}
+.opt-btn.selected{border-color:var(--accent); border-bottom-color:var(--accent); color:#fff; background:var(--accent);}
+.opt-btn:hover:not(.selected){border-color:#3a3a3f; color:var(--text);}
+.opt-btn:active{transform:translateY(2px); border-bottom-width:1px;}
 .opt-btn:disabled{opacity:.35; pointer-events:none;}
 
 .cp-block{margin-top:14px; padding-top:14px; border-top:1px solid var(--border);}
@@ -378,6 +388,18 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
     <div class="panel" id="captionPickerSection">
       <div class="panel-pad">
 
+        <div class="cp-master-row">
+          <div>
+            <div class="cp-master-title">Burn in captions</div>
+            <div class="cp-master-desc">Off? We'll cut the clip with no on-screen text.</div>
+          </div>
+          <label class="cp-switch">
+            <input type="checkbox" id="cpCaptionsToggle" checked>
+            <span class="cp-switch-track"></span>
+          </label>
+        </div>
+
+        <div id="cpBody">
         <div class="cp-preview">
           <div class="cp-preview-tag">Preview</div>
           <div class="cp-words" id="cpWords"></div>
@@ -476,6 +498,7 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
         </div>
 
         <div class="cp-summary mono" id="cpSummary"></div>
+        </div>
       </div>
     </div>
 
@@ -582,39 +605,42 @@ async function logout(){
   window.location.href = "/";
 }
 
+/* Source, Captions and Generate are always visible — including to
+   guests and Free-plan users — so people can explore the product
+   (paste a link, play with caption styles) before ever signing up.
+   The login/upgrade wall only appears when they actually try to
+   generate, as a nudge at the point of value, not a locked door
+   up front. */
 function applyAccessState(){
+  const genBtn = document.getElementById("genBtn");
+  const genHint = genBtn.querySelector(".generate-main-hint");
+  if (isGuest) {
+    genHint.innerText = "sign up free to generate";
+  } else if (currentPlan === "free") {
+    genHint.innerText = "upgrade to generate";
+  } else {
+    genHint.innerText = "2–5 min per video";
+  }
+}
+
+function showAccessWall(){
   const loginWall = document.getElementById("loginWall");
   const loginWallText = document.getElementById("loginWallText");
   const loginWallBtn = document.getElementById("loginWallBtn");
   const wallLabel = document.getElementById("wallLabel");
-  const generateCard = document.getElementById("generateCard");
-  const srcLabel = document.getElementById("srcLabel");
-  const captionPickerSection = document.getElementById("captionPickerSection");
-  const capLabel = document.getElementById("capLabel");
-  const genBtn = document.getElementById("genBtn");
 
   if (isGuest) {
-    loginWallText.innerText = "Please log in to use Cut Clips.";
-    loginWallBtn.innerText = "Log In →";
+    loginWallText.innerText = "Like what you see? Create a free account to generate this clip.";
+    loginWallBtn.innerText = "Sign Up Free →";
     loginWallBtn.onclick = () => window.location.href = "/login.html?next=" + encodeURIComponent(location.pathname);
-    wallLabel.style.display = "flex"; loginWall.style.display = "block";
-    srcLabel.style.display = "none"; generateCard.style.display = "none";
-    capLabel.style.display = "none"; captionPickerSection.style.display = "none";
-    genBtn.style.display = "none";
-  } else if (currentPlan === "free") {
-    loginWallText.innerText = "Cut Clips isn't available on the Free plan. Upgrade to unlock it.";
+  } else {
+    loginWallText.innerText = "Cut Clips generation isn't available on the Free plan. Upgrade to unlock it.";
     loginWallBtn.innerText = "Upgrade Plan →";
     loginWallBtn.onclick = () => window.location.href = "/pricing.html";
-    wallLabel.style.display = "flex"; loginWall.style.display = "block";
-    srcLabel.style.display = "none"; generateCard.style.display = "none";
-    capLabel.style.display = "none"; captionPickerSection.style.display = "none";
-    genBtn.style.display = "none";
-  } else {
-    wallLabel.style.display = "none"; loginWall.style.display = "none";
-    srcLabel.style.display = "flex"; generateCard.style.display = "block";
-    capLabel.style.display = "flex"; captionPickerSection.style.display = "block";
-    genBtn.style.display = "flex";
   }
+  wallLabel.style.display = "flex";
+  loginWall.style.display = "block";
+  loginWall.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 async function loadUserPlan(){
@@ -950,8 +976,12 @@ function cpApplyAnimation(id, wrap){
   if (id === "glowpulse") { words.forEach((w, i) => { w.style.opacity = "1"; w.style.animation = `cpGlow 1.4s ease-in-out ${i * 0.15}s infinite`; }); return; }
 }
 
+let cpCaptionsOn = true;
+
 function cpGetSettings(){
+  if (!cpCaptionsOn) return { captionsEnabled: false };
   return {
+    captionsEnabled: true,
     style: CP_STYLES[cpStyleIdx].name,
     animation: CP_ANIMS[cpAnimIdx].name,
     captionMode: cpCaptionMode,
@@ -966,15 +996,23 @@ function cpGetSettings(){
 
 function cpUpdateSummary(){
   const s = cpGetSettings();
-  document.getElementById("cpSummary").innerHTML =
-    `Applying to next clip: <strong>${s.style}</strong> · <strong>${s.animation}</strong> · <strong>${s.aspectRatio}</strong> · <strong>${s.quality}</strong>`;
+  document.getElementById("cpSummary").innerHTML = s.captionsEnabled === false
+    ? `Applying to next clip: <strong>No captions</strong>`
+    : `Applying to next clip: <strong>${s.style}</strong> · <strong>${s.animation}</strong> · <strong>${s.aspectRatio}</strong> · <strong>${s.quality}</strong>`;
 }
+
+document.getElementById("cpCaptionsToggle").addEventListener("change", (e) => {
+  cpCaptionsOn = e.target.checked;
+  document.getElementById("cpBody").classList.toggle("disabled", !cpCaptionsOn);
+  cpUpdateSummary();
+});
 
 function cpInit(){
   cpRenderStyleGrid(); cpRenderAnimGrid(); cpRenderRatioGrid(); cpRenderQualityGrid();
   cpRenderPosButtons(); cpUpdateSliderFill(); cpRenderLive(); cpUpdateSummary();
 }
 cpInit();
+
 
 /* ══════════════ GENERATE / PROCESS / RESULTS ══════════════ */
 let procTimer = null;
@@ -1010,7 +1048,7 @@ function stopProcAnimation(finish){
 async function generateClips(){
   const url = document.getElementById("clipUrl").value.trim();
   if (!url) { alert("Please paste a YouTube URL!"); return; }
-  if (isGuest || currentPlan === "free") { applyAccessState(); return; }
+  if (isGuest || currentPlan === "free") { showAccessWall(); return; }
 
   const genBtn = document.getElementById("genBtn");
   const procLabel = document.getElementById("procLabel");
@@ -1085,7 +1123,7 @@ async function generateClips(){
     });
     const data = await res.json();
 
-    if (data.loginRequired) { applyAccessState(); procLabel.style.display = "none"; procCard.style.display = "none"; genBtn.disabled = false; return; }
+    if (data.loginRequired) { showAccessWall(); procLabel.style.display = "none"; procCard.style.display = "none"; genBtn.disabled = false; return; }
     if (!data.success || !data.jobId) { showError(data.error); return; }
 
     const jobId = data.jobId;
