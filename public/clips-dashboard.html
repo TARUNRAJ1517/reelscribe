@@ -567,6 +567,17 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
 </div>
 
 <script>
+/* ══════════════ SECURITY HELPER ══════════════
+   Any text that ultimately comes from user/AI-generated data
+   (video titles, clip titles, AI reasons, file keys) must be
+   escaped before it's placed into innerHTML. YouTube titles are
+   attacker-controllable, so this is not optional. */
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
 /* ══════════════ AUTH / IDENTITY ══════════════
    Identity comes from the server session (/me), not localStorage.
    localStorage is kept only to show the email instantly on load —
@@ -688,9 +699,23 @@ function toggleClipHistory(){
   if (clipHistoryOpen && !clipHistoryLoaded) { loadClipHistory(); clipHistoryLoaded = true; }
 }
 
+/* Delegated download-click handler for history items — avoids
+   building inline onclick="" strings out of server data (s3Key),
+   which is unsafe if that string ever contains a quote character. */
+document.getElementById('clipHistoryList').addEventListener('click', (e) => {
+  const link = e.target.closest('a[data-s3key]');
+  if (!link) return;
+  e.stopPropagation();
+  notifyDownload(link.dataset.s3key);
+});
+
 async function loadClipHistory(){
   const list = document.getElementById('clipHistoryList');
-  if (isGuest) { list.innerHTML = '<div class="log-empty">Log in to see your clip history.</div>'; return; }
+  if (isGuest) {
+    list.innerHTML = '<div class="log-empty">Log in to see your clip history.</div>';
+    document.getElementById("statClipsHistory").innerText = "0";
+    return;
+  }
   try {
     const res = await fetch(`/clip-history`);
     const data = await res.json();
@@ -708,22 +733,22 @@ async function loadClipHistory(){
       item.className = 'log-item';
       item.innerHTML = `
         <div class="log-item-row">
-          <span class="log-tc mono">${date}</span>
-          <span class="log-name">${title}</span>
-          <span class="log-src">${job.clips.length} clips</span>
+          <span class="log-tc mono">${escapeHtml(date)}</span>
+          <span class="log-name">${escapeHtml(title)}</span>
+          <span class="log-src">${escapeHtml(String(job.clips.length))} clips</span>
         </div>
         <div class="log-sub" id="historyClips${jobIdx}">
           ${job.clips.map((clip, i) => `
             <div class="log-sub-item">
-              <span>${clip.title || 'Clip ' + (i+1)} · ${clip.duration}s</span>
-              <a href="${clip.url}" download="clip_${i+1}.mp4" onclick="event.stopPropagation();notifyDownload('${clip.s3Key}')">Download</a>
+              <span>${escapeHtml(clip.title || 'Clip ' + (i+1))} · ${escapeHtml(String(clip.duration))}s</span>
+              <a href="${escapeHtml(clip.url)}" download="clip_${i+1}.mp4" data-s3key="${escapeHtml(clip.s3Key || '')}">Download</a>
             </div>
           `).join('')}
         </div>`;
-      item.onclick = () => {
+      item.addEventListener('click', () => {
         const sub = document.getElementById(`historyClips${jobIdx}`);
         sub.style.display = sub.style.display === 'block' ? 'none' : 'block';
-      };
+      });
       list.appendChild(item);
     });
   } catch (e) {
@@ -1094,19 +1119,25 @@ async function generateClips(){
       if (!clips.length) {
         sheetScroll.outerHTML = '<div class="sheet-empty">No clips came back — try a different video.</div>';
       } else {
+        // All dynamic fields (title, reason, s3Key, url) are escaped
+        // before insertion — YouTube titles are attacker-controllable
+        // text and must never be trusted with raw innerHTML.
         sheetScroll.innerHTML = clips.map((clip, i) => `
           <div class="frame-card">
             <div class="frame-thumb">
               <div class="frame-idx">${String(i+1).padStart(2,'0')}</div>
-              <div class="frame-dur">${clip.duration}s</div>
+              <div class="frame-dur">${escapeHtml(String(clip.duration))}s</div>
               <div class="play"></div>
             </div>
             <div class="frame-body">
-              <div class="frame-title">${clip.title || 'Clip ' + (i+1)}</div>
-              ${clip.reason ? `<div class="frame-reason">${clip.reason}</div>` : ''}
-              <a href="${clip.url}" download="clip_${i+1}.mp4" class="frame-dl" onclick="notifyDownload('${clip.s3Key}')">Download</a>
+              <div class="frame-title">${escapeHtml(clip.title || 'Clip ' + (i+1))}</div>
+              ${clip.reason ? `<div class="frame-reason">${escapeHtml(clip.reason)}</div>` : ''}
+              <a href="${escapeHtml(clip.url)}" download="clip_${i+1}.mp4" class="frame-dl" data-s3key="${escapeHtml(clip.s3Key || '')}">Download</a>
             </div>
           </div>`).join('');
+        sheetScroll.querySelectorAll('.frame-dl').forEach(a => {
+          a.addEventListener('click', () => notifyDownload(a.dataset.s3key));
+        });
       }
       resultsSection.style.display = "block";
       genBtn.disabled = false;
@@ -1158,6 +1189,11 @@ async function generateClips(){
 
   await resolveIdentity();
   await loadUserPlan();
+
+  // Preload the history count silently (list itself stays hidden via
+  // CSS until the user hits "Show") so the "Videos (24h)" stat is
+  // correct on first paint instead of showing "—" indefinitely.
+  if (!isGuest) { loadClipHistory(); clipHistoryLoaded = true; }
 
   if (incomingUrl || autostart) window.history.replaceState({}, document.title, "/clips-dashboard.html");
   if (incomingUrl && autostart && !isGuest && currentPlan !== "free") generateClips();
