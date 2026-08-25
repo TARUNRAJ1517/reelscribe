@@ -423,6 +423,603 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
 .caption-cta-icon svg { width: 17px; height: 17px; color: var(--red); }
 .caption-cta-text h4 { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
 .caption-cta-text p { font-size: 11.5px; color: var(--sub); line-height: 1.4; }
+
+/* =========================================================
+   RESPONSIVE DESKTOP + MOBILE FIX
+   Existing design / colors / content / JS unchanged
+   ========================================================= */
+
+/* Base: prevent horizontal overflow on every screen */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+}
+
+/* Keep all media responsive */
+img,
+video,
+svg {
+  max-width: 100%;
+}
+
+input,
+button {
+  max-width: 100%;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (min-width: 481px) {
+
+  body {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .nav {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .hero {
+    padding: 56px 32px 40px;
+  }
+
+  .hero-h1 {
+    font-size: 42px;
+    max-width: 680px;
+  }
+
+  .hero-sub {
+    max-width: 650px;
+    font-size: 15px;
+  }
+
+  .features-section,
+  .how-section,
+  .platforms-section,
+  .stats-section {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  .cta-section {
+    margin-left: 32px;
+    margin-right: 32px;
+  }
+
+  .plans-section,
+  .testimonials-section {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  footer {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  .feat-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .plans-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .step {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .step:first-child {
+    border-radius: 10px 0 0 10px;
+  }
+
+  .step:last-child {
+    border-radius: 0 10px 10px 0;
+    border-right: 1px solid var(--border);
+  }
+
+  .step:not(:first-child) {
+    border-left: none;
+  }
+
+  .demo-video-box video {
+    width: 100%;
+    max-height: 430px;
+    object-fit: cover;
+  }
+}
+
+
+/* =========================================================
+   DESKTOP
+   ========================================================= */
+
+@media (min-width: 761px) {
+
+  body {
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  .nav {
+    padding: 14px 36px;
+  }
+
+  .nav-logo {
+    font-size: 17px;
+  }
+
+  .nav-toggle {
+    max-width: 260px;
+  }
+
+  .nav-btn {
+    font-size: 11px;
+    padding: 7px 10px;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 76px 70px 56px;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    margin-bottom: 22px;
+  }
+
+  .hero-h1 {
+    font-size: 58px;
+    line-height: 1.05;
+    letter-spacing: -1.5px;
+    max-width: 820px;
+    margin-bottom: 20px;
+  }
+
+  .hero-sub {
+    max-width: 720px;
+    font-size: 16px;
+    line-height: 1.7;
+    margin-bottom: 30px;
+  }
+
+  .hero-input-wrap {
+    max-width: 820px;
+  }
+
+  .hero-input {
+    font-size: 15px;
+    padding: 17px 18px;
+  }
+
+  .hero-input-btn {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .hero-upload {
+    max-width: 820px;
+  }
+
+  .trust-pills {
+    max-width: 820px;
+  }
+
+  .demo-video-box {
+    max-width: 820px;
+    margin-top: 24px;
+  }
+
+  .demo-video-box video {
+    width: 100%;
+    max-height: 520px;
+    object-fit: cover;
+  }
+
+  /* TICKER */
+  .ticker-wrap {
+    padding: 12px 0;
+  }
+
+  /* STATS */
+  .stats-section {
+    padding: 54px 70px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .stat-box {
+    border-bottom: none;
+  }
+
+  .stat-box:nth-child(2) {
+    border-right: 1px solid var(--border);
+  }
+
+  .stat-box:nth-child(4) {
+    border-right: none;
+  }
+
+  .stat-5th {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border);
+  }
+
+  .stat-num {
+    font-size: 34px;
+  }
+
+  /* FEATURES */
+  .features-section {
+    padding: 0 70px 54px;
+  }
+
+  .feat-heading {
+    font-size: 38px;
+  }
+
+  .feat-sub {
+    max-width: 650px;
+    font-size: 15px;
+  }
+
+  .feat-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .feat-card {
+    padding: 26px;
+    min-height: 270px;
+  }
+
+  .feat-card h3 {
+    font-size: 20px;
+  }
+
+  .feat-card p {
+    font-size: 14px;
+    max-width: 480px;
+  }
+
+  /* HOW IT WORKS */
+  .how-section {
+    padding: 0 70px 54px;
+  }
+
+  .how-heading {
+    font-size: 38px;
+  }
+
+  .how-sub {
+    font-size: 14px;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .step {
+    min-height: 230px;
+    border-bottom: 1px solid var(--border);
+    border-right: none;
+  }
+
+  .step:first-child {
+    border-radius: 10px 0 0 10px;
+  }
+
+  .step:last-child {
+    border-radius: 0 10px 10px 0;
+    border-right: 1px solid var(--border);
+  }
+
+  .step:not(:first-child) {
+    border-left: none;
+  }
+
+  .step p {
+    max-width: 300px;
+  }
+
+  /* PLATFORMS */
+  .platforms-section {
+    padding: 0 70px 54px;
+  }
+
+  .platforms-row {
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .p-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  /* PLANS */
+  .plans-section {
+    padding: 0 70px 54px;
+  }
+
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .plan-card {
+    padding: 26px;
+  }
+
+  /* CTA */
+  .cta-section {
+    margin: 0 70px 54px;
+    padding: 44px;
+  }
+
+  .cta-h {
+    font-size: 30px;
+  }
+
+  .cta-p {
+    font-size: 14px;
+    max-width: 620px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .cta-btn,
+  .cta-btn-outline {
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 36px 70px 30px;
+  }
+
+  .foot-links {
+    gap: 10px 28px;
+  }
+
+  /* CAPTION SECTION */
+  .caption-heading {
+    font-size: 38px;
+  }
+
+  .caption-sub {
+    max-width: 650px;
+    font-size: 14px;
+  }
+
+  .caption-card {
+    width: 150px;
+  }
+
+  .caption-preview {
+    height: 112px;
+  }
+
+  .caption-preview span {
+    font-size: 14px;
+  }
+
+  .caption-cta {
+    max-width: 700px;
+  }
+
+  /* CLIP LOGIN */
+  #clipLoginWall {
+    margin-left: 70px;
+    margin-right: 70px;
+    padding: 36px;
+  }
+
+  .clip-login-btn {
+    max-width: 500px;
+  }
+}
+
+
+/* =========================================================
+   LARGE DESKTOP
+   ========================================================= */
+
+@media (min-width: 1100px) {
+
+  body {
+    max-width: 1280px;
+  }
+
+  .hero {
+    padding-left: 90px;
+    padding-right: 90px;
+  }
+
+  .hero-h1 {
+    font-size: 64px;
+    max-width: 900px;
+  }
+
+  .hero-sub {
+    font-size: 17px;
+  }
+
+  .features-section,
+  .how-section,
+  .platforms-section,
+  .stats-section,
+  .plans-section {
+    padding-left: 90px;
+    padding-right: 90px;
+  }
+
+  .cta-section {
+    margin-left: 90px;
+    margin-right: 90px;
+  }
+
+  footer {
+    padding-left: 90px;
+    padding-right: 90px;
+  }
+
+  .feat-card {
+    min-height: 290px;
+  }
+
+  .step {
+    min-height: 250px;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE DEVICES
+   ========================================================= */
+
+@media (max-width: 360px) {
+
+  .nav {
+    padding-left: 12px;
+    padding-right: 12px;
+    gap: 6px;
+  }
+
+  .nav-logo {
+    font-size: 14px;
+    gap: 5px;
+  }
+
+  .nav-logo .ndot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .nav-toggle {
+    max-width: none;
+  }
+
+  .nav-btn {
+    font-size: 9px;
+    padding: 6px 2px;
+  }
+
+  .nav-menu {
+    font-size: 18px;
+  }
+
+  .hero {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .hero-h1 {
+    font-size: 28px;
+  }
+
+  .hero-sub {
+    font-size: 13px;
+  }
+
+  .hero-input-wrap {
+    display: flex;
+  }
+
+  .hero-input {
+    min-width: 0;
+    padding-left: 10px;
+    padding-right: 8px;
+    font-size: 13px;
+  }
+
+  .hero-input-btn {
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 10px;
+  }
+
+  .features-section,
+  .how-section,
+  .platforms-section,
+  .stats-section,
+  .plans-section,
+  .testimonials-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .cta-section {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  .stat-box {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .stat-num {
+    font-size: 25px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+
+/* =========================================================
+   ACCESSIBILITY / MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  .ticker,
+  .marquee-track,
+  .marquee-track.reverse,
+  .style-bounce span,
+  .style-shake span {
+    animation: none;
+  }
+}
+  
 </style>
 </head>
 <body>
