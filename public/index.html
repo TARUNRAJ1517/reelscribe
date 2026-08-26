@@ -4,463 +4,407 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ReelScribe — Transcribe Any Video Instantly</title>
+<meta name="description" content="ReelScribe instantly transcribes any video and cuts AI-powered viral clips from YouTube links. Free to start, no credit card required.">
 <link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/favicon.png">
 <link rel="canonical" href="https://reelscribe.site/">
+
+<!-- Open Graph / Social Sharing -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ReelScribe">
+<meta property="og:title" content="ReelScribe — Transcribe Any Video Instantly">
+<meta property="og:description" content="ReelScribe instantly transcribes any video and cuts AI-powered viral clips from YouTube links. Free to start, no credit card required.">
+<meta property="og:url" content="https://reelscribe.site/">
+<meta property="og:image" content="https://reelscribe.site/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ReelScribe — Transcribe Any Video Instantly">
+<meta name="twitter:description" content="ReelScribe instantly transcribes any video and cuts AI-powered viral clips from YouTube links. Free to start, no credit card required.">
+<meta name="twitter:image" content="https://reelscribe.site/assets/og-cover.png">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ReelScribe",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Web",
+  "description": "AI-powered video transcription and viral clip generator supporting YouTube, Instagram, TikTok, and more.",
+  "offers": {
+    "@type": "Offer",
+    "price": "149",
+    "priceCurrency": "INR"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.9",
+    "ratingCount": "312"
+  }
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --bg: #0e0d10;
-  --s1: #161418;
-  --s2: #1c191e;
-  --border: #2a262b;
-  --border2: #38333a;
-  --red: #ff3b30;
-  --red-dim: #a32a22;
-  --text: #f5f2ee;
-  --sub: #a39d95;
-  --muted: #665f5c;
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0a0b; --s1:#111113; --s2:#18181b;
+  --border:#232326; --border2:#2c2c30;
+  --accent:#ff3b30; --accent-dim:#2a120f;
+  --text:#eeeeee; --text-dim:#a4a4a8; --muted:#5c5c60;
 }
-
-html { scroll-behavior: smooth; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Archivo', -apple-system, sans-serif;
-  max-width: 480px; margin: 0 auto;
-  -webkit-font-smoothing: antialiased;
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',-apple-system,sans-serif;
+  max-width:480px; margin:0 auto; min-height:100vh;
+  -webkit-font-smoothing:antialiased; font-size:14px; line-height:1.5;
+  position:relative;
 }
-.mono { font-family: 'IBM Plex Mono', monospace; }
-:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+body::before{
+  content:''; position:fixed; inset:0; z-index:1; pointer-events:none;
+  opacity:.035; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+@keyframes markPulse{0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(255,59,48,.5);}50%{opacity:.55; box-shadow:0 0 0 3px rgba(255,59,48,0);}}
+@keyframes frameIn{from{opacity:0; transform:translateY(6px);}to{opacity:1; transform:translateY(0);}}
+.mono{font-family:'IBM Plex Mono',monospace;}
+:focus-visible{outline:1.5px solid var(--accent); outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important;} }
 
 /* NAV */
-.nav {
-  position: sticky; top: 0; z-index: 999;
-  background: rgba(14,13,16,0.9);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center;
-  justify-content: space-between;
-  padding: 13px 20px; gap: 10px;
-}
-.nav-logo {
-  font-size: 16px; font-weight: 700; letter-spacing: -0.2px;
-  display: flex; align-items: center; gap: 7px; flex-shrink: 0;
-}
-.nav-logo .ndot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
-.nav-toggle {
-  display: flex; flex: 1; max-width: 200px;
-  background: var(--s1); border: 1px solid var(--border2);
-  border-radius: 6px; padding: 3px;
-}
-.nav-btn {
-  flex: 1; padding: 6px 4px; border-radius: 4px; border: none;
-  background: transparent; color: var(--muted);
-  font-size: 11px; font-weight: 600; cursor: pointer;
-  font-family: 'Archivo', sans-serif; transition: all .2s; white-space: nowrap;
-  letter-spacing: 0.3px; text-transform: uppercase;
-}
-.nav-btn.active { background: var(--red); color: #1a0a08; }
-.nav-menu { background: none; border: none; color: var(--sub); font-size: 20px; cursor: pointer; flex-shrink: 0; }
+.nav{position:sticky; top:0; z-index:999; background:rgba(10,10,11,.94); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:14px 20px; gap:10px;}
+.nav-logo{font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; display:flex; align-items:center; gap:9px; flex-shrink:0;}
+.nav-logo .mark{width:6px; height:6px; background:var(--accent); flex-shrink:0; border-radius:50%; animation:markPulse 2.6s ease-in-out infinite;}
+.nav-toggle{display:flex; flex:1; max-width:200px; background:var(--s1); border:1px solid var(--border2); padding:3px;}
+.nav-btn{flex:1; padding:7px 4px; border:none; background:transparent; color:var(--muted);
+  font-size:10px; font-weight:600; cursor:pointer; font-family:'IBM Plex Mono',monospace;
+  transition:all .15s; white-space:nowrap; letter-spacing:.5px; text-transform:uppercase;}
+.nav-btn.active{background:var(--accent); color:#fff;}
+.nav-menu{background:none; border:1px solid var(--border2); width:30px; height:30px; color:var(--text-dim); font-size:14px; cursor:pointer; transition:all .15s; flex-shrink:0;}
+.nav-menu:hover{border-color:var(--accent); color:var(--text);}
+.nav-menu:active{transform:scale(.93);}
 
 /* MENU OVERLAY */
-.menu-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.8); z-index: 9999; backdrop-filter: blur(8px);
-}
-.menu-box {
-  background: var(--s1); border: 1px solid var(--border2);
-  margin: 14px; border-radius: 12px; padding: 22px;
-}
-.menu-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-.menu-box a {
-  display: flex; align-items: center; gap: 10px;
-  padding: 13px 0; text-decoration: none; color: var(--sub);
-  font-size: 14px; font-weight: 500;
-  border-bottom: 1px solid var(--border); transition: color .2s;
-}
-.menu-box a:last-of-type { border-bottom: none; }
-.menu-box a:hover { color: var(--text); }
-.menu-close { background: none; border: none; color: var(--sub); font-size: 20px; cursor: pointer; }
-.menu-cta {
-  width: 100%; margin-top: 18px; padding: 14px; border: none;
-  border-radius: 4px; color: #1a0a08; font-size: 13px; font-weight: 600;
-  letter-spacing: 0.5px; text-transform: uppercase;
-  background: var(--red); cursor: pointer; font-family: 'Archivo', sans-serif;
-}
+.menu-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:9999; backdrop-filter:blur(4px);}
+.menu-box{background:var(--s1); border:1px solid var(--border2); margin:14px; padding:22px; position:relative;}
+.reg{position:absolute; width:8px; height:8px; pointer-events:none; opacity:.5;}
+.reg::before,.reg::after{content:''; position:absolute; background:var(--border2);}
+.reg::before{top:50%; left:0; right:0; height:1px; transform:translateY(-50%);}
+.reg::after{left:50%; top:0; bottom:0; width:1px; transform:translateX(-50%);}
+.reg.tl{top:-4px; left:-4px;} .reg.tr{top:-4px; right:-4px;} .reg.bl{bottom:-4px; left:-4px;} .reg.br{bottom:-4px; right:-4px;}
+.menu-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border);}
+.menu-box a{display:flex; align-items:center; gap:10px; padding:12px 4px; text-decoration:none; color:var(--text-dim);
+  font-size:13px; font-weight:500; border-bottom:1px solid var(--border); transition:color .15s;}
+.menu-box a:last-of-type{border-bottom:none;}
+.menu-box a:hover{color:var(--text);}
+.menu-close{background:none; border:1px solid var(--border2); width:26px; height:26px; color:var(--text-dim); font-size:13px; cursor:pointer;}
+.menu-cta{width:100%; margin-top:14px; padding:13px; border:none; color:#fff; font-size:11.5px; font-weight:600;
+  letter-spacing:.5px; text-transform:uppercase; background:var(--accent); cursor:pointer; font-family:'Inter',sans-serif;}
+
+/* LAYOUT */
+.reel{display:flex; position:relative; z-index:2;}
+.reel-body{flex:1; min-width:0; padding:0 20px; position:relative; z-index:2;}
+
+/* FRAME LABEL */
+.frame-label{display:flex; align-items:baseline; gap:8px; padding:22px 0 12px;}
+.frame-num{font-size:10px; font-weight:600; color:var(--accent); font-family:'IBM Plex Mono',monospace; letter-spacing:.5px;}
+.frame-name{font-size:10px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+.frame-line{flex:1; height:1px; background:var(--border);}
 
 /* HERO */
-.hero { padding: 44px 22px 32px; }
-.eyebrow {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 10.5px; font-weight: 500; letter-spacing: 1.5px;
-  text-transform: uppercase; color: var(--red);
-  margin-bottom: 20px; font-family: 'IBM Plex Mono', monospace;
-}
-.eyebrow::before, .eyebrow::after { content: ''; width: 14px; height: 1px; background: var(--border2); }
-.eyebrow .edot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); flex-shrink:0; }
+.hero{padding-top:8px;}
+.hero-h1{font-size:28px; font-weight:700; line-height:1.15; letter-spacing:-.6px; margin-bottom:14px;}
+.hero-h1 em{font-style:normal; color:var(--accent);}
+.hero-sub{font-size:13px; color:var(--text-dim); line-height:1.7; margin-bottom:20px;}
+.hero-sub strong{color:var(--text); font-weight:600;}
 
-.hero-h1 {
-  font-size: 32px; font-weight: 700; line-height: 1.12;
-  letter-spacing: -0.8px; margin-bottom: 16px;
-}
-.hero-h1 em { font-style: normal; color: var(--red); }
-.hero-sub {
-  font-size: 14px; color: var(--sub); line-height: 1.7;
-  margin-bottom: 26px;
-}
-.hero-sub strong { color: var(--text); font-weight: 600; }
+.hero-input-wrap{display:flex; background:var(--s1); border:1px solid var(--border2); overflow:hidden;
+  margin-bottom:10px; transition:border-color .2s, box-shadow .2s;}
+.hero-input-wrap:focus-within{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-dim);}
+.hero-input{flex:1; padding:14px 14px; background:transparent; border:none; outline:none; color:var(--text);
+  font-size:12.5px; font-family:'IBM Plex Mono',monospace;}
+.hero-input::placeholder{color:var(--muted);}
+.hero-input-btn{padding:12px 16px; border:none; background:var(--accent); color:#fff; font-size:11px; font-weight:700;
+  letter-spacing:.4px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif; white-space:nowrap; transition:background .15s;}
+.hero-input-btn:hover{background:#e6342b;}
 
-.hero-input-wrap {
-  display: flex; background: var(--s1);
-  border: 1px solid var(--border2); border-radius: 6px; overflow: hidden;
-  margin-bottom: 12px; transition: border-color .2s, box-shadow .2s;
-}
-.hero-input-wrap:focus-within { border-color: var(--red); box-shadow: 0 0 0 3px rgba(255,59,48,0.12); }
-.hero-input {
-  flex: 1; padding: 15px 16px; background: transparent;
-  border: none; outline: none; color: var(--text);
-  font-size: 14px; font-family: 'Archivo', sans-serif;
-}
-.hero-input::placeholder { color: var(--muted); }
-.hero-input-btn {
-  padding: 12px 18px; border: none; background: var(--red);
-  color: #1a0a08; font-size: 12px; font-weight: 600;
-  letter-spacing: 0.5px; text-transform: uppercase;
-  cursor: pointer; font-family: 'Archivo', sans-serif;
-  white-space: nowrap; transition: opacity .2s;
-}
-.hero-input-btn:hover { opacity: .88; }
+.hero-or{text-align:center; color:var(--muted); font-size:10px; margin:10px 0; font-family:'IBM Plex Mono',monospace; letter-spacing:.5px; text-transform:uppercase;}
+.hero-upload{width:100%; padding:12px; border:1px solid var(--border2); background:transparent; color:var(--text-dim);
+  font-size:12px; font-weight:500; cursor:pointer; font-family:'Inter',sans-serif; transition:all .15s;
+  display:flex; align-items:center; justify-content:center; gap:8px;}
+.hero-upload:hover{border-color:var(--accent); color:var(--text);}
+.hero-upload svg{width:15px; height:15px;}
 
-.hero-or { text-align: center; color: var(--muted); font-size: 11px; margin: 10px 0; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; }
-.hero-upload {
-  width: 100%; padding: 13px; border: 1px solid var(--border2);
-  border-radius: 6px; background: transparent; color: var(--sub);
-  font-size: 12.5px; font-weight: 500; cursor: pointer;
-  font-family: 'Archivo', sans-serif; transition: all .2s;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.hero-upload:hover { border-color: var(--red); color: var(--text); }
-.hero-upload svg { width: 15px; height: 15px; }
+.trust-pills{display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:14px;}
+.trust-pill{display:flex; align-items:center; gap:5px; font-size:10.5px; font-weight:500; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
+.trust-pill svg{width:11px; height:11px; color:var(--accent);}
 
-.trust-pills { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 16px; }
-.trust-pill {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 11px; font-weight: 500; color: var(--sub);
-}
-.trust-pill svg { width: 12px; height: 12px; color: var(--red); }
+.demo-video-box{margin-top:16px; overflow:hidden; border:1px solid var(--border2); background:var(--s1);}
+.demo-video-box video{display:block; width:100%; height:auto;}
 
-.demo-video-box {
-  margin-top: 18px; border-radius: 10px; overflow: hidden;
-  border: 1px solid var(--border2); background: var(--s1);
-}
-.demo-video-box video { display: block; width: 100%; height: auto; }
-
-#previewBox {
-  display: none; margin-top: 16px;
-  background: var(--s1); border: 1px solid var(--border2);
-  border-radius: 10px; padding: 18px;
-}
-#previewBox h4 { font-size: 12px; font-weight: 600; margin-bottom: 10px; color: var(--sub); letter-spacing: 1px; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; }
-#previewText { font-size: 13px; color: var(--sub); line-height: 1.7; white-space: pre-wrap; }
-#loginSection { display: none; margin-top: 14px; }
-#dashboardSection { display: none; margin-top: 14px; }
-.lock-text { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
-#googleBtn {
-  width: 100%; padding: 13px; border: none; border-radius: 6px;
-  background: white; color: #333; font-size: 13px; font-weight: 600;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  gap: 8px; font-family: 'Archivo', sans-serif;
-}
-.g-logo { width: 16px; height: 16px; }
-.dash-btn {
-  width: 100%; padding: 13px; border: none; border-radius: 6px;
-  background: var(--red); color: #1a0a08; font-size: 13px; font-weight: 600;
-  letter-spacing: 0.4px; text-transform: uppercase;
-  cursor: pointer; font-family: 'Archivo', sans-serif;
-}
-
-/* PROCESSING (used while a clip request is queued before redirect) */
-.processing-box { text-align: center; padding: 24px 16px; }
-.processing-spinner {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: 3px solid var(--border2);
-  border-top-color: var(--red);
-  animation: spin 1s linear infinite;
-  margin: 0 auto 16px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.processing-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
-.processing-sub { font-size: 12px; color: var(--sub); line-height: 1.6; }
+/* PREVIEW / LOGIN / DASHBOARD PANELS */
+#previewBox{display:none; margin-top:14px; background:var(--s1); border:1px solid var(--border2); padding:16px; position:relative;}
+#previewBox h4{font-size:10px; font-weight:600; margin-bottom:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; font-family:'IBM Plex Mono',monospace;}
+#previewText{font-size:12px; color:var(--text-dim); line-height:1.7; white-space:pre-wrap; font-family:'IBM Plex Mono',monospace;}
+#loginSection{display:none; margin-top:14px;}
+#dashboardSection{display:none; margin-top:14px;}
+.lock-text{text-align:center; font-size:11px; color:var(--muted); margin-bottom:10px;}
+#googleBtn{width:100%; padding:12px; border:none; background:#fff; color:#333; font-size:12px; font-weight:600;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; font-family:'Inter',sans-serif;}
+.g-logo{width:15px; height:15px;}
+.dash-btn{width:100%; padding:12px; border:none; background:var(--accent); color:#fff; font-size:11.5px; font-weight:600;
+  letter-spacing:.4px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif;}
 
 /* LOGIN WALL FOR CLIPS */
-#clipLoginWall {
-  display: none; margin: 0 22px 24px;
-  background: var(--s1); border: 1px solid var(--border2);
-  border-radius: 10px; padding: 28px 20px; text-align: center;
-}
-#clipLoginWall h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
-#clipLoginWall p { font-size: 13px; color: var(--sub); margin-bottom: 20px; line-height: 1.6; }
-.clip-login-btn {
-  width: 100%; padding: 14px; border: none; border-radius: 6px;
-  background: var(--red); color: #1a0a08; font-size: 13px; font-weight: 600;
-  letter-spacing: 0.4px; text-transform: uppercase;
-  cursor: pointer; font-family: 'Archivo', sans-serif;
-}
-
-/* SEC LABEL */
-.sec-label {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 10.5px; font-weight: 500; letter-spacing: 1.5px;
-  text-transform: uppercase; color: var(--red); margin-bottom: 16px;
-  font-family: 'IBM Plex Mono', monospace;
-}
-.sec-label::before { content: ''; display: block; width: 14px; height: 1px; background: var(--border2); flex-shrink: 0; }
+#clipLoginWall{display:none; margin-top:16px; background:var(--s1); border:1px solid var(--border2); padding:24px 16px; text-align:center;}
+#clipLoginWall h3{font-size:15px; font-weight:600; margin-bottom:8px;}
+#clipLoginWall p{font-size:12px; color:var(--text-dim); margin-bottom:16px; line-height:1.6;}
+.clip-login-btn{width:100%; padding:13px; border:none; background:var(--accent); color:#fff; font-size:11.5px; font-weight:600;
+  letter-spacing:.4px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif;}
 
 /* TICKER */
-.ticker-wrap { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 10px 0; overflow: hidden; }
-.ticker { display: flex; gap: 32px; white-space: nowrap; animation: ticker 20s linear infinite; }
-@keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-.ticker-item {
-  font-size: 10.5px; font-weight: 500; letter-spacing: 1px;
-  text-transform: uppercase; color: var(--muted); flex-shrink: 0;
-  font-family: 'IBM Plex Mono', monospace;
-}
-.ticker-item span { color: var(--red); }
+.ticker-wrap{border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:10px 0; overflow:hidden; margin-top:24px;}
+.ticker{display:flex; gap:28px; white-space:nowrap; animation:tick 20s linear infinite;}
+@keyframes tick{from{transform:translateX(0)} to{transform:translateX(-50%)}}
+.ticker-item{font-size:9.5px; font-weight:500; letter-spacing:1px; text-transform:uppercase; color:var(--muted); flex-shrink:0; font-family:'IBM Plex Mono',monospace;}
+.ticker-item span{color:var(--accent);}
 
-/* STATS */
-.stats-section { padding: 36px 22px; }
-.stats-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  background: var(--s1); border: 1px solid var(--border);
-  border-radius: 10px; overflow: hidden;
-}
-.stat-box { padding: 22px 20px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-.stat-box:nth-child(2) { border-right: none; }
-.stat-box:nth-child(3) { border-bottom: none; }
-.stat-box:nth-child(4) { border-right: none; border-bottom: none; }
-.stat-num { font-size: 30px; font-weight: 700; letter-spacing: -1px; line-height: 1; margin-bottom: 4px; }
-.stat-num .accent { color: var(--red); }
-.stat-label { font-size: 10px; font-weight: 500; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
-.stat-5th { grid-column: 1 / -1; padding: 18px 20px; border-top: 1px solid var(--border); text-align: center; }
-.stat-5th .stat-num { font-size: 26px; }
+/* STAT STRIP */
+.stat-strip{display:flex; flex-wrap:wrap; border:1px solid var(--border); background:var(--s1); animation:frameIn .4s ease both;}
+.stat-cell{flex:1 1 50%; padding:16px 10px; text-align:center; border-right:1px solid var(--border); border-bottom:1px solid var(--border);}
+.stat-cell:nth-child(2n){border-right:none;}
+.stat-cell.full{flex:1 1 100%; border-right:none; border-bottom:none;}
+.stat-num{font-size:20px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--accent); letter-spacing:-.3px;}
+.stat-label{font-size:8.5px; font-weight:500; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); margin-top:4px; font-family:'IBM Plex Mono',monospace;}
 
-/* FEATURES */
-.features-section { padding: 0 22px 36px; }
-.feat-heading { font-size: 28px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.15; margin-bottom: 20px; }
-.feat-heading em { font-style: normal; color: var(--red); }
-.feat-sub { font-size: 14px; color: var(--sub); line-height: 1.6; margin-bottom: 22px; }
-.feat-cards { display: flex; flex-direction: column; gap: 10px; }
-.feat-card {
-  background: var(--s1); border: 1px solid var(--border);
-  border-radius: 10px; padding: 20px; transition: border-color .25s, transform .2s;
-  position: relative;
-}
-.feat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
-.feat-card.live { background: #131013; border-color: rgba(255,59,48,0.4); }
-.feat-num { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 12px; letter-spacing: 1px; }
-.feat-card.live .feat-num { color: var(--red); }
-.feat-card h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 8px; }
-.feat-card p { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 16px; }
-.feat-stats { display: flex; gap: 24px; }
-.feat-stat-num { font-size: 20px; font-weight: 700; color: var(--red); line-height: 1; }
-.feat-stat-label { font-size: 10px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 3px; font-family: 'IBM Plex Mono', monospace; }
+/* FEATURE CARDS */
+.feat-heading{font-size:24px; font-weight:700; letter-spacing:-.5px; line-height:1.2; margin-bottom:10px;}
+.feat-heading em{font-style:normal; color:var(--accent);}
+.feat-sub{font-size:12.5px; color:var(--text-dim); line-height:1.6; margin-bottom:16px;}
+.feat-cards{display:flex; flex-direction:column; gap:10px; animation:frameIn .4s ease both;}
+.feat-card{background:var(--s1); border:1px solid var(--border); padding:18px; position:relative; transition:border-color .2s;}
+.feat-card:hover{border-color:var(--border2);}
+.feat-card.live{background:var(--accent-dim); border-color:var(--accent);}
+.feat-num{font-size:9.5px; color:var(--muted); margin-bottom:10px; letter-spacing:1px;}
+.feat-card.live .feat-num{color:var(--accent);}
+.feat-card h3{font-size:15px; font-weight:700; letter-spacing:-.2px; margin-bottom:6px;}
+.feat-card p{font-size:12px; color:var(--text-dim); line-height:1.6; margin-bottom:14px;}
+.feat-stats{display:flex; gap:20px;}
+.feat-stat-num{font-size:17px; font-weight:700; color:var(--accent); line-height:1; font-family:'IBM Plex Mono',monospace;}
+.feat-stat-label{font-size:9px; font-weight:500; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); margin-top:3px; font-family:'IBM Plex Mono',monospace;}
 
-/* HOW IT WORKS */
-.how-section { padding: 0 22px 36px; }
-.how-heading { font-size: 28px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.15; margin-bottom: 6px; }
-.how-sub { font-size: 13px; color: var(--sub); margin-bottom: 24px; }
-.steps { display: flex; flex-direction: column; }
-.step { background: var(--s1); border: 1px solid var(--border); padding: 20px; border-bottom: none; position: relative; }
-.step:first-child { border-radius: 10px 10px 0 0; }
-.step:last-child { border-radius: 0 0 10px 10px; border-bottom: 1px solid var(--border); }
-.step-num-label { font-size: 10px; color: var(--muted); font-weight: 500; letter-spacing: 1.5px; margin-bottom: 14px; font-family: 'IBM Plex Mono', monospace; }
-.step-icon {
-  width: 38px; height: 38px; border-radius: 6px;
-  background: var(--s2); border: 1px solid var(--border2);
-  display: flex; align-items: center; justify-content: center; margin-bottom: 12px;
-}
-.step-icon svg { width: 17px; height: 17px; color: var(--red); }
-.step h4 { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; margin-bottom: 6px; }
-.step p { font-size: 13px; color: var(--sub); line-height: 1.6; }
+/* STEPS */
+.how-heading{font-size:24px; font-weight:700; letter-spacing:-.5px; line-height:1.2; margin-bottom:5px;}
+.how-sub{font-size:12px; color:var(--muted); margin-bottom:16px; font-family:'IBM Plex Mono',monospace;}
+.steps{display:flex; flex-direction:column; animation:frameIn .4s ease both;}
+.step{background:var(--s1); border:1px solid var(--border); padding:18px; border-bottom:none; position:relative;}
+.step:last-child{border-bottom:1px solid var(--border);}
+.step-num-label{font-size:9.5px; color:var(--accent); font-weight:600; letter-spacing:1.5px; margin-bottom:12px; font-family:'IBM Plex Mono',monospace;}
+.step-icon{width:36px; height:36px; background:var(--s2); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; margin-bottom:12px;}
+.step-icon svg{width:16px; height:16px; color:var(--accent);}
+.step h4{font-size:13.5px; font-weight:700; letter-spacing:-.1px; margin-bottom:5px;}
+.step p{font-size:11.5px; color:var(--text-dim); line-height:1.6;}
 
 /* PLATFORMS */
-.platforms-section { padding: 0 22px 36px; }
-.platforms-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-.p-icon {
-  width: 46px; height: 46px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center; transition: transform .2s;
-}
-.p-icon:hover { transform: translateY(-2px); }
-.p-icon img { width: 20px; height: 20px; }
+.platforms-row{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:4px;}
+.p-icon{width:42px; height:42px; display:flex; align-items:center; justify-content:center; transition:transform .15s; border:1px solid var(--border2);}
+.p-icon:hover{transform:translateY(-2px);}
+.p-icon img{width:18px; height:18px;}
 
 /* CTA */
-.cta-section {
-  margin: 0 22px 36px;
-  background: var(--s1); border: 1px solid var(--border2);
-  border-radius: 12px; padding: 32px 22px; text-align: center;
-}
-.cta-h { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 10px; }
-.cta-p { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 22px; }
-.cta-btn {
-  width: 100%; padding: 15px; border: none; border-radius: 6px;
-  background: var(--red); color: #1a0a08; font-size: 13.5px; font-weight: 600;
-  letter-spacing: 0.5px; text-transform: uppercase;
-  cursor: pointer; font-family: 'Archivo', sans-serif;
-  transition: opacity .2s;
-}
-.cta-btn:hover { opacity: 0.88; }
-.cta-btn-outline {
-  width: 100%; margin-top: 10px; padding: 15px; border-radius: 6px;
-  background: transparent; border: 1px solid var(--border2); color: var(--sub);
-  font-size: 13.5px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
-  cursor: pointer; font-family: 'Archivo', sans-serif; transition: all .2s;
-}
-.cta-btn-outline:hover { color: var(--text); border-color: var(--red); }
+.cta-section{margin-top:22px; background:var(--s1); border:1px solid var(--border2); padding:28px 20px; text-align:center; animation:frameIn .4s ease both;}
+.cta-h{font-size:19px; font-weight:700; letter-spacing:-.3px; margin-bottom:8px;}
+.cta-p{font-size:12px; color:var(--text-dim); line-height:1.6; margin-bottom:18px;}
+.cta-btn{width:100%; padding:14px; border:none; background:var(--accent); color:#fff; font-size:12px; font-weight:600;
+  letter-spacing:.4px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif; transition:background .15s;}
+.cta-btn:hover{background:#e6342b;}
+.cta-btn-outline{width:100%; margin-top:9px; padding:14px; background:transparent; border:1px solid var(--border2); color:var(--text-dim);
+  font-size:12px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif; transition:all .15s;}
+.cta-btn-outline:hover{color:var(--text); border-color:var(--accent);}
 
-#clipPage { display: none; }
+#clipPage{display:none;}
 
-/* Plans (teaser — full detail lives on /pricing.html) */
-.plans-section { padding: 0 22px 36px; }
-.plans-grid { display: flex; flex-direction: column; gap: 10px; }
-.plan-card { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 20px; position: relative; }
-.plan-card.popular { background: #131013; border-color: rgba(255,59,48,0.4); }
-.plan-badge {
-  position: absolute; top: -10px; left: 18px;
-  background: var(--red); color: #1a0a08;
-  font-size: 9px; font-weight: 600; letter-spacing: 1.2px;
-  text-transform: uppercase; padding: 3px 9px;
-  border-radius: 2px; font-family: 'IBM Plex Mono', monospace;
-}
-.plan-name { font-size: 12px; font-weight: 600; color: var(--sub); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-.plan-price { font-size: 26px; font-weight: 700; letter-spacing: -0.8px; margin-bottom: 4px; }
-.plan-price span { font-size: 13px; font-weight: 500; color: var(--muted); }
-.plan-desc { font-size: 12px; color: var(--sub); margin-bottom: 14px; line-height: 1.5; }
-.plan-features { display: flex; flex-direction: column; gap: 7px; }
-.plan-feat { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--sub); font-weight: 400; }
-.plan-feat svg { width: 12px; height: 12px; color: var(--red); flex-shrink: 0; }
-.plan-cta {
-  width: 100%; margin-top: 16px; padding: 12px; border: none;
-  border-radius: 4px; background: transparent; border: 1px solid var(--border2);
-  color: var(--sub); font-size: 12.5px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
-  cursor: pointer; font-family: 'Archivo', sans-serif; transition: all .2s;
-}
-.plan-cta:hover { border-color: var(--red); color: var(--text); }
-.plan-cta-primary { background: var(--red); color: #1a0a08; border: none; }
-.plan-cta-primary:hover { opacity: 0.88; color: #1a0a08; }
+/* PLANS */
+.plans-grid{display:flex; flex-direction:column; gap:10px; animation:frameIn .4s ease both;}
+.plan-card{background:var(--s1); border:1px solid var(--border); padding:18px; position:relative;}
+.plan-card.popular{background:var(--accent-dim); border-color:var(--accent);}
+.plan-badge{position:absolute; top:-1px; right:-1px; background:var(--accent); color:#fff; font-size:8.5px; font-weight:700;
+  letter-spacing:1px; text-transform:uppercase; padding:4px 9px; font-family:'IBM Plex Mono',monospace;}
+.plan-name{font-size:10.5px; font-weight:600; color:var(--muted); letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; font-family:'IBM Plex Mono',monospace;}
+.plan-price{font-size:22px; font-weight:700; letter-spacing:-.5px; margin-bottom:4px; font-family:'IBM Plex Mono',monospace;}
+.plan-price span{font-size:11px; font-weight:500; color:var(--muted);}
+.plan-desc{font-size:11.5px; color:var(--text-dim); margin-bottom:14px; line-height:1.5;}
+.plan-features{display:flex; flex-direction:column; gap:7px;}
+.plan-feat{display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--text-dim);}
+.plan-feat svg{width:11px; height:11px; color:var(--accent); flex-shrink:0;}
+.plan-cta{width:100%; margin-top:16px; padding:11px; border:1px solid var(--border2); background:transparent; color:var(--text-dim);
+  font-size:11px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif; transition:all .15s;}
+.plan-cta:hover{border-color:var(--accent); color:var(--text);}
+.plan-cta-primary{background:var(--accent); color:#fff; border:none;}
+.plan-cta-primary:hover{background:#e6342b; color:#fff;}
 
-/* Testimonials */
-.testimonials-section { padding: 0 22px 36px; }
-.testi-cards { display: flex; flex-direction: column; gap: 10px; }
-.testi-card { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
-.testi-stars { color: var(--red); font-size: 12px; margin-bottom: 10px; letter-spacing: 2px; }
-.testi-text { font-size: 13px; color: var(--sub); line-height: 1.7; margin-bottom: 12px; }
-.testi-author { display: flex; align-items: center; gap: 10px; }
-.testi-avatar {
-  width: 30px; height: 30px; border-radius: 4px;
-  background: var(--s2); border: 1px solid var(--border2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 700; color: var(--red); flex-shrink: 0;
-  font-family: 'IBM Plex Mono', monospace;
-}
-.testi-name { font-size: 13px; font-weight: 600; }
-.testi-handle { font-size: 11px; color: var(--muted); }
+/* TESTIMONIALS */
+.testi-grid{display:flex; flex-direction:column; gap:10px; animation:frameIn .4s ease both;}
+.testi-card{background:var(--s1); border:1px solid var(--border); padding:16px;}
+.testi-stars{color:var(--accent); font-size:12px; margin-bottom:8px; letter-spacing:2px;}
+.testi-quote{font-size:12.5px; color:var(--text-dim); line-height:1.65; margin-bottom:12px;}
+.testi-person{display:flex; align-items:center; gap:9px;}
+.testi-avatar{width:28px; height:28px; border-radius:50%; background:var(--s2); border:1px solid var(--border2);
+  display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:var(--accent); flex-shrink:0; font-family:'IBM Plex Mono',monospace;}
+.testi-name{font-size:11.5px; font-weight:600; color:var(--text);}
+.testi-role{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
 
-footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
-.foot-logo { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
-.foot-logo .fdot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
-.foot-tag { font-size: 11px; color: var(--muted); margin-bottom: 20px; font-family: 'IBM Plex Mono', monospace; }
-.foot-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 20px; }
-.foot-links a { color: var(--muted); font-size: 12px; text-decoration: none; transition: color .2s; }
-.foot-links a:hover { color: var(--sub); }
-.foot-sep { height: 1px; background: var(--border); margin-bottom: 16px; }
-.foot-copy { font-size: 11px; color: var(--muted); text-align: center; font-family: 'IBM Plex Mono', monospace; }
+/* USE CASES */
+.usecase-grid{display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; animation:frameIn .4s ease both; scrollbar-width:none;}
+.usecase-grid::-webkit-scrollbar{display:none;}
+.usecase-card{flex:0 0 150px; background:var(--s1); border:1px solid var(--border); padding:16px;}
+.usecase-icon{width:30px; height:30px; margin-bottom:12px; color:var(--accent);}
+.usecase-icon svg{width:100%; height:100%;}
+.usecase-card h4{font-size:12.5px; font-weight:700; margin-bottom:5px;}
+.usecase-card p{font-size:11px; color:var(--text-dim); line-height:1.5;}
 
-/* CAPTION STYLES */
-.caption-heading { font-size: 26px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.15; margin-bottom: 14px; }
-.caption-heading em { font-style: normal; color: var(--red); }
-.caption-sub { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 20px; }
+/* COMPARISON TABLE */
+.compare-table{width:100%; border-collapse:collapse; border:1px solid var(--border); font-size:11.5px; animation:frameIn .4s ease both;}
+.compare-table th,.compare-table td{padding:11px 8px; text-align:center; border-bottom:1px solid var(--border); border-right:1px solid var(--border);}
+.compare-table th:last-child,.compare-table td:last-child{border-right:none;}
+.compare-table th{background:var(--s1); font-size:9.5px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); font-family:'IBM Plex Mono',monospace; font-weight:600;}
+.compare-table td:first-child,.compare-table th:first-child{text-align:left; font-weight:600; color:var(--text-dim);}
+.compare-table .col-us{background:var(--accent-dim); color:var(--text); font-weight:700;}
+.compare-table svg{width:12px; height:12px; color:var(--accent);}
+.compare-table .no-mark{color:var(--muted); font-size:13px;}
 
-.marquee-wrap {
-  position: relative; overflow: hidden; margin-bottom: 10px;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-}
-.marquee-track { display: flex; gap: 12px; width: max-content; animation: scrollLeft 26s linear infinite; }
-.marquee-track.reverse { animation: scrollRight 26s linear infinite; }
-@keyframes scrollLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@keyframes scrollRight { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+/* FAQ */
+.faq-list{display:flex; flex-direction:column; gap:8px; animation:frameIn .4s ease both;}
+.faq-item{background:var(--s1); border:1px solid var(--border);}
+.faq-q{width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:15px 16px;
+  background:none; border:none; color:var(--text); font-size:12.5px; font-weight:600; text-align:left; cursor:pointer; font-family:'Inter',sans-serif;}
+.faq-q svg{width:14px; height:14px; flex-shrink:0; color:var(--accent); transition:transform .2s;}
+.faq-item.open .faq-q svg{transform:rotate(45deg);}
+.faq-a{max-height:0; overflow:hidden; transition:max-height .25s ease, padding .25s ease;}
+.faq-item.open .faq-a{max-height:220px;}
+.faq-a p{padding:0 16px 15px; font-size:12px; color:var(--text-dim); line-height:1.65;}
 
-.caption-card { flex-shrink: 0; width: 128px; border-radius: 8px; overflow: hidden; background: var(--s1); border: 1px solid var(--border); }
-.caption-preview {
-  height: 96px; background: #000; display: flex; align-items: center; justify-content: center; padding: 8px;
-}
-.caption-preview span { font-size: 12.5px; font-weight: 700; letter-spacing: -0.2px; text-align: center; color: #fff; }
-.caption-label-bar { display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 8px 10px; background: var(--s2); border-top: 1px solid var(--border); }
-.caption-name { font-size: 9.5px; font-weight: 600; color: var(--text); letter-spacing: 0.2px; }
-.style-outline span { color: transparent; -webkit-text-stroke: 1.3px #fff; }
-.style-red span { color: #fff; text-shadow: 0 0 10px var(--red), 0 0 20px var(--red); }
-.style-boxed span { background: #fff; color: #0e0d10; padding: 4px 9px; border-radius: 3px; font-size: 11px; }
-.style-mono span { color: #fff; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.5px; font-size: 11px; }
-.style-classic span { color: #fff; -webkit-text-stroke: 2px #000; paint-order: stroke fill; font-size: 14px; }
-.style-highlight span { background: var(--red); color: #1a0a08; padding: 4px 8px; border-radius: 3px; font-size: 11px; }
-.style-karaoke span { color: var(--muted); }
-.style-karaoke .filled { color: var(--red); }
-.style-minimal span { color: #fff; background: rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 4px; font-size: 11px; }
-.style-bounce span { color: #fff; display: inline-block; animation: bouncePreview 1.2s ease-in-out infinite; }
-@keyframes bouncePreview { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-.style-shake span { color: #fff; display: inline-block; animation: shakePreview 0.35s ease-in-out infinite; }
-@keyframes shakePreview { 0%, 100% { transform: rotate(-1.5deg); } 50% { transform: rotate(1.5deg); } }
+/* BLOG TEASER */
+.blog-grid{display:flex; flex-direction:column; gap:10px; animation:frameIn .4s ease both;}
+.blog-card{display:flex; gap:12px; background:var(--s1); border:1px solid var(--border); padding:14px; text-decoration:none; transition:border-color .2s;}
+.blog-card:hover{border-color:var(--border2);}
+.blog-thumb{width:52px; height:52px; flex-shrink:0; background:var(--s2); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center;}
+.blog-tag{font-size:9px; color:var(--accent); font-weight:600; letter-spacing:.6px; text-transform:uppercase; margin-bottom:4px; font-family:'IBM Plex Mono',monospace;}
+.blog-card h4{font-size:12.5px; font-weight:700; color:var(--text); margin-bottom:3px; line-height:1.3;}
+.blog-card p{font-size:11px; color:var(--muted); line-height:1.4;}
 
-.caption-cta {
-  margin-top: 6px; padding: 14px 16px;
-  background: var(--s1); border: 1px dashed var(--border2);
-  border-radius: 8px; display: flex; align-items: center; gap: 12px;
-}
-.caption-cta-icon { width: 36px; height: 36px; border-radius: 6px; flex-shrink: 0; background: var(--s2); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; }
-.caption-cta-icon svg { width: 17px; height: 17px; color: var(--red); }
-.caption-cta-text h4 { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
-.caption-cta-text p { font-size: 11.5px; color: var(--sub); line-height: 1.4; }
+/* STICKY MOBILE CTA */
+.sticky-cta{position:fixed; left:0; right:0; bottom:0; z-index:900; max-width:480px; margin:0 auto;
+  background:rgba(10,10,11,.96); backdrop-filter:blur(14px); border-top:1px solid var(--border);
+  padding:10px 16px; display:none; align-items:center; justify-content:space-between; gap:10px;
+  transform:translateY(100%); transition:transform .25s ease;}
+.sticky-cta.show{display:flex; transform:translateY(0);}
+.sticky-cta span{font-size:11.5px; font-weight:600; color:var(--text-dim);}
+.sticky-cta button{padding:10px 16px; border:none; background:var(--accent); color:#fff; font-size:11px; font-weight:700;
+  letter-spacing:.4px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif; white-space:nowrap;}
+
+/* PRODUCT MOCKUP — TRANSCRIPT */
+.mockup-box{margin-top:16px; border:1px solid var(--border2); background:var(--s1); overflow:hidden; animation:frameIn .4s ease both;}
+.mockup-bar{display:flex; align-items:center; gap:6px; padding:10px 12px; background:var(--s2); border-bottom:1px solid var(--border);}
+.mockup-dot{width:7px; height:7px; border-radius:50%; background:var(--border2);}
+.mockup-url{flex:1; text-align:center; font-size:9.5px; color:var(--muted); font-family:'IBM Plex Mono',monospace; letter-spacing:.3px;}
+.mockup-body{padding:16px;}
+.mockup-line{display:flex; gap:10px; margin-bottom:12px; align-items:baseline;}
+.mockup-line:last-child{margin-bottom:0;}
+.mockup-time{font-size:10px; color:var(--accent); font-family:'IBM Plex Mono',monospace; flex-shrink:0; width:38px;}
+.mockup-text{font-size:12px; color:var(--text-dim); line-height:1.6;}
+.mockup-text b{color:var(--text); font-weight:600;}
+
+/* PRODUCT MOCKUP — CLIPS GRID */
+.clips-mockup{display:flex; gap:8px; margin-top:16px; animation:frameIn .4s ease both;}
+.clip-thumb{flex:1; aspect-ratio:9/16; background:linear-gradient(160deg,#1a1a1d,#0a0a0b); border:1px solid var(--border2);
+  position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; padding:8px;}
+.clip-thumb::before{content:''; position:absolute; inset:0; background:
+  repeating-linear-gradient(120deg, rgba(255,59,48,.06) 0 2px, transparent 2px 14px);}
+.clip-dur{position:absolute; top:6px; right:6px; background:rgba(0,0,0,.7); color:#fff; font-size:8px; font-weight:600;
+  padding:2px 5px; font-family:'IBM Plex Mono',monospace; z-index:1;}
+.clip-cap{position:relative; z-index:1; font-size:9px; font-weight:800; color:#fff; text-align:center;
+  text-shadow:0 0 6px var(--accent); line-height:1.3;}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border); padding:22px 0 66px;}
+.foot-logo{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; display:flex; align-items:center; gap:9px; margin-bottom:4px;}
+.foot-logo .mark{width:5px; height:5px; background:var(--accent);}
+.foot-tag{font-size:10px; color:var(--muted); margin-bottom:14px; font-family:'IBM Plex Mono',monospace;}
+.foot-links{display:flex; flex-wrap:wrap; gap:6px 14px; margin-bottom:14px;}
+.foot-links a{color:var(--muted); font-size:11px; text-decoration:none; transition:color .2s;}
+.foot-links a:hover{color:var(--text-dim);}
+.foot-copy{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+
+/* CAPTION MARQUEE */
+.caption-heading{font-size:22px; font-weight:700; letter-spacing:-.5px; line-height:1.2; margin-bottom:10px;}
+.caption-heading em{font-style:normal; color:var(--accent);}
+.caption-sub{font-size:12px; color:var(--text-dim); line-height:1.6; margin-bottom:16px;}
+.marquee-wrap{position:relative; overflow:hidden; margin-bottom:8px;
+  -webkit-mask-image:linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image:linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);}
+.marquee-track{display:flex; gap:10px; width:max-content; animation:scrollLeft 26s linear infinite;}
+.marquee-track.reverse{animation:scrollRight 26s linear infinite;}
+@keyframes scrollLeft{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+@keyframes scrollRight{from{transform:translateX(-50%);}to{transform:translateX(0);}}
+.caption-card{flex-shrink:0; width:118px; overflow:hidden; background:var(--s1); border:1px solid var(--border);}
+.caption-preview{height:88px; background:#000; display:flex; align-items:center; justify-content:center; padding:8px;}
+.caption-preview span{font-size:11.5px; font-weight:800; letter-spacing:-.2px; text-align:center; color:#fff;}
+.caption-label-bar{display:flex; align-items:center; justify-content:center; padding:7px 8px; background:var(--s2); border-top:1px solid var(--border);}
+.caption-name{font-size:8.5px; font-weight:600; color:var(--text-dim); letter-spacing:.3px; text-transform:uppercase; font-family:'IBM Plex Mono',monospace;}
+.style-outline span{color:transparent; -webkit-text-stroke:1.2px #fff;}
+.style-red span{color:#fff; text-shadow:0 0 8px var(--accent), 0 0 16px var(--accent);}
+.style-boxed span{background:#fff; color:#0a0a0b; padding:3px 7px; font-size:10px;}
+.style-mono span{color:#fff; font-family:'IBM Plex Mono',monospace; letter-spacing:.4px; font-size:10px;}
+.style-classic span{color:#fff; -webkit-text-stroke:1.6px #000; paint-order:stroke fill; font-size:12.5px;}
+.style-highlight span{background:var(--accent); color:#fff; padding:3px 7px; font-size:10px;}
+.style-karaoke span{color:var(--muted);}
+.style-karaoke .filled{color:var(--accent);}
+.style-minimal span{color:#fff; background:rgba(255,255,255,.08); padding:3px 7px; font-size:10px;}
+.style-bounce span{color:#fff; display:inline-block; animation:bouncePreview 1.2s ease-in-out infinite;}
+@keyframes bouncePreview{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.style-shake span{color:#fff; display:inline-block; animation:shakePreview .35s ease-in-out infinite;}
+@keyframes shakePreview{0%,100%{transform:rotate(-1.5deg);}50%{transform:rotate(1.5deg);}}
+
+.caption-cta{margin-top:4px; padding:14px; background:var(--s1); border:1px dashed var(--border2); display:flex; align-items:center; gap:12px;}
+.caption-cta-icon{width:34px; height:34px; flex-shrink:0; background:var(--s2); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center;}
+.caption-cta-icon svg{width:16px; height:16px; color:var(--accent);}
+.caption-cta-text h4{font-size:12.5px; font-weight:700; margin-bottom:2px;}
+.caption-cta-text p{font-size:11px; color:var(--text-dim); line-height:1.4;}
 
 /* ══════════════════════════════════════════════
    RESPONSIVE — DESKTOP / TABLET
-   Mobile layout above is untouched (default / min-width:0).
-   These rules only kick in on wider viewports.
 ═══════════════════════════════════════════════ */
 @media (min-width: 700px) {
   body { max-width: 980px; }
+  .reel-body { padding: 0 32px; }
 
-  .hero-h1 { font-size: 44px; }
-  .feat-heading, .how-heading, .caption-heading { font-size: 34px; }
+  .hero-h1 { font-size: 42px; }
+  .feat-heading, .how-heading, .caption-heading { font-size: 32px; }
 
-  .stats-grid { grid-template-columns: repeat(4, 1fr); }
-  .stat-box:nth-child(3) { border-bottom: 1px solid var(--border); }
-  .stat-box:nth-child(4) { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-  .stat-box:nth-last-child(1):nth-child(4) { border-right: none; }
+  .stat-cell { flex: 1 1 0; border-bottom: none !important; }
+  .stat-cell.full { flex: 1 1 0; }
 
   .feat-cards { flex-direction: row; }
   .feat-card { flex: 1; }
 
-  .steps { flex-direction: row; gap: 12px; }
-  .step { border-radius: 10px !important; border-bottom: 1px solid var(--border) !important; flex: 1; }
+  .steps { flex-direction: row; gap: 10px; }
+  .step { border-bottom: 1px solid var(--border) !important; flex: 1; }
 
   .plans-grid { flex-direction: row; }
   .plan-card { flex: 1; }
 
-  .testi-cards { flex-direction: row; flex-wrap: wrap; }
-  .testi-card { flex: 1 1 260px; }
-
-  .hero, .features-section, .how-section, .platforms-section, .cta-section,
-  .stats-section, .plans-section, .testimonials-section { padding-left: 32px; padding-right: 32px; }
-  .cta-section, #clipLoginWall { margin-left: 32px; margin-right: 32px; }
-
   .cta-btn, .cta-btn-outline, .clip-login-btn { max-width: 340px; margin-left: auto; margin-right: auto; display: block; }
 }
 
-@media (min-width: 1100px) {
-  body { max-width: 1120px; }
+@media (min-width: 1000px) {
+  body { max-width: 1040px; }
+  .reel-body { padding: 0 40px; }
 }
 </style>
 </head>
@@ -468,40 +412,45 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
 
 <!-- NAV -->
 <nav class="nav">
-  <div class="nav-logo"><span class="ndot"></span>ReelScribe</div>
+  <div class="nav-logo"><span class="mark"></span>ReelScribe</div>
   <div class="nav-toggle">
     <button class="nav-btn active" id="btnT" onclick="switchMode('transcript')">Transcript</button>
     <button class="nav-btn" id="btnC" onclick="switchMode('clips')">Cut Clips</button>
   </div>
-  <button class="nav-menu" onclick="openMenu()" aria-label="Open menu">☰</button>
+  <button class="nav-menu" onclick="openMenu()" aria-label="Open menu">≡</button>
 </nav>
 
 <!-- MENU -->
 <div class="menu-overlay" id="menuOverlay">
   <div class="menu-box" id="menuBox">
+    <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
     <div class="menu-top">
-      <div class="nav-logo"><span class="ndot"></span>ReelScribe</div>
+      <div class="nav-logo"><span class="mark"></span>ReelScribe</div>
       <button class="menu-close" onclick="closeMenu()" aria-label="Close menu">✕</button>
     </div>
     <a href="/">Home</a>
     <a href="/pricing.html">Pricing</a>
+    <a href="/contact.html">Support</a>
     <a href="/dashboard.html" id="menuDashTranscript" style="display:none;">Transcription Dashboard</a>
     <a href="/clips-dashboard.html" id="menuDashClips" style="display:none;">Clips Dashboard</a>
     <button class="menu-cta" id="menuLoginBtn" onclick="window.location.href='/login.html'">Login →</button>
-    <button class="menu-cta" id="menuLogoutBtn" style="display:none; background:var(--s2); border:1px solid var(--border2); color:var(--sub);" onclick="logout()">Logout →</button>
+    <button class="menu-cta" id="menuLogoutBtn" style="display:none; background:var(--s2); border:1px solid var(--border2); color:var(--text-dim);" onclick="logout()">Logout →</button>
   </div>
 </div>
+
+<div class="reel">
+  <div class="reel-body">
 
 <!-- TRANSCRIPT PAGE -->
 <div id="transcriptPage">
   <div class="hero">
-    <div class="eyebrow"><span class="edot"></span> AI Powered · Free to Start</div>
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">AI Powered · Free To Start</span><span class="frame-line"></span></div>
     <h1 class="hero-h1">Turn any video into a <em>viral script.</em></h1>
     <p class="hero-sub">ReelScribe <strong>instantly extracts transcripts</strong> from any video. Study hooks, discover scripts, and create better content — in seconds.</p>
 
     <div class="hero-input-wrap">
-      <svg style="width:16px;height:16px;color:var(--muted);margin:auto 0 auto 14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-      <input class="hero-input" type="url" id="videoUrl" placeholder="Paste Instagram, YouTube, TikTok URL...">
+      <svg style="width:15px;height:15px;color:var(--muted);margin:auto 0 auto 14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <input class="hero-input" type="url" id="videoUrl" placeholder="youtube.com / instagram.com / tiktok.com ...">
       <button class="hero-input-btn" onclick="transcribeVideo()">Get Transcript</button>
     </div>
 
@@ -518,12 +467,22 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
       <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Free to start</span>
     </div>
 
+    <div class="mockup-box" aria-hidden="true">
+      <div class="mockup-bar"><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-url">reelscribe.site/transcript</span></div>
+      <div class="mockup-body">
+        <div class="mockup-line"><span class="mockup-time">00:04</span><span class="mockup-text">So <b>nobody tells you this</b> when you start posting online —</span></div>
+        <div class="mockup-line"><span class="mockup-time">00:09</span><span class="mockup-text">the first three seconds decide if someone <b>keeps watching.</b></span></div>
+        <div class="mockup-line"><span class="mockup-time">00:14</span><span class="mockup-text">That's the hook. Everything after that is just <b>delivery.</b></span></div>
+      </div>
+    </div>
+
     <div id="previewBox">
+      <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
       <h4>Transcript Preview</h4>
       <div id="previewText"></div>
       <div id="loginSection">
         <div style="height:1px;background:var(--border);margin:14px 0;"></div>
-        <p class="lock-text">🔒 Login to unlock full transcript</p>
+        <p class="lock-text">Login to unlock the full transcript</p>
         <button id="googleBtn" onclick="googleLogin()">
           <svg class="g-logo" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
           Continue with Google
@@ -531,7 +490,7 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
       </div>
       <div id="dashboardSection">
         <div style="height:1px;background:var(--border);margin:14px 0;"></div>
-        <p class="lock-text">✅ Logged in! View full transcript on Dashboard.</p>
+        <p class="lock-text">Logged in — view the full transcript on your Dashboard.</p>
         <button class="dash-btn" onclick="window.location.href='/dashboard.html'">Go to Dashboard →</button>
       </div>
     </div>
@@ -552,78 +511,135 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
     </div>
   </div>
 
-  <div class="stats-section">
-    <div class="sec-label">Numbers</div>
-    <div class="stats-grid">
-      <div class="stat-box"><div class="stat-num">12K<span class="accent">+</span></div><div class="stat-label">Transcripts Generated</div></div>
-      <div class="stat-box"><div class="stat-num">50<span class="accent">+</span></div><div class="stat-label">Languages</div></div>
-      <div class="stat-box"><div class="stat-num">4.9<span class="accent">★</span></div><div class="stat-label">User Rating</div></div>
-      <div class="stat-box"><div class="stat-num">10<span class="accent">x</span></div><div class="stat-label">Faster Than Manual</div></div>
-      <div class="stat-5th"><div class="stat-num">₹149<span class="accent">/mo</span></div><div class="stat-label">Starting Price — 5x cheaper than competitors</div></div>
-    </div>
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Numbers</span><span class="frame-line"></span></div>
+  <div class="stat-strip">
+    <div class="stat-cell"><div class="stat-num">12K+</div><div class="stat-label">Transcripts Generated</div></div>
+    <div class="stat-cell"><div class="stat-num">50+</div><div class="stat-label">Languages</div></div>
+    <div class="stat-cell"><div class="stat-num">4.9★</div><div class="stat-label">User Rating</div></div>
+    <div class="stat-cell"><div class="stat-num">10x</div><div class="stat-label">Faster Than Manual</div></div>
+    <div class="stat-cell full"><div class="stat-num">₹149/mo</div><div class="stat-label">Starting Price — 5x cheaper than competitors</div></div>
   </div>
 
-  <div class="features-section">
-    <div class="sec-label">Everything You Need</div>
-    <h2 class="feat-heading">Two engines.<br>One <em>platform.</em></h2>
-    <p class="feat-sub">Transcribe any video instantly. Cut viral clips automatically. All in one place.</p>
-    <div class="feat-cards">
-      <div class="feat-card">
-        <div class="feat-num mono">01 — TRANSCRIPT</div>
-        <h3>Extract Any Script</h3>
-        <p>Paste a link or upload a file. ReelScribe transcribes speech with high accuracy — study viral hooks, discover what works, repurpose content.</p>
-        <div class="feat-stats">
-          <div><div class="feat-stat-num">50+</div><div class="feat-stat-label">Languages</div></div>
-          <div><div class="feat-stat-num">~5s</div><div class="feat-stat-label">Avg Speed</div></div>
-        </div>
+  <div class="frame-label"><span class="frame-num">01</span><span class="frame-name">Everything You Need</span><span class="frame-line"></span></div>
+  <h2 class="feat-heading">Two engines.<br>One <em>platform.</em></h2>
+  <p class="feat-sub">Transcribe any video instantly. Cut viral clips automatically. All in one place.</p>
+  <div class="feat-cards">
+    <div class="feat-card">
+      <div class="feat-num mono">01 — TRANSCRIPT</div>
+      <h3>Extract Any Script</h3>
+      <p>Paste a link or upload a file. ReelScribe transcribes speech with high accuracy — study viral hooks, discover what works, repurpose content.</p>
+      <div class="feat-stats">
+        <div><div class="feat-stat-num">50+</div><div class="feat-stat-label">Languages</div></div>
+        <div><div class="feat-stat-num">~5s</div><div class="feat-stat-label">Avg Speed</div></div>
       </div>
-      <div class="feat-card live">
-        <div class="feat-num mono">02 — CLIPPING · LIVE</div>
-        <h3>Cut Clips Automatically</h3>
-        <p>Paste a YouTube link. AI finds the best moments and cuts 5–12 ready-to-post vertical clips. No timeline editing required.</p>
-        <div class="feat-stats">
-          <div><div class="feat-stat-num">5–12</div><div class="feat-stat-label">Clips Per Video</div></div>
-          <div><div class="feat-stat-num">Auto</div><div class="feat-stat-label">Delete After 24h</div></div>
-        </div>
+    </div>
+    <div class="feat-card live">
+      <div class="feat-num mono">02 — CLIPPING · LIVE</div>
+      <h3>Cut Clips Automatically</h3>
+      <p>Paste a YouTube link. AI finds the best moments and cuts 5–12 ready-to-post vertical clips. No timeline editing required.</p>
+      <div class="feat-stats">
+        <div><div class="feat-stat-num">5–12</div><div class="feat-stat-label">Clips Per Video</div></div>
+        <div><div class="feat-stat-num">Auto</div><div class="feat-stat-label">Delete After 24h</div></div>
       </div>
     </div>
   </div>
 
-  <div class="how-section">
-    <div class="sec-label">Process</div>
-    <h2 class="how-heading">How ReelScribe Works</h2>
-    <p class="how-sub">Paste to published — three steps.</p>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num-label">01</div>
-        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
-        <h4>Paste or Upload</h4>
-        <p>Drop any public video URL or upload a file directly from your device.</p>
-      </div>
-      <div class="step">
-        <div class="step-num-label">02</div>
-        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-        <h4>AI Processes</h4>
-        <p>Our AI engine automatically extracts and transcribes all speech in seconds.</p>
-      </div>
-      <div class="step">
-        <div class="step-num-label">03</div>
-        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
-        <h4>Get Your Transcript</h4>
-        <p>Receive a clean, accurate transcript — ready to copy or repurpose.</p>
-      </div>
+  <div class="frame-label"><span class="frame-num">02</span><span class="frame-name">Process</span><span class="frame-line"></span></div>
+  <h2 class="how-heading">How ReelScribe Works</h2>
+  <p class="how-sub">Paste to published — three steps.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num-label">01</div>
+      <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+      <h4>Paste or Upload</h4>
+      <p>Drop any public video URL or upload a file directly from your device.</p>
+    </div>
+    <div class="step">
+      <div class="step-num-label">02</div>
+      <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+      <h4>AI Processes</h4>
+      <p>Our AI engine automatically extracts and transcribes all speech in seconds.</p>
+    </div>
+    <div class="step">
+      <div class="step-num-label">03</div>
+      <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+      <h4>Get Your Transcript</h4>
+      <p>Receive a clean, accurate transcript — ready to copy or repurpose.</p>
     </div>
   </div>
 
-  <div class="platforms-section">
-    <div class="sec-label">Supported Platforms</div>
-    <div class="platforms-row">
-      <div class="p-icon" style="background:#fff;"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg" alt="YouTube"></div>
-      <div class="p-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);"><img style="filter:brightness(0) invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram"></div>
-      <div class="p-icon" style="background:#000;"><img style="filter:invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" alt="TikTok"></div>
-      <div class="p-icon" style="background:#000;"><img style="filter:invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" alt="X"></div>
-      <div class="p-icon" style="background:#1877F2;"><img style="filter:brightness(0) invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" alt="Facebook"></div>
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Supported Platforms</span><span class="frame-line"></span></div>
+  <div class="platforms-row">
+    <div class="p-icon" style="background:#fff;"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg" alt="YouTube"></div>
+    <div class="p-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);"><img style="filter:brightness(0) invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram"></div>
+    <div class="p-icon" style="background:#000;"><img style="filter:invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" alt="TikTok"></div>
+    <div class="p-icon" style="background:#000;"><img style="filter:invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" alt="X"></div>
+    <div class="p-icon" style="background:#1877F2;"><img style="filter:brightness(0) invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" alt="Facebook"></div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">03</span><span class="frame-name">Who It's For</span><span class="frame-line"></span></div>
+  <div class="usecase-grid">
+    <div class="usecase-card"><div class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div><h4>Podcasters</h4><p>Turn episodes into searchable text and quote-ready snippets.</p></div>
+    <div class="usecase-card"><div class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div><h4>YouTubers</h4><p>Study competitor hooks and repurpose scripts fast.</p></div>
+    <div class="usecase-card"><div class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><h4>Course Creators</h4><p>Generate captions and notes straight from lecture videos.</p></div>
+    <div class="usecase-card"><div class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></div><h4>Marketers</h4><p>Pull soundbites from interviews for social copy.</p></div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">What Users Say</span><span class="frame-line"></span></div>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-quote">Switched from a $20/month tool to ReelScribe and honestly get faster transcripts for less. Been using it daily for my podcast clips.</p>
+      <div class="testi-person"><div class="testi-avatar">R</div><div><div class="testi-name">Rohan Mehta</div><div class="testi-role">Podcast Editor</div></div></div>
     </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-quote">The clip cutting actually finds the right moments — saved me hours of manually scrubbing through long-form YouTube videos.</p>
+      <div class="testi-person"><div class="testi-avatar">S</div><div><div class="testi-name">Sana Kapoor</div><div class="testi-role">Content Creator</div></div></div>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Why ReelScribe</span><span class="frame-line"></span></div>
+  <table class="compare-table">
+    <thead><tr><th>Feature</th><th class="col-us">ReelScribe</th><th>Others</th></tr></thead>
+    <tbody>
+      <tr><td>Starting price</td><td class="col-us">₹149/mo</td><td>₹700+/mo</td></tr>
+      <tr><td>Free trial</td><td class="col-us"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td><td><span class="no-mark">✕</span></td></tr>
+      <tr><td>Auto clip cutting</td><td class="col-us"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td><td><span class="no-mark">✕</span></td></tr>
+      <tr><td>50+ languages</td><td class="col-us"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td><td>Varies</td></tr>
+    </tbody>
+  </table>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">FAQ</span><span class="frame-line"></span></div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Is ReelScribe really free to start?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Yes — you get 5 free transcripts with no credit card required. Upgrade only if you need more.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Which platforms are supported?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>YouTube, Instagram, TikTok, X, and Facebook links, plus direct file uploads (video or audio).</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">How long is my data kept?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Generated clips auto-delete after 24 hours. Source videos are removed right after processing.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Can I cancel my subscription anytime?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Yes, plans are month-to-month with no lock-in — cancel from your dashboard anytime.</p></div>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">From The Blog</span><span class="frame-line"></span></div>
+  <div class="blog-grid">
+    <a class="blog-card" href="/blog/repurpose-youtube-into-reels.html">
+      <div class="blog-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;color:var(--accent)"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></div>
+      <div><div class="blog-tag">Guide</div><h4>How To Repurpose Any YouTube Video Into Reels</h4><p>A 5-step workflow creators use to scale content.</p></div>
+    </a>
+    <a class="blog-card" href="/blog/top-10-viral-hooks.html">
+      <div class="blog-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;color:var(--accent)"><path d="M12 2c-2 4-6 5-6 10a6 6 0 0 0 12 0c0-2-1-3-2-4 0 2-1 3-2 2 1-3-1-5-2-8z"/></svg></div>
+      <div><div class="blog-tag">Tips</div><h4>Top 10 Viral Hooks That Actually Work</h4><p>Patterns pulled from thousands of transcripts.</p></div>
+    </a>
   </div>
 
   <div class="cta-section">
@@ -636,13 +652,13 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
 <!-- CLIP PAGE -->
 <div id="clipPage">
   <div class="hero">
-    <div class="eyebrow"><span class="edot"></span> AI Powered · Login Required</div>
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">AI Powered · Login Required</span><span class="frame-line"></span></div>
     <h1 class="hero-h1">Turn long videos into <em>viral clips.</em></h1>
     <p class="hero-sub">Paste any YouTube link. AI scans the transcript, finds the <strong>best viral moments</strong>, and cuts 5–12 ready-to-post reels — automatically.</p>
 
     <div class="hero-input-wrap">
-      <svg style="width:16px;height:16px;color:var(--muted);margin:auto 0 auto 14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-      <input class="hero-input" type="url" id="clipUrl" placeholder="Paste YouTube video link...">
+      <svg style="width:15px;height:15px;color:var(--muted);margin:auto 0 auto 14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <input class="hero-input" type="url" id="clipUrl" placeholder="youtube.com/watch?v=...">
       <button class="hero-input-btn" onclick="generateClips()">Generate</button>
     </div>
 
@@ -658,13 +674,19 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
         <source src="/assets/videos/demo.mp4" type="video/mp4">
       </video>
     </div>
-  </div>
 
-  <!-- Login wall for guests -->
-  <div id="clipLoginWall">
-    <h3>🔒 Login Required</h3>
-    <p>Clip generation is for logged-in users only. Login to generate your viral clips!</p>
-    <button class="clip-login-btn" onclick="window.location.href='/login.html?next=' + encodeURIComponent('/?mode=clips')">Login →</button>
+    <div class="clips-mockup" aria-hidden="true">
+      <div class="clip-thumb"><span class="clip-dur">0:34</span><span class="clip-cap">WAIT FOR<br>IT</span></div>
+      <div class="clip-thumb"><span class="clip-dur">0:51</span><span class="clip-cap">NOBODY<br>TELLS YOU</span></div>
+      <div class="clip-thumb"><span class="clip-dur">0:22</span><span class="clip-cap">THIS ONE<br>TRICK</span></div>
+    </div>
+
+    <!-- Login wall for guests -->
+    <div id="clipLoginWall">
+      <h3>Login Required</h3>
+      <p>Clip generation is for logged-in users only. Login to generate your viral clips.</p>
+      <button class="clip-login-btn" onclick="window.location.href='/login.html?next=' + encodeURIComponent('/?mode=clips')">Login →</button>
+    </div>
   </div>
 
   <div class="ticker-wrap">
@@ -680,133 +702,162 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
     </div>
   </div>
 
-  <div class="stats-section">
-    <div class="sec-label">Impact</div>
-    <div class="stats-grid">
-      <div class="stat-box"><div class="stat-num">5–12<span class="accent">✦</span></div><div class="stat-label">Clips Per Video</div></div>
-      <div class="stat-box"><div class="stat-num">4<span class="accent">K</span></div><div class="stat-label">Max Quality</div></div>
-      <div class="stat-box"><div class="stat-num">2–5<span class="accent">m</span></div><div class="stat-label">Avg Processing Time</div></div>
-      <div class="stat-box"><div class="stat-num">24<span class="accent">h</span></div><div class="stat-label">Auto Delete Timer</div></div>
-      <div class="stat-5th"><div class="stat-num">₹149<span class="accent">/mo</span></div><div class="stat-label">Start with Starter — 5x cheaper than KlipRok</div></div>
-    </div>
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Impact</span><span class="frame-line"></span></div>
+  <div class="stat-strip">
+    <div class="stat-cell"><div class="stat-num">5–12</div><div class="stat-label">Clips Per Video</div></div>
+    <div class="stat-cell"><div class="stat-num">4K</div><div class="stat-label">Max Quality</div></div>
+    <div class="stat-cell"><div class="stat-num">2–5m</div><div class="stat-label">Avg Processing Time</div></div>
+    <div class="stat-cell"><div class="stat-num">24h</div><div class="stat-label">Auto Delete Timer</div></div>
+    <div class="stat-cell full"><div class="stat-num">₹149/mo</div><div class="stat-label">Start with Starter — 5x cheaper than competitors</div></div>
   </div>
 
   <!-- Caption Styles -->
-  <div class="features-section" style="padding-top:0;">
-    <div class="sec-label">Included</div>
-    <h2 class="caption-heading">Caption styles.<br>Built <em>right in.</em></h2>
-    <p class="caption-sub">Burned-in captions for every clip — pick a style and it's done. No editing app needed.</p>
+  <div class="frame-label"><span class="frame-num">01</span><span class="frame-name">Included</span><span class="frame-line"></span></div>
+  <h2 class="caption-heading">Caption styles.<br>Built <em>right in.</em></h2>
+  <p class="caption-sub">Burned-in captions for every clip — pick a style and it's done. No editing app needed.</p>
 
-    <!-- Row 1: scrolls left -->
-    <div class="marquee-wrap">
-      <div class="marquee-track">
-        <div class="caption-card"><div class="caption-preview style-red"><span>BOLD POP</span></div><div class="caption-label-bar"><span class="caption-name">Bold Pop</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-red"><span>NEON GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Neon Glow</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div><div class="caption-label-bar"><span class="caption-name">Karaoke</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-outline"><span>OUTLINE</span></div><div class="caption-label-bar"><span class="caption-name">Outline</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-mono"><span>WORD POP</span></div><div class="caption-label-bar"><span class="caption-name">Word Pop</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-classic"><span>CLASSIC</span></div><div class="caption-label-bar"><span class="caption-name">Classic Bold</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-classic"><span>MEME</span></div><div class="caption-label-bar"><span class="caption-name">Meme Impact</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-bounce"><span>BOUNCE</span></div><div class="caption-label-bar"><span class="caption-name">Bounce</span></div></div>
-        <!-- duplicate set for seamless loop -->
-        <div class="caption-card"><div class="caption-preview style-red"><span>BOLD POP</span></div><div class="caption-label-bar"><span class="caption-name">Bold Pop</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-red"><span>NEON GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Neon Glow</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div><div class="caption-label-bar"><span class="caption-name">Karaoke</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-outline"><span>OUTLINE</span></div><div class="caption-label-bar"><span class="caption-name">Outline</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-mono"><span>WORD POP</span></div><div class="caption-label-bar"><span class="caption-name">Word Pop</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-classic"><span>CLASSIC</span></div><div class="caption-label-bar"><span class="caption-name">Classic Bold</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-classic"><span>MEME</span></div><div class="caption-label-bar"><span class="caption-name">Meme Impact</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-bounce"><span>BOUNCE</span></div><div class="caption-label-bar"><span class="caption-name">Bounce</span></div></div>
-      </div>
-    </div>
-
-    <!-- Row 2: scrolls right -->
-    <div class="marquee-wrap">
-      <div class="marquee-track reverse">
-        <div class="caption-card"><div class="caption-preview style-minimal"><span>Minimal Clean</span></div><div class="caption-label-bar"><span class="caption-name">Minimal Clean</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-mono"><span>GRADIENT</span></div><div class="caption-label-bar"><span class="caption-name">Gradient Fill</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-minimal"><span>Cinematic</span></div><div class="caption-label-bar"><span class="caption-name">Cinematic</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-red"><span>RED GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Red Glow</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-boxed"><span>BOXED</span></div><div class="caption-label-bar"><span class="caption-name">Boxed</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-highlight"><span>HIGHLIGHT</span></div><div class="caption-label-bar"><span class="caption-name">Highlight</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-classic"><span>DUOTONE</span></div><div class="caption-label-bar"><span class="caption-name">Duotone</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-shake"><span>SHAKE IT</span></div><div class="caption-label-bar"><span class="caption-name">Shake</span></div></div>
-        <!-- duplicate set for seamless loop -->
-        <div class="caption-card"><div class="caption-preview style-minimal"><span>Minimal Clean</span></div><div class="caption-label-bar"><span class="caption-name">Minimal Clean</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-mono"><span>GRADIENT</span></div><div class="caption-label-bar"><span class="caption-name">Gradient Fill</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-minimal"><span>Cinematic</span></div><div class="caption-label-bar"><span class="caption-name">Cinematic</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-red"><span>RED GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Red Glow</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-boxed"><span>BOXED</span></div><div class="caption-label-bar"><span class="caption-name">Boxed</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-highlight"><span>HIGHLIGHT</span></div><div class="caption-label-bar"><span class="caption-name">Highlight</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-classic"><span>DUOTONE</span></div><div class="caption-label-bar"><span class="caption-name">Duotone</span></div></div>
-        <div class="caption-card"><div class="caption-preview style-shake"><span>SHAKE IT</span></div><div class="caption-label-bar"><span class="caption-name">Shake</span></div></div>
-      </div>
-    </div>
-
-    <div class="caption-cta">
-      <div class="caption-cta-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-      </div>
-      <div class="caption-cta-text">
-        <h4>Custom caption styles</h4>
-        <p>Pick a style, and it'll be burned into your clips automatically.</p>
-      </div>
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <div class="caption-card"><div class="caption-preview style-red"><span>BOLD POP</span></div><div class="caption-label-bar"><span class="caption-name">Bold Pop</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-red"><span>NEON GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Neon Glow</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div><div class="caption-label-bar"><span class="caption-name">Karaoke</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-outline"><span>OUTLINE</span></div><div class="caption-label-bar"><span class="caption-name">Outline</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-mono"><span>WORD POP</span></div><div class="caption-label-bar"><span class="caption-name">Word Pop</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-classic"><span>CLASSIC</span></div><div class="caption-label-bar"><span class="caption-name">Classic Bold</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-classic"><span>MEME</span></div><div class="caption-label-bar"><span class="caption-name">Meme Impact</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-bounce"><span>BOUNCE</span></div><div class="caption-label-bar"><span class="caption-name">Bounce</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-red"><span>BOLD POP</span></div><div class="caption-label-bar"><span class="caption-name">Bold Pop</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-red"><span>NEON GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Neon Glow</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div><div class="caption-label-bar"><span class="caption-name">Karaoke</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-outline"><span>OUTLINE</span></div><div class="caption-label-bar"><span class="caption-name">Outline</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-mono"><span>WORD POP</span></div><div class="caption-label-bar"><span class="caption-name">Word Pop</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-classic"><span>CLASSIC</span></div><div class="caption-label-bar"><span class="caption-name">Classic Bold</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-classic"><span>MEME</span></div><div class="caption-label-bar"><span class="caption-name">Meme Impact</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-bounce"><span>BOUNCE</span></div><div class="caption-label-bar"><span class="caption-name">Bounce</span></div></div>
     </div>
   </div>
 
-  <div class="how-section">
-    <div class="sec-label">Process</div>
-    <h2 class="how-heading">How Clip Generation Works</h2>
-    <p class="how-sub">Link to download — three steps.</p>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num-label">01</div>
-        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
-        <h4>Paste YouTube Link</h4>
-        <p>Any public video — podcast, interview, tutorial, vlog.</p>
-      </div>
-      <div class="step">
-        <div class="step-num-label">02</div>
-        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-        <h4>AI Finds Best Moments</h4>
-        <p>AI reads the full transcript and picks the highest hook-strength, most viral moments.</p>
-      </div>
-      <div class="step">
-        <div class="step-num-label">03</div>
-        <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
-        <h4>Download Your Clips</h4>
-        <p>5–12 clips ready to download. Main video deleted instantly. Clips auto-delete in 24 hours.</p>
-      </div>
+  <div class="marquee-wrap">
+    <div class="marquee-track reverse">
+      <div class="caption-card"><div class="caption-preview style-minimal"><span>Minimal Clean</span></div><div class="caption-label-bar"><span class="caption-name">Minimal Clean</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-mono"><span>GRADIENT</span></div><div class="caption-label-bar"><span class="caption-name">Gradient Fill</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-minimal"><span>Cinematic</span></div><div class="caption-label-bar"><span class="caption-name">Cinematic</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-red"><span>RED GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Red Glow</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-boxed"><span>BOXED</span></div><div class="caption-label-bar"><span class="caption-name">Boxed</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-highlight"><span>HIGHLIGHT</span></div><div class="caption-label-bar"><span class="caption-name">Highlight</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-classic"><span>DUOTONE</span></div><div class="caption-label-bar"><span class="caption-name">Duotone</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-shake"><span>SHAKE IT</span></div><div class="caption-label-bar"><span class="caption-name">Shake</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-minimal"><span>Minimal Clean</span></div><div class="caption-label-bar"><span class="caption-name">Minimal Clean</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-mono"><span>GRADIENT</span></div><div class="caption-label-bar"><span class="caption-name">Gradient Fill</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-minimal"><span>Cinematic</span></div><div class="caption-label-bar"><span class="caption-name">Cinematic</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-red"><span>RED GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Red Glow</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-boxed"><span>BOXED</span></div><div class="caption-label-bar"><span class="caption-name">Boxed</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-highlight"><span>HIGHLIGHT</span></div><div class="caption-label-bar"><span class="caption-name">Highlight</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-classic"><span>DUOTONE</span></div><div class="caption-label-bar"><span class="caption-name">Duotone</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-shake"><span>SHAKE IT</span></div><div class="caption-label-bar"><span class="caption-name">Shake</span></div></div>
     </div>
   </div>
 
-  <div class="plans-section">
-    <div class="sec-label">Pricing</div>
-    <h2 class="feat-heading">Simple plans.<br>No <em>surprises.</em></h2>
-    <div class="plans-grid">
-      <div class="plan-card">
-        <div class="plan-name">Starter</div>
-        <div class="plan-price">₹149 <span>/month</span></div>
-        <div class="plan-desc">Perfect for trying out AI clipping.</div>
-        <div class="plan-features">
-          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>30 transcripts/month</div>
-          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>3–5 clips/video</div>
-          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>10 videos/month</div>
-        </div>
-        <button class="plan-cta" onclick="window.location.href='/pricing.html'">Get Starter →</button>
+  <div class="caption-cta">
+    <div class="caption-cta-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+    </div>
+    <div class="caption-cta-text">
+      <h4>Custom caption styles</h4>
+      <p>Pick a style, and it'll be burned into your clips automatically.</p>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">02</span><span class="frame-name">Process</span><span class="frame-line"></span></div>
+  <h2 class="how-heading">How Clip Generation Works</h2>
+  <p class="how-sub">Link to download — three steps.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num-label">01</div>
+      <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+      <h4>Paste YouTube Link</h4>
+      <p>Any public video — podcast, interview, tutorial, vlog.</p>
+    </div>
+    <div class="step">
+      <div class="step-num-label">02</div>
+      <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+      <h4>AI Finds Best Moments</h4>
+      <p>AI reads the full transcript and picks the highest hook-strength, most viral moments.</p>
+    </div>
+    <div class="step">
+      <div class="step-num-label">03</div>
+      <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+      <h4>Download Your Clips</h4>
+      <p>5–12 clips ready to download. Main video deleted instantly. Clips auto-delete in 24 hours.</p>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Pricing</span><span class="frame-line"></span></div>
+  <h2 class="feat-heading">Simple plans.<br>No <em>surprises.</em></h2>
+  <div class="plans-grid">
+    <div class="plan-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">₹149 <span>/month</span></div>
+      <div class="plan-desc">Perfect for trying out AI clipping.</div>
+      <div class="plan-features">
+        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>30 transcripts/month</div>
+        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>3–5 clips/video</div>
+        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>10 videos/month</div>
       </div>
-      <div class="plan-card popular">
-        <div class="plan-badge">Most Popular</div>
-        <div class="plan-name">Pro</div>
-        <div class="plan-price">₹299 <span>/month</span></div>
-        <div class="plan-desc">For regular creators who need more clips.</div>
-        <div class="plan-features">
-          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>60 transcripts/month</div>
-          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5–12 clips/video</div>
-          <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>15 videos/month</div>
-        </div>
-        <button class="plan-cta plan-cta-primary" onclick="window.location.href='/pricing.html'">Get Pro →</button>
+      <button class="plan-cta" onclick="window.location.href='/pricing.html'">Get Starter →</button>
+    </div>
+    <div class="plan-card popular">
+      <div class="plan-badge">Most Popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">₹299 <span>/month</span></div>
+      <div class="plan-desc">For regular creators who need more clips.</div>
+      <div class="plan-features">
+        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>60 transcripts/month</div>
+        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5–12 clips/video</div>
+        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>15 videos/month</div>
       </div>
+      <button class="plan-cta plan-cta-primary" onclick="window.location.href='/pricing.html'">Get Pro →</button>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">What Users Say</span><span class="frame-line"></span></div>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-quote">The clip cutting actually finds the right moments — saved me hours of manually scrubbing through long-form YouTube videos.</p>
+      <div class="testi-person"><div class="testi-avatar">S</div><div><div class="testi-name">Sana Kapoor</div><div class="testi-role">Content Creator</div></div></div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-quote">Captions come out burned-in and ready to post, no extra editing app needed. That alone saves me a full step every video.</p>
+      <div class="testi-person"><div class="testi-avatar">A</div><div><div class="testi-name">Aditya Rao</div><div class="testi-role">Shorts Creator</div></div></div>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Why ReelScribe</span><span class="frame-line"></span></div>
+  <table class="compare-table">
+    <thead><tr><th>Feature</th><th class="col-us">ReelScribe</th><th>Others</th></tr></thead>
+    <tbody>
+      <tr><td>Starting price</td><td class="col-us">₹149/mo</td><td>₹700+/mo</td></tr>
+      <tr><td>Clips per video</td><td class="col-us">5–12</td><td>1–3</td></tr>
+      <tr><td>Burned-in captions</td><td class="col-us"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td><td><span class="no-mark">✕</span></td></tr>
+      <tr><td>Auto delete after 24h</td><td class="col-us"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td><td>Varies</td></tr>
+    </tbody>
+  </table>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">FAQ</span><span class="frame-line"></span></div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">How many clips do I get per video?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Between 5–12 clips depending on your plan and the length of the source video.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Do I need to log in to generate clips?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Yes — clip generation requires a free account so we can track your monthly quota and keep clips secure.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">What happens to my source video after processing?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>It's deleted immediately after clips are generated. The clips themselves auto-delete after 24 hours.</p></div>
     </div>
   </div>
 
@@ -818,8 +869,8 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
 </div>
 
 <footer>
-  <div class="foot-logo"><span class="fdot"></span>ReelScribe</div>
-  <div class="foot-tag">Transcribe · Repurpose · Scale</div>
+  <div class="foot-logo"><span class="mark"></span>ReelScribe</div>
+  <div class="foot-tag">transcribe · repurpose · scale</div>
   <div class="foot-links">
     <a href="/about.html">About</a>
     <a href="/pricing.html">Pricing</a>
@@ -827,9 +878,16 @@ footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
     <a href="/terms.html">Terms</a>
     <a href="/privacy.html">Privacy</a>
   </div>
-  <div class="foot-sep"></div>
-  <p class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</p>
+  <div class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</div>
 </footer>
+
+  </div>
+</div>
+
+<div class="sticky-cta" id="stickyCta">
+  <span>5 free transcripts, no card needed</span>
+  <button onclick="document.getElementById('videoUrl') ? document.getElementById('videoUrl').focus() : null; window.scrollTo({top:0,behavior:'smooth'})">Try Free</button>
+</div>
 
 <script>
 /* ── AUTH NOTE ──────────────────────────────────────────────────────
@@ -941,7 +999,7 @@ async function transcribeVideo(){
   const previewBox = document.getElementById("previewBox");
   const previewText = document.getElementById("previewText");
   previewBox.style.display = "block";
-  previewText.innerText = "⏳ Generating transcript...";
+  previewText.innerText = "Generating transcript...";
   document.getElementById("loginSection").style.display = "none";
   document.getElementById("dashboardSection").style.display = "none";
   try {
@@ -952,7 +1010,7 @@ async function transcribeVideo(){
     const data = await res.json();
     handleResult(data);
   } catch(e){
-    previewText.innerText = "❌ Server error. Please try again.";
+    previewText.innerText = "Server error. Please try again.";
   }
 }
 
@@ -960,7 +1018,7 @@ async function transcribeFile(file){
   const previewBox = document.getElementById("previewBox");
   const previewText = document.getElementById("previewText");
   previewBox.style.display = "block";
-  previewText.innerText = "⏳ Uploading and processing...";
+  previewText.innerText = "Uploading and processing...";
   document.getElementById("loginSection").style.display = "none";
   document.getElementById("dashboardSection").style.display = "none";
   const fd = new FormData();
@@ -970,14 +1028,14 @@ async function transcribeFile(file){
     const data = await res.json();
     handleResult(data);
   } catch(e){
-    previewText.innerText = "❌ Server error. Please try again.";
+    previewText.innerText = "Server error. Please try again.";
   }
 }
 
 function handleResult(data){
   const previewText = document.getElementById("previewText");
   if(data.loginRequired){
-    previewText.innerText = "❌ " + data.error;
+    previewText.innerText = data.error;
     document.getElementById("loginSection").style.display = "block";
   } else if(data.success){
     localStorage.setItem("latestTranscript", data.transcript);
@@ -990,9 +1048,61 @@ function handleResult(data){
       document.getElementById("dashboardSection").style.display = "block";
     }
   } else {
-    previewText.innerText = "❌ " + (data.error || "Something went wrong");
+    previewText.innerText = data.error || "Something went wrong";
   }
 }
+
+/* FAQ accordion */
+function toggleFaq(btn){
+  const item = btn.closest('.faq-item');
+  const wasOpen = item.classList.contains('open');
+  item.closest('.faq-list').querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if(!wasOpen) item.classList.add('open');
+}
+
+/* Count-up animation for stat numbers when they scroll into view */
+function animateCounters(){
+  const cells = document.querySelectorAll('.stat-num');
+  const seen = new WeakSet();
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(!entry.isIntersecting || seen.has(entry.target)) return;
+      seen.add(entry.target);
+      const el = entry.target;
+      const raw = el.textContent.trim();
+      const match = raw.match(/^([\d.]+)(.*)$/);
+      if(!match) return;
+      const end = parseFloat(match[1]);
+      const suffix = match[2];
+      const isDecimal = match[1].includes(".");
+      let start = 0;
+      const duration = 700;
+      const startTime = performance.now();
+      function tick(now){
+        const progress = Math.min((now - startTime) / duration, 1);
+        const val = start + (end - start) * progress;
+        el.textContent = (isDecimal ? val.toFixed(1) : Math.round(val)) + suffix;
+        if(progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  }, { threshold: 0.4 });
+  cells.forEach(el => io.observe(el));
+}
+document.addEventListener("DOMContentLoaded", animateCounters);
+
+/* Sticky mobile CTA — show after hero scrolls out of view */
+document.addEventListener("DOMContentLoaded", () => {
+  const sticky = document.getElementById("stickyCta");
+  const heroInput = document.querySelector(".hero-input-wrap");
+  if(!sticky || !heroInput) return;
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      sticky.classList.toggle("show", !entry.isIntersecting);
+    });
+  }, { threshold: 0 });
+  io.observe(heroInput);
+});
 
 function generateClips(){
   const url = document.getElementById("clipUrl").value.trim();
