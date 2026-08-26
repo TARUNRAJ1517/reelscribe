@@ -5,308 +5,215 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Dashboard – ReelScribe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --bg: #0e0d10;
-  --card: #161418;
-  --card2: #1c191e;
-  --border: #2a262b;
-  --border2: #38333a;
-  --purple: #ff3b30;
-  --pink: #ff3b30;
-  --text: #f5f2ee;
-  --sub: #a39d95;
-  --muted: #665f5c;
-  --grad: #ff3b30;
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0a0b; --s1:#111113; --s2:#18181b;
+  --border:#232326; --border2:#2c2c30;
+  --accent:#ff3b30; --accent-dim:#2a120f;
+  --text:#eeeeee; --text-dim:#a4a4a8; --muted:#5c5c60;
 }
-
-html { scroll-behavior: smooth; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Archivo', sans-serif;
-  max-width: 480px; margin: 0 auto;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',-apple-system,sans-serif;
+  max-width:480px; margin:0 auto; min-height:100vh;
+  -webkit-font-smoothing:antialiased; font-size:14px; line-height:1.5;
+  position:relative;
 }
+body::before{
+  content:''; position:fixed; inset:0; z-index:1; pointer-events:none;
+  opacity:.035; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+@keyframes markPulse{0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(255,59,48,.5);}50%{opacity:.55; box-shadow:0 0 0 3px rgba(255,59,48,0);}}
+@keyframes frameIn{from{opacity:0; transform:translateY(6px);}to{opacity:1; transform:translateY(0);}}
+.mono{font-family:'IBM Plex Mono',monospace;}
+:focus-visible{outline:1.5px solid var(--accent); outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important;} }
 
 /* NAV */
-.nav {
-  position: sticky; top: 0; z-index: 999;
-  background: rgba(9,7,15,0.92);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center;
-  justify-content: space-between;
-  padding: 13px 20px;
-}
-.nav-logo {
-  font-size: 18px; font-weight: 900; letter-spacing: -0.5px;
-  color: var(--purple);
-}
-.nav-right { display: flex; align-items: center; gap: 10px; }
-.nav-plan-badge {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
-  text-transform: uppercase; padding: 4px 10px;
-  border-radius: 100px; border: 1px solid var(--border2);
-  color: var(--sub); background: var(--card);
-}
-.nav-plan-badge.paid { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); color: var(--purple); }
-.nav-menu { background: none; border: none; color: var(--sub); font-size: 20px; cursor: pointer; }
+.nav{position:sticky; top:0; z-index:999; background:rgba(10,10,11,.94); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:14px 20px;}
+.nav-logo{font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; display:flex; align-items:center; gap:9px;}
+.nav-logo .mark{width:6px; height:6px; background:var(--accent); flex-shrink:0; border-radius:50%; animation:markPulse 2.6s ease-in-out infinite;}
+.nav-right{display:flex; align-items:center; gap:10px;}
+.nav-badge{font-size:9.5px; font-weight:500; letter-spacing:.6px; text-transform:uppercase; padding:4px 8px;
+  border:1px solid var(--border2); color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
+.nav-badge.paid{border-color:var(--accent); color:var(--accent);}
+.nav-menu{background:none; border:1px solid var(--border2); width:30px; height:30px; color:var(--text-dim); font-size:14px; cursor:pointer; transition:all .15s;}
+.nav-menu:hover{border-color:var(--accent); color:var(--text);}
+.nav-menu:active{transform:scale(.93);}
 
 /* DRAWER */
-.drawer-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.7); z-index: 9998; backdrop-filter: blur(6px);
-}
-.drawer-overlay.active { display: block; }
-.drawer {
-  position: fixed; top: 0; right: -320px;
-  width: 78%; max-width: 290px; height: 100%;
-  background: #0e0c1c; border-left: 1px solid var(--border2);
-  padding: 0; transition: right .3s ease;
-  z-index: 9999; display: flex; flex-direction: column;
-}
-.drawer.active { right: 0; }
-.drawer-head {
-  padding: 28px 22px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.drawer-avatar {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: var(--grad);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px; font-weight: 900; color: #1a0a08;
-  margin-bottom: 12px;
-}
-.drawer-name { font-size: 16px; font-weight: 800; margin-bottom: 3px; }
-.drawer-email { font-size: 12px; color: var(--muted); word-break: break-all; margin-bottom: 12px; }
-.drawer-plan-row {
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--card); border: 1px solid var(--border2);
-  border-radius: 10px; padding: 10px 14px;
-}
-.drawer-plan-label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-.drawer-plan-value { font-size: 13px; font-weight: 800; color: var(--purple); }
-.drawer-body { flex: 1; padding: 16px 22px; display: flex; flex-direction: column; gap: 8px; }
-.drawer-link {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px 14px; border-radius: 12px;
-  background: transparent; border: 1px solid transparent;
-  color: var(--sub); font-size: 14px; font-weight: 600;
-  cursor: pointer; font-family: 'Archivo', sans-serif;
-  transition: all .2s; text-decoration: none;
-}
-.drawer-link svg { width: 16px; height: 16px; flex-shrink: 0; }
-.drawer-link:hover { background: var(--card); border-color: var(--border); color: var(--text); }
-.drawer-link-danger { color: #f87171; }
-.drawer-link-danger:hover { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.2); color: #f87171; }
-.drawer-foot { padding: 16px 22px; border-top: 1px solid var(--border); }
-.drawer-upgrade {
-  width: 100%; padding: 13px; border: none; border-radius: 12px;
-  background: var(--grad); color: white; font-size: 14px; font-weight: 700;
-  cursor: pointer; font-family: 'Archivo', sans-serif;
-}
+.drawer-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:9998; backdrop-filter:blur(4px);}
+.drawer-overlay.active{display:block;}
+.drawer{position:fixed; top:0; right:-320px; width:80%; max-width:300px; height:100%;
+  background:var(--s1); border-left:1px solid var(--border2); transition:right .28s ease;
+  z-index:9999; display:flex; flex-direction:column;}
+.drawer.active{right:0;}
+.drawer-head{padding:26px 20px 18px; border-bottom:1px solid var(--border);}
+.drawer-avatar{width:42px; height:42px; background:var(--s2); border:1px solid var(--border2);
+  display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700;
+  color:var(--accent); margin-bottom:12px; font-family:'IBM Plex Mono',monospace;}
+.drawer-name{font-size:14px; font-weight:600; margin-bottom:3px;}
+.drawer-email{font-size:11px; color:var(--muted); word-break:break-all; margin-bottom:12px; font-family:'IBM Plex Mono',monospace;}
+.drawer-plan-row{display:flex; align-items:center; justify-content:space-between; background:var(--s2); border:1px solid var(--border2); padding:9px 12px;}
+.drawer-plan-label{font-size:9.5px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-family:'IBM Plex Mono',monospace;}
+.drawer-plan-value{font-size:12px; font-weight:600; color:var(--accent);}
+.drawer-body{flex:1; padding:14px 20px; display:flex; flex-direction:column; gap:2px; overflow-y:auto;}
+.drawer-link{display:flex; align-items:center; gap:10px; padding:11px 12px; background:transparent; border:1px solid transparent;
+  color:var(--text-dim); font-size:12.5px; font-weight:500; cursor:pointer; font-family:'Inter',sans-serif; transition:all .15s; text-decoration:none;}
+.drawer-link svg{width:15px; height:15px; flex-shrink:0;}
+.drawer-link:hover{background:var(--s2); border-color:var(--border2); color:var(--text);}
+.drawer-link-danger{color:#ff6b5f;}
+.drawer-link-danger:hover{background:var(--accent-dim); border-color:var(--border2); color:#ff6b5f;}
+.drawer-foot{padding:14px 20px 20px; border-top:1px solid var(--border);}
+.drawer-upgrade{width:100%; padding:12px; border:none; background:var(--accent); color:#fff; font-size:11.5px; font-weight:600;
+  letter-spacing:.5px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif;}
 
-/* SECTION LABEL */
-.sec-label {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 10px; font-weight: 700; letter-spacing: 2px;
-  text-transform: uppercase; color: var(--purple); margin-bottom: 14px;
-}
-.sec-label::before {
-  content: ''; display: block;
-  width: 24px; height: 2px; background: var(--purple); flex-shrink: 0;
-}
+/* BODY LAYOUT */
+.reel{display:flex; position:relative; z-index:2;}
+.reel-body{flex:1; min-width:0; padding:0 20px; position:relative; z-index:2;}
 
-/* MAIN */
-.main { padding: 24px 20px; }
+/* FRAME LABEL */
+.frame-label{display:flex; align-items:baseline; gap:8px; padding:22px 0 12px;}
+.frame-num{font-size:10px; font-weight:600; color:var(--accent); font-family:'IBM Plex Mono',monospace; letter-spacing:.5px;}
+.frame-name{font-size:10px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+.frame-line{flex:1; height:1px; background:var(--border);}
 
-/* WELCOME STRIP */
-.welcome-strip {
-  background: var(--card); border: 1px solid var(--border2);
-  border-radius: 18px; padding: 20px;
-  margin-bottom: 20px; position: relative; overflow: hidden;
-}
-.welcome-strip::before {
-  content: '';
-  position: absolute; top: -40px; right: -40px;
-  width: 180px; height: 180px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(139,92,246,0.1), transparent 65%);
-  pointer-events: none;
-}
-.welcome-greeting { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
-.welcome-name { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 14px; }
-.welcome-stats { display: flex; gap: 10px; }
-.welcome-stat {
-  flex: 1; background: var(--card2); border: 1px solid var(--border);
-  border-radius: 12px; padding: 12px;
-}
-.welcome-stat-num { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; color: var(--purple); }
-.welcome-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+/* STAT STRIP */
+.stat-strip{display:flex; border:1px solid var(--border); background:var(--s1); animation:frameIn .4s ease both;}
+.stat-cell{flex:1; padding:12px 10px; text-align:center; border-right:1px solid var(--border);}
+.stat-cell:last-child{border-right:none;}
+.stat-num{font-size:16px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--accent); letter-spacing:-.3px;}
+.stat-label{font-size:8.5px; font-weight:500; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); margin-top:3px; font-family:'IBM Plex Mono',monospace;}
 
-/* LATEST TRANSCRIPT */
-.transcript-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 18px; padding: 20px; margin-bottom: 16px;
-}
-.transcript-card-head {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 14px;
-}
-.transcript-card-title { font-size: 15px; font-weight: 800; }
-.transcript-card-badge {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
-  text-transform: uppercase; padding: 4px 10px;
-  border-radius: 100px;
-  background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2);
-  color: var(--purple);
-}
-.transcript-body {
-  background: var(--card2); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px;
-  max-height: 180px; overflow-y: auto;
-  font-size: 13px; color: var(--sub); line-height: 1.8;
-  white-space: pre-wrap; margin-bottom: 14px;
-}
-.transcript-body::-webkit-scrollbar { width: 4px; }
-.transcript-body::-webkit-scrollbar-track { background: transparent; }
-.transcript-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
-.transcript-empty {
-  text-align: center; padding: 24px 0;
-  font-size: 13px; color: var(--muted);
-}
-.transcript-actions { display: flex; gap: 8px; }
-.btn-copy {
-  flex: 1; padding: 12px; border: none; border-radius: 11px;
-  background: var(--grad); color: white;
-  font-size: 13px; font-weight: 700; cursor: pointer;
-  font-family: 'Archivo', sans-serif; transition: opacity .2s;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.btn-copy svg { width: 14px; height: 14px; }
-.btn-copy:hover { opacity: 0.85; }
-.btn-new {
-  padding: 12px 16px; border-radius: 11px;
-  background: transparent; border: 1px solid var(--border2);
-  color: var(--sub); font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: 'Archivo', sans-serif;
-  transition: all .2s; white-space: nowrap;
-  display: flex; align-items: center; gap: 6px;
-}
-.btn-new svg { width: 14px; height: 14px; }
-.btn-new:hover { border-color: var(--purple); color: var(--text); }
+/* TRANSCRIPT PANEL */
+.panel{border:1px solid var(--border); background:var(--s1); position:relative; animation:frameIn .4s ease both;}
+.panel-pad{padding:16px;}
+.reg{position:absolute; width:8px; height:8px; pointer-events:none; opacity:.5;}
+.reg::before,.reg::after{content:''; position:absolute; background:var(--border2);}
+.reg::before{top:50%; left:0; right:0; height:1px; transform:translateY(-50%);}
+.reg::after{left:50%; top:0; bottom:0; width:1px; transform:translateX(-50%);}
+.reg.tl{top:-4px; left:-4px;} .reg.tr{top:-4px; right:-4px;} .reg.bl{bottom:-4px; left:-4px;} .reg.br{bottom:-4px; right:-4px;}
+
+.tc-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:10px;}
+.tc-title{font-size:14px; font-weight:600;}
+.tc-badge{font-size:9.5px; font-weight:500; letter-spacing:.6px; text-transform:uppercase; padding:4px 8px;
+  border:1px solid var(--border2); color:var(--text-dim); font-family:'IBM Plex Mono',monospace; flex-shrink:0;}
+.tc-badge.latest{border-color:var(--accent); color:var(--accent);}
+
+.tc-body{background:var(--s2); border:1px solid var(--border2); padding:14px; max-height:220px; overflow-y:auto;
+  font-size:12.5px; color:var(--text-dim); line-height:1.8; white-space:pre-wrap; margin-bottom:14px; font-family:'IBM Plex Mono',monospace;}
+.tc-body::-webkit-scrollbar{width:4px;}
+.tc-body::-webkit-scrollbar-track{background:transparent;}
+.tc-body::-webkit-scrollbar-thumb{background:var(--border2);}
+.tc-empty{text-align:center; padding:24px 10px; font-size:11.5px; color:var(--muted); line-height:1.6;}
+
+.tc-actions{display:flex; gap:8px;}
+.btn-copy{flex:1; padding:11px; border:none; background:var(--accent); color:#fff; font-size:11.5px; font-weight:600;
+  letter-spacing:.3px; cursor:pointer; font-family:'Inter',sans-serif; transition:background .15s, transform .1s;
+  display:flex; align-items:center; justify-content:center; gap:7px;}
+.btn-copy svg{width:14px; height:14px;}
+.btn-copy:hover{background:#e6342b;}
+.btn-copy:active{transform:scale(.985);}
+.btn-new{padding:11px 16px; background:var(--s2); border:1px solid var(--border2); color:var(--text-dim); font-size:11.5px; font-weight:600;
+  cursor:pointer; font-family:'Inter',sans-serif; transition:all .15s; white-space:nowrap; display:flex; align-items:center; gap:7px;}
+.btn-new svg{width:14px; height:14px;}
+.btn-new:hover{border-color:var(--accent); color:var(--text);}
+.btn-new:active{transform:scale(.985);}
+
+.preview-banner{border:1px solid var(--border2); background:var(--accent-dim); padding:12px; margin-top:12px; text-align:center;}
+.preview-banner p{font-size:11px; color:var(--text-dim); margin-bottom:10px; line-height:1.6;}
+.preview-login-btn{padding:9px 18px; border:none; background:var(--accent); color:#fff; font-size:11px; font-weight:600;
+  letter-spacing:.3px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif;}
 
 /* QUICK ACTIONS */
-.quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-.quick-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 16px; padding: 16px; cursor: pointer;
-  transition: border-color .2s;
-}
-.quick-card:hover { border-color: rgba(139,92,246,0.4); }
-.quick-icon {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: var(--card2); border: 1px solid var(--border2);
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 10px;
-}
-.quick-icon svg { width: 16px; height: 16px; color: var(--purple); }
-.quick-title { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
-.quick-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
-
-/* HISTORY */
-.history-card {
-  background: var(--card); border: 1px solid var(--border);
-  border-radius: 18px; padding: 20px; margin-bottom: 16px;
-}
-.history-head {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 0;
-}
-.history-title { font-size: 15px; font-weight: 800; }
-.history-toggle {
-  background: none; border: 1px solid var(--border2);
-  border-radius: 8px; color: var(--muted);
-  font-size: 11px; font-weight: 700; padding: 5px 10px;
-  cursor: pointer; font-family: 'Archivo', sans-serif; transition: all .2s;
-}
-.history-toggle:hover { border-color: var(--purple); color: var(--text); }
-.history-list { margin-top: 14px; display: none; }
-.history-item {
-  background: var(--card2); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px; margin-bottom: 8px;
-  cursor: pointer; transition: border-color .2s;
-}
-.history-item:last-child { margin-bottom: 0; }
-.history-item:hover { border-color: rgba(139,92,246,0.3); }
-.history-item-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-.history-item-date { font-size: 10px; color: var(--muted); font-weight: 600; }
-.history-item-source {
-  font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
-  text-transform: uppercase; padding: 2px 8px;
-  border-radius: 100px; background: rgba(139,92,246,0.08);
-  border: 1px solid rgba(139,92,246,0.15); color: var(--purple);
-}
-.history-item-preview { font-size: 12px; color: var(--sub); line-height: 1.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
-.history-item-url { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.history-empty { text-align: center; padding: 20px 0; font-size: 13px; color: var(--muted); }
+.qa-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; animation:frameIn .4s ease both;}
+.qa-card{display:block; text-decoration:none; border:1px solid var(--border); background:var(--s1); border-radius:12px; padding:16px;
+  position:relative; cursor:pointer; transition:transform .15s ease, border-color .15s ease;}
+.qa-card:hover{transform:translateY(-2px); border-color:var(--border2);}
+.qa-card:active{transform:scale(.98);}
+.qa-card.featured{border-color:var(--accent);}
+.qa-new-tag{position:absolute; top:12px; right:12px; font-size:8.5px; font-weight:700; letter-spacing:.4px; text-transform:uppercase;
+  background:var(--accent); color:#fff; padding:2px 6px; font-family:'IBM Plex Mono',monospace;}
+.qa-icon{width:38px; height:38px; border-radius:10px; background:var(--s2); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; margin-bottom:12px;}
+.qa-icon svg{width:18px; height:18px; color:var(--accent);}
+.qa-title{font-size:13.5px; font-weight:700; color:var(--text); margin-bottom:3px;}
+.qa-sub{font-size:10.5px; color:var(--muted); line-height:1.4;}
 
 /* UPGRADE BANNER */
-.upgrade-banner {
-  background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(236,72,153,0.08));
-  border: 1px solid rgba(139,92,246,0.2);
-  border-radius: 18px; padding: 22px 20px;
-  margin-bottom: 20px; text-align: center;
-}
-.upgrade-banner h3 { font-size: 18px; font-weight: 900; letter-spacing: -0.3px; margin-bottom: 6px; }
-.upgrade-banner p { font-size: 13px; color: var(--sub); margin-bottom: 16px; line-height: 1.6; }
-.upgrade-btn {
-  width: 100%; padding: 13px; border: none; border-radius: 12px;
-  background: var(--grad); color: white; font-size: 14px; font-weight: 700;
-  cursor: pointer; font-family: 'Archivo', sans-serif;
-}
+.upgrade-banner{border:1px solid var(--border2); background:var(--accent-dim); padding:18px 16px; text-align:center; animation:frameIn .4s ease both;}
+.upgrade-banner h3{font-size:14px; font-weight:600; margin-bottom:6px;}
+.upgrade-banner p{font-size:11.5px; color:var(--text-dim); margin-bottom:14px; line-height:1.6;}
+.upgrade-btn{width:100%; padding:11px; border:none; background:var(--accent); color:#fff; font-size:11.5px; font-weight:600;
+  letter-spacing:.4px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif;}
+
+/* HISTORY / LOG */
+.log-card{border:1px solid var(--border); background:var(--s1); padding:16px; animation:frameIn .4s ease both;}
+.log-card-head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+.log-card-title{font-size:13.5px; font-weight:600; color:var(--text);}
+.log-toggle-pill{display:flex; align-items:center; gap:6px; padding:8px 16px; border:none; border-radius:999px;
+  background:var(--accent); color:#fff; font-size:10.5px; font-weight:700; letter-spacing:.3px;
+  text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif; transition:opacity .15s, transform .1s; flex-shrink:0;}
+.log-toggle-pill:hover{opacity:.88;}
+.log-toggle-pill:active{transform:scale(.96);}
+.log-toggle-pill .chev{display:inline-block; transition:transform .2s; font-size:9px;}
+.log-toggle-pill.open .chev{transform:rotate(180deg);}
+.log-list{display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--border);}
+.log-item{padding:12px; border:1px solid var(--border); background:var(--s2); margin-bottom:8px; cursor:pointer; transition:border-color .15s;}
+.log-item:last-child{margin-bottom:0;}
+.log-item:hover{border-color:var(--border2);}
+.log-item-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; gap:8px;}
+.log-item-date{font-size:9.5px; color:var(--muted); font-family:'IBM Plex Mono',monospace; flex-shrink:0;}
+.log-item-source{font-size:8.5px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; padding:2px 7px;
+  border:1px solid var(--border2); color:var(--accent); font-family:'IBM Plex Mono',monospace; flex-shrink:0;}
+.log-item-preview{font-size:11.5px; color:var(--text-dim); line-height:1.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:4px;}
+.log-item-url{font-size:10px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:'IBM Plex Mono',monospace;}
+.log-empty{font-size:11.5px; color:var(--muted); padding:12px 0; text-align:center;}
 
 /* FOOTER */
-footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
-.foot-logo {
-  font-size: 15px; font-weight: 900;
-  color: var(--purple);
-  margin-bottom: 4px;
-}
-.foot-tag { font-size: 11px; color: var(--muted); margin-bottom: 16px; }
-.foot-links { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 16px; }
-.foot-links a { color: var(--muted); font-size: 12px; text-decoration: none; transition: color .2s; }
-.foot-links a:hover { color: var(--sub); }
-.foot-sep { height: 1px; background: var(--border); margin-bottom: 14px; }
-.foot-copy { font-size: 11px; color: var(--muted); text-align: center; }
+footer{border-top:1px solid var(--border); padding:22px 0 26px;}
+.foot-logo{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; display:flex; align-items:center; gap:9px; margin-bottom:4px;}
+.foot-logo .mark{width:5px; height:5px; background:var(--accent);}
+.foot-tag{font-size:10px; color:var(--muted); margin-bottom:14px; font-family:'IBM Plex Mono',monospace;}
+.foot-links{display:flex; flex-wrap:wrap; gap:6px 14px; margin-bottom:14px;}
+.foot-links a{color:var(--muted); font-size:11px; text-decoration:none; transition:color .2s;}
+.foot-links a:hover{color:var(--text-dim);}
+.foot-copy{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
 
-/* PREVIEW BANNER */
-.preview-banner {
-  background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(236,72,153,0.1));
-  border: 1px solid rgba(139,92,246,0.2);
-  border-radius: 12px; padding: 14px; margin-top: 12px; text-align: center;
+/* ══════════════════════════════════════════════
+   RESPONSIVE — DESKTOP / TABLET
+   Mobile layout above is untouched.
+═══════════════════════════════════════════════ */
+@media (min-width: 700px) {
+  body { max-width: 920px; }
+  .reel-body { padding: 0 32px; }
+  .panel-pad { padding: 20px 24px; }
+  .stat-strip .stat-cell { padding: 16px 12px; }
+  .qa-grid { grid-template-columns: repeat(4, 1fr); }
+  .tc-body { max-height: 280px; }
+  .log-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .log-list.hidden-state { display: none; }
+  .log-item { margin-bottom: 0; }
 }
-.preview-banner p { font-size: 12px; color: var(--sub); margin-bottom: 10px; line-height: 1.6; }
-.preview-login-btn {
-  padding: 10px 20px; border: none; border-radius: 10px;
-  background: var(--grad); color: white; font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: 'Archivo', sans-serif;
+
+@media (min-width: 1000px) {
+  body { max-width: 1040px; }
+  .reel-body { padding: 0 40px; }
+  .log-list { grid-template-columns: repeat(3, 1fr); }
 }
 </style>
 </head>
 <body>
 
-<!-- Drawer Overlay -->
+<!-- DRAWER -->
 <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
-
-<!-- Drawer -->
 <div class="drawer" id="drawer">
   <div class="drawer-head">
-    <div class="drawer-avatar" id="drawerAvatar">U</div>
+    <div class="drawer-avatar mono" id="drawerAvatar">U</div>
     <div class="drawer-name" id="drawerName">User</div>
     <div class="drawer-email" id="drawerEmail">Loading...</div>
     <div class="drawer-plan-row">
@@ -339,137 +246,132 @@ footer { border-top: 1px solid var(--border); padding: 24px 20px 20px; }
 
 <!-- NAV -->
 <nav class="nav">
-  <div class="nav-logo">ReelScribe</div>
+  <div class="nav-logo"><span class="mark"></span>ReelScribe</div>
   <div class="nav-right">
-    <div class="nav-plan-badge" id="navPlanBadge">Free</div>
-    <button class="nav-menu" onclick="openDrawer()">☰</button>
+    <span class="nav-badge" id="navPlanBadge">Free</span>
+    <button class="nav-menu" onclick="openDrawer()" aria-label="Open menu">≡</button>
   </div>
 </nav>
 
-<!-- MAIN -->
-<div class="main">
+<div class="reel">
+  <div class="reel-body">
 
-  <!-- Welcome -->
-  <div class="welcome-strip">
-    <div class="welcome-greeting">Welcome back</div>
-    <div class="welcome-name" id="welcomeName">Loading...</div>
-    <div class="welcome-stats">
-      <div class="welcome-stat">
-        <div class="welcome-stat-num" id="statCredits">—</div>
-        <div class="welcome-stat-label">Left Today</div>
-      </div>
-      <div class="welcome-stat">
-        <div class="welcome-stat-num" id="statHistory">—</div>
-        <div class="welcome-stat-label">Transcripts</div>
-      </div>
-      <div class="welcome-stat">
-        <div class="welcome-stat-num" id="statPlan">Free</div>
-        <div class="welcome-stat-label">Plan</div>
+    <!-- STATS -->
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name" id="welcomeName">Dashboard</span><span class="frame-line"></span></div>
+    <div class="stat-strip">
+      <div class="stat-cell"><div class="stat-num" id="statCredits">—</div><div class="stat-label">Left today</div></div>
+      <div class="stat-cell"><div class="stat-num" id="statHistory">—</div><div class="stat-label">Transcripts</div></div>
+      <div class="stat-cell"><div class="stat-num" id="statPlan">Free</div><div class="stat-label">Plan</div></div>
+    </div>
+
+    <!-- 01 LATEST TRANSCRIPT -->
+    <div class="frame-label"><span class="frame-num">01</span><span class="frame-name">Latest Transcript</span><span class="frame-line"></span></div>
+    <div class="panel">
+      <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+      <div class="panel-pad">
+        <div class="tc-head">
+          <div class="tc-title">Your Transcript</div>
+          <div class="tc-badge" id="transcriptBadge">Loading</div>
+        </div>
+        <div class="tc-body" id="transcriptBody">
+          <div class="tc-empty">Loading transcript…</div>
+        </div>
+        <div class="tc-actions" id="transcriptActions" style="display:none">
+          <button class="btn-copy" onclick="copyTranscript()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy Transcript
+          </button>
+          <button class="btn-new" onclick="newTranscript()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New
+          </button>
+        </div>
+        <div id="previewBanner"></div>
       </div>
     </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Quick Actions</span><span class="frame-line"></span></div>
+    <div class="qa-grid">
+      <a class="qa-card featured" href="/clips-dashboard.html">
+        <span class="qa-new-tag">New</span>
+        <div class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div class="qa-title">Cut Clips</div>
+        <div class="qa-sub">AI clips from a YouTube video</div>
+      </a>
+      <a class="qa-card" href="#" onclick="newTranscript(); return false;">
+        <div class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="qa-title">New Transcript</div>
+        <div class="qa-sub">Paste a URL or upload a file</div>
+      </a>
+      <a class="qa-card" href="/pricing.html">
+        <div class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+        <div class="qa-title">Upgrade Plan</div>
+        <div class="qa-sub">Get more transcripts & clips</div>
+      </a>
+      <a class="qa-card" href="/contact.html">
+        <div class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="qa-title">Support</div>
+        <div class="qa-sub">Contact us anytime</div>
+      </a>
+    </div>
+
+    <!-- UPGRADE BANNER (free users) -->
+    <div class="frame-label" id="upgradeLabel" style="display:none;"><span class="frame-num">—</span><span class="frame-name">Upgrade</span><span class="frame-line"></span></div>
+    <div class="upgrade-banner" id="upgradeBanner" style="display:none">
+      <h3>Unlock More Power</h3>
+      <p>AI clip generation, 30+ transcripts/month, and priority processing — starting at just ₹149/mo.</p>
+      <button class="upgrade-btn" onclick="window.location.href='/pricing.html'">View Plans →</button>
+    </div>
+
+    <!-- HISTORY / LOG -->
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">History</span><span class="frame-line"></span></div>
+    <div class="log-card">
+      <div class="log-card-head">
+        <div class="log-card-title">Past Transcripts</div>
+        <button class="log-toggle-pill" id="historyToggle" onclick="toggleHistory()">
+          <span class="btn-label">Show</span><span class="chev">▾</span>
+        </button>
+      </div>
+      <div class="log-list" id="historyList">
+        <div class="log-empty">Loading…</div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="foot-logo"><span class="mark"></span>ReelScribe</div>
+      <div class="foot-tag">transcribe · repurpose · scale</div>
+      <div class="foot-links">
+        <a href="/about.html">About</a>
+        <a href="/pricing.html">Pricing</a>
+        <a href="/contact.html">Contact</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/privacy.html">Privacy</a>
+      </div>
+      <div class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</div>
+    </footer>
+
   </div>
-
-  <!-- Latest Transcript -->
-  <div class="sec-label">Latest Transcript</div>
-  <div class="transcript-card">
-    <div class="transcript-card-head">
-      <div class="transcript-card-title">Your Transcript</div>
-      <div class="transcript-card-badge" id="transcriptBadge">Loading...</div>
-    </div>
-    <div class="transcript-body" id="transcriptBody">
-      <div class="transcript-empty">⏳ Loading transcript...</div>
-    </div>
-    <div class="transcript-actions" id="transcriptActions" style="display:none">
-      <button class="btn-copy" onclick="copyTranscript()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        Copy Transcript
-      </button>
-      <button class="btn-new" onclick="newTranscript()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        New
-      </button>
-    </div>
-    <div id="previewBanner"></div>
-  </div>
-
-  <!-- Quick Actions -->
-  <div class="sec-label">Quick Actions</div>
-  <div class="quick-actions">
-    <div class="quick-card" onclick="window.location.href='/clips-dashboard.html'" style="position:relative; border-color:#a855f7;">
-      <span style="position:absolute; top:10px; right:10px; font-size:11px; font-weight:700; color:#fff; background:linear-gradient(135deg,#a855f7,#ec4899); padding:2px 8px; border-radius:10px;">✨ NEW</span>
-      <div class="quick-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-      </div>
-      <div class="quick-title">Cut Clips</div>
-      <div class="quick-desc">AI clips from YouTube video</div>
-    </div>
-    <div class="quick-card" onclick="newTranscript()">
-      <div class="quick-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-      </div>
-      <div class="quick-title">New Transcript</div>
-      <div class="quick-desc">Paste URL or upload a video file</div>
-    </div>
-    <div class="quick-card" onclick="window.location.href='/pricing.html'">
-      <div class="quick-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-      </div>
-      <div class="quick-title">Upgrade Plan</div>
-      <div class="quick-desc">Get more transcripts & clips</div>
-    </div>
-    <div class="quick-card" onclick="window.location.href='/contact.html'">
-      <div class="quick-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      </div>
-      <div class="quick-title">Support</div>
-      <div class="quick-desc">Contact us anytime</div>
-    </div>
-  </div>
-
-  <!-- Upgrade Banner (free users ke liye) -->
-  <div class="upgrade-banner" id="upgradeBanner" style="display:none">
-    <h3>Unlock More Power 🚀</h3>
-    <p>Get AI clip generation, 30+ transcripts/month, and priority processing — starting at just ₹149/mo.</p>
-    <button class="upgrade-btn" onclick="window.location.href='/pricing.html'">View Plans →</button>
-  </div>
-
-  <!-- History -->
-  <div class="sec-label">History</div>
-  <div class="history-card">
-    <div class="history-head">
-      <div class="history-title">Past Transcripts</div>
-      <button class="history-toggle" id="historyToggle" onclick="toggleHistory()">Show ▼</button>
-    </div>
-    <div class="history-list" id="historyList">
-      <div class="history-empty">⏳ Loading...</div>
-    </div>
-  </div>
-
 </div>
 
-<!-- FOOTER -->
-<footer>
-  <div class="foot-logo">ReelScribe</div>
-  <div class="foot-tag">Transcribe · Repurpose · Scale</div>
-  <div class="foot-links">
-    <a href="/about.html">About</a>
-    <a href="/pricing.html">Pricing</a>
-    <a href="/contact.html">Contact</a>
-    <a href="/terms.html">Terms</a>
-    <a href="/privacy.html">Privacy</a>
-  </div>
-  <div class="foot-sep"></div>
-  <p class="foot-copy">© 2026 ReelScribe. All rights reserved.</p>
-</footer>
-
 <script>
+/* ══════════════ SECURITY HELPER ══════════════
+   Escape any text that comes from user/server data before it's
+   placed into innerHTML (transcript previews, URLs, etc). */
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
 const params = new URLSearchParams(window.location.search);
 const googleEmail = params.get("email");
 if (googleEmail) localStorage.setItem("userEmail", googleEmail);
 
-// The email below is for *display only*. The server resolves your real
-// identity from your session cookie (see /me) — this value never controls
-// what data you can read or write.
+/* ══════════════ AUTH / IDENTITY ══════════════
+   Identity comes from the server session (/me), not localStorage.
+   localStorage is kept only to show the email instantly on load —
+   it carries no authentication weight. */
 let email = localStorage.getItem("userEmail") || "";
 let isGuest = true;
 
@@ -483,31 +385,27 @@ async function resolveIdentity() {
     else localStorage.removeItem("userEmail");
   } catch (e) { isGuest = !email; }
 
-  const nameStr = isGuest ? "Guest User" : email.split("@")[0];
+  const nameStr = isGuest ? "Guest" : email.split("@")[0];
   const avatarStr = nameStr.charAt(0).toUpperCase();
-  document.getElementById("welcomeName").innerText = isGuest ? "Guest User" : nameStr;
+  document.getElementById("welcomeName").innerText = isGuest ? "Guest — Dashboard" : nameStr;
   document.getElementById("drawerName").innerText = nameStr;
   document.getElementById("drawerEmail").innerText = isGuest ? "Not logged in" : email;
   document.getElementById("drawerAvatar").innerText = avatarStr;
 }
 
+function openDrawer(){ document.getElementById("drawer").classList.add("active"); document.getElementById("drawerOverlay").classList.add("active"); }
+function closeDrawer(){ document.getElementById("drawer").classList.remove("active"); document.getElementById("drawerOverlay").classList.remove("active"); }
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeDrawer(); });
+
 let historyOpen = false;
 let historyLoaded = false;
-
-function openDrawer() {
-  document.getElementById("drawer").classList.add("active");
-  document.getElementById("drawerOverlay").classList.add("active");
-}
-function closeDrawer() {
-  document.getElementById("drawer").classList.remove("active");
-  document.getElementById("drawerOverlay").classList.remove("active");
-}
 
 async function loadUserPlan() {
   if (isGuest) {
     document.getElementById("statCredits").innerText = "3";
     document.getElementById("statPlan").innerText = "Free";
     document.getElementById("drawerPlan").innerText = "Free";
+    document.getElementById("upgradeLabel").style.display = "flex";
     document.getElementById("upgradeBanner").style.display = "block";
     return;
   }
@@ -525,10 +423,12 @@ async function loadUserPlan() {
       if (data.plan !== "free") {
         badge.classList.add("paid");
       } else {
+        document.getElementById("upgradeLabel").style.display = "flex";
         document.getElementById("upgradeBanner").style.display = "block";
       }
     }
   } catch (e) {
+    document.getElementById("upgradeLabel").style.display = "flex";
     document.getElementById("upgradeBanner").style.display = "block";
   }
 }
@@ -546,15 +446,16 @@ async function loadLatestTranscript() {
       body.innerText = guestT;
       actions.style.display = "flex";
       badge.innerText = isPreview ? "Preview" : "Latest";
+      badge.classList.toggle("latest", !isPreview);
       if (isPreview) {
         previewBanner.innerHTML = `
           <div class="preview-banner">
-            <p>⚠️ This is a <strong>100-word preview</strong>. Log in for the full transcript.</p>
+            <p>This is a 100-word preview. Log in for the full transcript.</p>
             <button class="preview-login-btn" onclick="window.location.href='/login.html'">Log In — It's Free</button>
           </div>`;
       }
     } else {
-      body.innerHTML = '<div class="transcript-empty">📭 No transcript yet.<br>Create one to get started!</div>';
+      body.innerHTML = '<div class="tc-empty">No transcript yet. Create one to get started.</div>';
       badge.innerText = "Empty";
     }
     return;
@@ -568,15 +469,16 @@ async function loadLatestTranscript() {
       body.innerText = latest.transcript;
       actions.style.display = "flex";
       badge.innerText = "Latest";
+      badge.classList.add("latest");
       document.getElementById("statHistory").innerText = data.data.length;
       localStorage.setItem("latestTranscript", latest.transcript);
     } else {
-      body.innerHTML = '<div class="transcript-empty">📭 No transcript yet.<br>Create one to get started!</div>';
+      body.innerHTML = '<div class="tc-empty">No transcript yet. Create one to get started.</div>';
       badge.innerText = "Empty";
       document.getElementById("statHistory").innerText = "0";
     }
   } catch (e) {
-    body.innerHTML = '<div class="transcript-empty">❌ Could not load your transcript.</div>';
+    body.innerHTML = '<div class="tc-empty">Could not load your transcript.</div>';
     badge.innerText = "Error";
   }
 }
@@ -584,7 +486,7 @@ async function loadLatestTranscript() {
 async function loadHistory() {
   const list = document.getElementById("historyList");
   if (isGuest) {
-    list.innerHTML = '<div class="history-empty">Log in to see your transcript history.</div>';
+    list.innerHTML = '<div class="log-empty">Log in to see your transcript history.</div>';
     return;
   }
   try {
@@ -600,28 +502,28 @@ async function loadHistory() {
         const source = item.reelUrl?.includes("youtube") ? "YouTube" :
                        item.reelUrl?.includes("instagram") ? "Instagram" : "File";
         const div = document.createElement("div");
-        div.className = "history-item";
+        div.className = "log-item";
         div.innerHTML = `
-          <div class="history-item-top">
-            <div class="history-item-date">${date}</div>
-            <div class="history-item-source">${source}</div>
+          <div class="log-item-top">
+            <div class="log-item-date mono">${escapeHtml(date)}</div>
+            <div class="log-item-source">${escapeHtml(source)}</div>
           </div>
-          <div class="history-item-preview">${item.transcript.substring(0, 90)}...</div>
-          <div class="history-item-url">${item.reelUrl?.substring(0, 50) || "File upload"}</div>
+          <div class="log-item-preview">${escapeHtml(item.transcript.substring(0, 90))}...</div>
+          <div class="log-item-url">${escapeHtml((item.reelUrl || "File upload").substring(0, 50))}</div>
         `;
-        div.onclick = () => {
+        div.addEventListener("click", () => {
           document.getElementById("transcriptBody").innerText = item.transcript;
           document.getElementById("transcriptActions").style.display = "flex";
           localStorage.setItem("latestTranscript", item.transcript);
           window.scrollTo({ top: 0, behavior: "smooth" });
-        };
+        });
         list.appendChild(div);
       });
     } else {
-      list.innerHTML = '<div class="history-empty">📭 Koi history nahi hai</div>';
+      list.innerHTML = '<div class="log-empty">No history yet.</div>';
     }
   } catch (e) {
-    list.innerHTML = '<div class="history-empty">❌ History load nahi hui</div>';
+    list.innerHTML = '<div class="log-empty">Could not load history.</div>';
   }
 }
 
@@ -630,7 +532,8 @@ function toggleHistory() {
   const list = document.getElementById("historyList");
   const btn = document.getElementById("historyToggle");
   list.style.display = historyOpen ? "block" : "none";
-  btn.innerText = historyOpen ? "Hide ▲" : "Show ▼";
+  btn.classList.toggle("open", historyOpen);
+  btn.querySelector(".btn-label").innerText = historyOpen ? "Hide" : "Show";
   if (historyOpen && !historyLoaded) {
     loadHistory();
     historyLoaded = true;
@@ -641,8 +544,9 @@ function copyTranscript() {
   const text = document.getElementById("transcriptBody").innerText;
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.querySelector(".btn-copy");
-    btn.innerText = "✅ Copied!";
-    setTimeout(() => { btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Transcript`; }, 2000);
+    const original = btn.innerHTML;
+    btn.innerText = "Copied";
+    setTimeout(() => { btn.innerHTML = original; }, 2000);
   }).catch(() => { alert("Copy failed — please select and copy the text manually."); });
 }
 
