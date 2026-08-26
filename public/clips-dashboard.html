@@ -674,7 +674,25 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
       <p>AI clip generation, 30+ transcripts/month, and priority processing — starting at just ₹149/mo.</p>
       <button class="upgrade-btn" onclick="window.location.href='/pricing.html'">View Plans →</button>
     </div>
+    
 
+    <!-- LOG (history) -->
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Log</span><span class="frame-line"></span></div>
+    <div class="log-card">
+      <div class="log-card-head">
+        <div>
+          <div class="log-card-title">Past Clips</div>
+          <div class="log-card-sub" id="statClipsHistorySub">Your generated videos</div>
+        </div>
+        <button class="log-toggle-pill" id="histToggle" onclick="toggleClipHistory()">
+          <span class="btn-label">Show</span><span class="chev">▾</span>
+        </button>
+      </div>
+      <div class="log-list" id="clipHistoryList">
+        <div class="log-empty">Loading…</div>
+      </div>
+    </div>
+    
     <!-- TIPS -->
     <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Tips</span><span class="frame-line"></span></div>
     <div class="tips-card">
@@ -702,23 +720,6 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
         <summary>Why did I get fewer than 12 clips?</summary>
         <p>The AI only cuts moments it scores as genuinely strong — a shorter or less eventful source video may yield fewer clips.</p>
       </details>
-    </div>
-
-    <!-- LOG (history) -->
-    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Log</span><span class="frame-line"></span></div>
-    <div class="log-card">
-      <div class="log-card-head">
-        <div>
-          <div class="log-card-title">Past Clips</div>
-          <div class="log-card-sub" id="statClipsHistorySub">Your generated videos</div>
-        </div>
-        <button class="log-toggle-pill" id="histToggle" onclick="toggleClipHistory()">
-          <span class="btn-label">Show</span><span class="chev">▾</span>
-        </button>
-      </div>
-      <div class="log-list" id="clipHistoryList">
-        <div class="log-empty">Loading…</div>
-      </div>
     </div>
 
     <footer>
@@ -1255,25 +1256,30 @@ document.getElementById('clipUrl').addEventListener('input', (e) => {
    pulling in a zip library / fetching cross-origin blobs. */
 let lastGeneratedClips = [];
 
-function downloadAllClips(){
+async function downloadAllClips(){
   if (!lastGeneratedClips.length) return;
   const btn = document.getElementById('downloadAllBtn');
   btn.disabled = true;
   btn.innerText = 'Downloading…';
-  lastGeneratedClips.forEach((clip, i) => {
-    setTimeout(() => {
+  for (let i = 0; i < lastGeneratedClips.length; i++) {
+    const clip = lastGeneratedClips[i];
+    try {
+      const res = await fetch(clip.url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = clip.url;
+      a.href = blobUrl;
       a.download = `clip_${i + 1}.mp4`;
       document.body.appendChild(a);
       a.click();
       a.remove();
+      URL.revokeObjectURL(blobUrl);
       notifyDownload(clip.s3Key);
-      if (i === lastGeneratedClips.length - 1) {
-        setTimeout(() => { btn.disabled = false; btn.innerText = 'Download All'; }, 500);
-      }
-    }, i * 600);
-  });
+    } catch (e) { console.error('Download failed for clip', i, e); }
+    await new Promise(r => setTimeout(r, 400));
+  }
+  btn.disabled = false;
+  btn.innerText = 'Download All';
 }
 
 
@@ -1361,7 +1367,7 @@ async function generateClips(){
       downloadAllBtn.disabled = false;
       downloadAllBtn.innerText = 'Download All';
       if (!clips.length) {
-        sheetScroll.outerHTML = '<div class="sheet-empty">No clips came back — try a different video.</div>';
+        sheetScroll.innerHTML = '<div class="sheet-empty">No clips came back — try a different video.</div>';
       } else {
         // All dynamic fields (title, reason, s3Key, url) are escaped
         // before insertion — YouTube titles are attacker-controllable
