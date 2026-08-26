@@ -1403,7 +1403,7 @@ async function generateClips(){
 
     const jobId = data.jobId;
     const startTime = Date.now();
-    const maxWaitMs = 10 * 60 * 1000;
+    const maxWaitMs = 30 * 60 * 1000;
 
     const poll = setInterval(async () => {
       if (Date.now() - startTime > maxWaitMs) { clearInterval(poll); showError("Timed out. Please try again."); return; }
