@@ -18,7 +18,7 @@ html{scroll-behavior:smooth;}
 body{
   background:var(--bg); color:var(--text);
   font-family:'Inter',-apple-system,sans-serif;
-  width:100%; max-width:1100px; margin:0 auto; min-height:100vh; overflow-x:hidden;
+  max-width:480px; margin:0 auto; min-height:100vh;
   -webkit-font-smoothing:antialiased; font-size:14px; line-height:1.5;
   position:relative;
 }
@@ -114,19 +114,27 @@ body::before{
 .src-row:focus-within{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-dim);}
 .src-row input{flex:1; background:none; border:none; outline:none; color:var(--text); font-size:12px; font-family:'IBM Plex Mono',monospace; padding:11px 12px; min-width:0;}
 .generate-main{
-  width:100%; margin:16px 0 4px; padding:14px 16px; border:none; background:var(--accent); color:#fff;
-  cursor:pointer; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:space-between;
+  width:100%; margin:16px 0 4px; padding:15px 16px; border:none; border-radius:10px; background:var(--accent); color:#fff;
+  cursor:pointer; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px;
+  font-size:13.5px; font-weight:700; letter-spacing:.2px;
   transition:background .15s, transform .1s;
 }
-.generate-main span:first-child{font-size:13px; font-weight:600; letter-spacing:.2px;}
-.generate-main-hint{font-size:10px; color:rgba(255,255,255,.75);}
+.generate-main svg{width:16px; height:16px; flex-shrink:0;}
 .generate-main:hover{background:#e6342b;}
 .generate-main:active{transform:scale(.985);}
 .generate-main:disabled{opacity:.5; cursor:not-allowed;}
+.generate-hint{text-align:center; font-size:10px; color:var(--muted); margin-bottom:4px; font-family:'IBM Plex Mono',monospace;}
 .src-meter{display:flex; align-items:center; justify-content:space-between; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);}
 .src-meter-label{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
 .src-meter-val{font-size:10px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
 .src-meter-val b{color:var(--accent);}
+
+/* VIDEO PREVIEW */
+.video-preview-card{display:none; gap:10px; align-items:center; margin-top:12px; padding:10px; background:var(--s2); border:1px solid var(--border2); animation:frameIn .3s ease both;}
+.vp-thumb{width:64px; height:36px; object-fit:cover; background:#000; flex-shrink:0; border:1px solid var(--border);}
+.vp-info{min-width:0;}
+.vp-title{font-size:11.5px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.vp-channel{font-size:10px; color:var(--muted); margin-top:2px;}
 
 /* CAPTION PANEL */
 .panel{border:1px solid var(--border); background:var(--s1); position:relative; animation:frameIn .4s ease both; animation-delay:.06s;}
@@ -269,13 +277,54 @@ body::before{
 .frame-dl:active{transform:scale(.96);}
 .sheet-hint{font-size:10px; color:var(--muted); margin-top:8px; font-family:'IBM Plex Mono',monospace;}
 .sheet-empty{font-size:11.5px; color:var(--muted); padding:14px; text-align:center;}
+.sheet-footer{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:8px;}
+.download-all-btn{
+  padding:8px 16px; border:none; border-radius:999px; background:var(--accent); color:#fff;
+  font-size:10.5px; font-weight:700; letter-spacing:.3px; text-transform:uppercase; cursor:pointer;
+  font-family:'Inter',sans-serif; transition:opacity .15s, transform .1s; flex-shrink:0;
+}
+.download-all-btn:hover{opacity:.88;}
+.download-all-btn:active{transform:scale(.96);}
+.download-all-btn:disabled{opacity:.5; cursor:not-allowed;}
+.download-all-note{font-size:9px; color:var(--muted); margin-top:6px; font-family:'IBM Plex Mono',monospace;}
 
 /* LOG */
+.log-card{border:1px solid var(--border); background:var(--s1); padding:16px; animation:frameIn .4s ease both;}
+.log-card-head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+.log-card-title{font-size:13.5px; font-weight:600; color:var(--text);}
+.log-card-sub{font-size:10.5px; color:var(--muted); margin-top:2px;}
+.log-toggle-pill{
+  display:flex; align-items:center; gap:6px; padding:8px 16px; border:none; border-radius:999px;
+  background:var(--accent); color:#fff; font-size:10.5px; font-weight:700; letter-spacing:.3px;
+  text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif; transition:opacity .15s, transform .1s; flex-shrink:0;
+}
+.log-toggle-pill:hover{opacity:.88;}
+.log-toggle-pill:active{transform:scale(.96);}
+.log-toggle-pill .chev{display:inline-block; transition:transform .2s; font-size:9px;}
+.log-toggle-pill.open .chev{transform:rotate(180deg);}
+.log-list{display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--border);}
+
+/* TIPS */
+.tips-card{border:1px solid var(--border); background:var(--s1); padding:4px 16px; animation:frameIn .4s ease both;}
+.tip-row{display:flex; gap:12px; padding:14px 0; border-top:1px solid var(--border);}
+.tip-row:first-child{border-top:none;}
+.tip-num{font-size:10px; font-weight:700; color:var(--accent); font-family:'IBM Plex Mono',monospace; flex-shrink:0; padding-top:1px;}
+.tip-row p{font-size:12px; color:var(--text-dim); line-height:1.6;}
+
+/* FAQ */
+.faq-list{border:1px solid var(--border); background:var(--s1); animation:frameIn .4s ease both;}
+.faq-item{border-top:1px solid var(--border);}
+.faq-item:first-child{border-top:none;}
+.faq-item summary{padding:14px 16px; font-size:12.5px; font-weight:600; color:var(--text); cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:10px;}
+.faq-item summary::-webkit-details-marker{display:none;}
+.faq-item summary::after{content:'+'; font-size:16px; color:var(--muted); flex-shrink:0; transition:transform .2s;}
+.faq-item[open] summary::after{content:'−';}
+.faq-item p{padding:0 16px 16px; font-size:11.5px; color:var(--muted); line-height:1.6;}
+
 .log-toggle{background:none; border:1px solid var(--border2); color:var(--muted); font-size:9.5px; font-weight:500; letter-spacing:.3px;
   text-transform:uppercase; padding:4px 9px; cursor:pointer; font-family:'IBM Plex Mono',monospace; transition:all .15s;}
 .log-toggle:hover{border-color:var(--accent); color:var(--text);}
 .log-toggle:active{transform:scale(.95);}
-.log-list{display:none;}
 .log-item{padding:10px 0; border-top:1px solid var(--border); transition:padding-left .15s; cursor:pointer;}
 .log-item:first-child{border-top:none;}
 .log-item:hover{padding-left:4px;}
@@ -299,60 +348,39 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
 .foot-links a:hover{color:var(--text-dim);}
 .foot-copy{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
 
-/* RESPONSIVE — layout only; existing design/content preserved */
-@media (min-width: 769px){
-  .reel-body{padding-left:28px; padding-right:28px;}
-  .nav{padding-left:28px; padding-right:28px;}
+/* ══════════════════════════════════════════════
+   RESPONSIVE — DESKTOP / TABLET
+   Mobile filmstrip layout above is untouched.
+   These rules only kick in on wider viewports.
+═══════════════════════════════════════════════ */
+@media (min-width: 700px) {
+  body { max-width: 920px; }
+  .reel-body { padding: 0 32px; }
+
+  .cp-grid { grid-template-columns: repeat(4, 1fr); }
+
+  .src-card, .panel, .tips-card, .faq-list, .log-card { padding: 20px 24px; }
+  .panel-pad { padding: 18px 24px; }
+
+  /* Clip results become a wrapping grid instead of a horizontal
+     scroll strip — more clips visible at once without swiping. */
+  .sheet-scroll {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    overflow-x: visible;
+  }
+  .frame-card { flex: unset; }
+  .sheet-hint { display: none; }
+
+  .stat-strip .stat-cell { padding: 16px 12px; }
+
+  .cp-preview { max-width: 180px; }
 }
 
-@media (max-width: 768px){
-  body{max-width:100%;}
-  .nav{padding:12px 16px;}
-  .reel-body{padding-left:16px; padding-right:16px;}
-  .frame-label{padding-top:18px;}
-  .stat-cell{padding:11px 7px;}
-  .stat-num{font-size:15px;}
-  .stat-label{font-size:8px; letter-spacing:.45px;}
-  .src-card,.panel{width:100%;}
-  .cp-master-row{gap:10px;}
-  .cp-preview{max-width:140px;}
-  .sheet-scroll{max-width:100%;}
-  .frame-card{flex-basis:126px;}
-  .drawer{width:min(86vw,300px);}
-}
-
-@media (max-width: 520px){
-  .nav-logo{font-size:12px; letter-spacing:1.2px;}
-  .nav-right{gap:7px;}
-  .nav-badge{font-size:8.5px; padding:4px 7px;}
-  .reel-body{padding-left:12px; padding-right:12px;}
-  .frame-label{gap:6px;}
-  .stat-cell{padding:10px 4px;}
-  .stat-num{font-size:14px;}
-  .stat-label{font-size:7.5px;}
-  .src-card,.panel{padding-left:12px; padding-right:12px;}
-  .panel{padding-left:0; padding-right:0;}
-  .panel-pad{padding-left:12px; padding-right:12px;}
-  .src-row input{font-size:11px; padding:11px 9px;}
-  .generate-main{padding:13px 12px;}
-  .generate-main span:first-child{font-size:12px;}
-  .generate-main-hint{font-size:9px;}
-  .cp-master-row{align-items:flex-start;}
-  .cp-master-desc{max-width:80%;}
-  .proc-pad{padding-left:12px; padding-right:12px;}
-  footer{padding-bottom:22px;}
-}
-
-@media (max-width: 360px){
-  .nav{padding-left:12px; padding-right:12px;}
-  .nav-badge{font-size:8px; padding:3px 6px;}
-  .nav-menu{width:28px; height:28px;}
-  .reel-body{padding-left:10px; padding-right:10px;}
-  .stat-cell{padding-left:2px; padding-right:2px;}
-  .stat-num{font-size:13px;}
-  .stat-label{font-size:7px;}
-  .src-card{padding:12px;}
-  .frame-card{flex-basis:120px;}
+@media (min-width: 1000px) {
+  body { max-width: 1040px; }
+  .reel-body { padding: 0 40px; }
+  .sheet-scroll { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 }
 </style>
 </head>
@@ -436,6 +464,13 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
       <div class="src-meter">
         <span class="src-meter-label">Clips left today</span>
         <span class="src-meter-val"><b id="meterClipsLeft">—</b></span>
+      </div>
+      <div class="video-preview-card" id="videoPreviewCard">
+        <img id="vpThumb" class="vp-thumb" src="" alt="">
+        <div class="vp-info">
+          <div class="vp-title" id="vpTitle"></div>
+          <div class="vp-channel" id="vpChannel"></div>
+        </div>
       </div>
     </div>
 
@@ -559,9 +594,10 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
     </div>
 
     <button class="generate-main" id="genBtn" onclick="generateClips()">
-      <span>Generate clips</span>
-      <span class="generate-main-hint mono">2–5 min per video</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <span>Generate Clips</span>
     </button>
+    <div class="generate-hint" id="genHint">2–5 min per video</div>
 
     <!-- PROCESSING -->
     <div class="frame-label" id="procLabel" style="display:none;"><span class="frame-num">—</span><span class="frame-name">Processing</span><span class="frame-line"></span></div>
@@ -587,7 +623,11 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
     <div class="frame-label" id="outLabel" style="display:none;"><span class="frame-num">03</span><span class="frame-name" id="outName">Output</span><span class="frame-line"></span></div>
     <div id="resultsSection" style="display:none;">
       <div class="sheet-scroll" id="sheetScroll"></div>
-      <div class="sheet-hint">← scroll for all clips</div>
+      <div class="sheet-footer">
+        <div class="sheet-hint">← scroll for all clips</div>
+        <button class="download-all-btn" id="downloadAllBtn" onclick="downloadAllClips()" style="display:none;">Download All</button>
+      </div>
+      <div class="download-all-note">Browser may ask permission for multiple downloads</div>
     </div>
 
     <!-- UPGRADE BANNER (free users) -->
@@ -598,12 +638,50 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
       <button class="upgrade-btn" onclick="window.location.href='/pricing.html'">View Plans →</button>
     </div>
 
-    <!-- LOG (history) -->
-    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Log</span><span class="frame-line"></span>
-      <button class="log-toggle" id="histToggle" onclick="toggleClipHistory()">Show</button>
+    <!-- TIPS -->
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Tips</span><span class="frame-line"></span></div>
+    <div class="tips-card">
+      <div class="tip-row"><span class="tip-num">01</span><p>Longer source videos usually give the AI more moments to pick from — better hit rate on viral clips.</p></div>
+      <div class="tip-row"><span class="tip-num">02</span><p>Word Pop and Karaoke captions tend to perform best on Reels and Shorts — try them before Static.</p></div>
+      <div class="tip-row"><span class="tip-num">03</span><p>Download your clips within 24 hours — after that they're auto-deleted from our servers.</p></div>
     </div>
-    <div class="log-list" id="clipHistoryList">
-      <div class="log-empty">Loading…</div>
+
+    <!-- FAQ -->
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">FAQ</span><span class="frame-line"></span></div>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>Do I need to keep the tab open while it processes?</summary>
+        <p>Yes for now — keep this tab open until the clips finish rendering. We'll add background processing with a notification soon.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What happens to my clips after 24 hours?</summary>
+        <p>Clips are automatically deleted from our servers 24 hours after they're generated. Download anything you want to keep before then.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can I change captions after generating?</summary>
+        <p>Not yet — caption style is baked into the clip during rendering. Set your style before hitting Generate, or re-run the video with a different style.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Why did I get fewer than 12 clips?</summary>
+        <p>The AI only cuts moments it scores as genuinely strong — a shorter or less eventful source video may yield fewer clips.</p>
+      </details>
+    </div>
+
+    <!-- LOG (history) -->
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Log</span><span class="frame-line"></span></div>
+    <div class="log-card">
+      <div class="log-card-head">
+        <div>
+          <div class="log-card-title">Past Clips</div>
+          <div class="log-card-sub" id="statClipsHistorySub">Your generated videos</div>
+        </div>
+        <button class="log-toggle-pill" id="histToggle" onclick="toggleClipHistory()">
+          <span class="btn-label">Show</span><span class="chev">▾</span>
+        </button>
+      </div>
+      <div class="log-list" id="clipHistoryList">
+        <div class="log-empty">Loading…</div>
+      </div>
     </div>
 
     <footer>
@@ -679,8 +757,7 @@ async function logout(){
    generate, as a nudge at the point of value, not a locked door
    up front. */
 function applyAccessState(){
-  const genBtn = document.getElementById("genBtn");
-  const genHint = genBtn.querySelector(".generate-main-hint");
+  const genHint = document.getElementById("genHint");
   if (isGuest) {
     genHint.innerText = "sign up free to generate";
   } else if (currentPlan === "free") {
@@ -751,7 +828,8 @@ function toggleClipHistory(){
   const list = document.getElementById('clipHistoryList');
   const btn = document.getElementById('histToggle');
   list.style.display = clipHistoryOpen ? 'block' : 'none';
-  btn.innerText = clipHistoryOpen ? 'Hide' : 'Show';
+  btn.classList.toggle('open', clipHistoryOpen);
+  btn.querySelector('.btn-label').innerText = clipHistoryOpen ? 'Hide' : 'Show';
   if (clipHistoryOpen && !clipHistoryLoaded) { loadClipHistory(); clipHistoryLoaded = true; }
 }
 
@@ -767,9 +845,11 @@ document.getElementById('clipHistoryList').addEventListener('click', (e) => {
 
 async function loadClipHistory(){
   const list = document.getElementById('clipHistoryList');
+  const sub = document.getElementById('statClipsHistorySub');
   if (isGuest) {
     list.innerHTML = '<div class="log-empty">Log in to see your clip history.</div>';
     document.getElementById("statClipsHistory").innerText = "0";
+    if (sub) sub.innerText = "Log in to see your history";
     return;
   }
   try {
@@ -778,9 +858,11 @@ async function loadClipHistory(){
     if (!data.success || !data.data || data.data.length === 0) {
       list.innerHTML = '<div class="log-empty">No clip history yet.</div>';
       document.getElementById("statClipsHistory").innerText = "0";
+      if (sub) sub.innerText = "No videos yet";
       return;
     }
     document.getElementById("statClipsHistory").innerText = data.data.length;
+    if (sub) sub.innerText = `${data.data.length} video${data.data.length === 1 ? '' : 's'} in the last 24h`;
     list.innerHTML = '';
     data.data.forEach((job, jobIdx) => {
       const date = new Date(job.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -1094,6 +1176,69 @@ function cpInit(){
 }
 cpInit();
 
+/* ══════════════ VIDEO PREVIEW ══════════════
+   Uses YouTube's public oEmbed endpoint (no API key, CORS-enabled)
+   to show a thumbnail/title/channel before the user commits to
+   generating — catches wrong links early instead of after a
+   2-5 minute wait. Text is inserted via innerText, never innerHTML,
+   so no escaping gap even though the title comes from YouTube. */
+const YT_URL_REGEX = /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{11})/;
+let vpDebounceTimer = null;
+
+function clearVideoPreview(){
+  document.getElementById('videoPreviewCard').style.display = 'none';
+}
+
+async function fetchVideoPreview(url){
+  const card = document.getElementById('videoPreviewCard');
+  try {
+    const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+    if (!res.ok) throw new Error('lookup failed');
+    const data = await res.json();
+    document.getElementById('vpThumb').src = data.thumbnail_url || '';
+    document.getElementById('vpTitle').innerText = data.title || 'Untitled video';
+    document.getElementById('vpChannel').innerText = data.author_name ? `by ${data.author_name}` : '';
+    card.style.display = 'flex';
+  } catch (e) {
+    clearVideoPreview();
+  }
+}
+
+document.getElementById('clipUrl').addEventListener('input', (e) => {
+  clearTimeout(vpDebounceTimer);
+  const val = e.target.value.trim();
+  if (!YT_URL_REGEX.test(val)) { clearVideoPreview(); return; }
+  vpDebounceTimer = setTimeout(() => fetchVideoPreview(val), 500);
+});
+
+/* ══════════════ DOWNLOAD ALL ══════════════
+   Browsers commonly block more than one or two simultaneous
+   programmatic downloads, so clips are triggered one at a time
+   with a short stagger. This is a reasonable default without
+   pulling in a zip library / fetching cross-origin blobs. */
+let lastGeneratedClips = [];
+
+function downloadAllClips(){
+  if (!lastGeneratedClips.length) return;
+  const btn = document.getElementById('downloadAllBtn');
+  btn.disabled = true;
+  btn.innerText = 'Downloading…';
+  lastGeneratedClips.forEach((clip, i) => {
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = clip.url;
+      a.download = `clip_${i + 1}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      notifyDownload(clip.s3Key);
+      if (i === lastGeneratedClips.length - 1) {
+        setTimeout(() => { btn.disabled = false; btn.innerText = 'Download All'; }, 500);
+      }
+    }, i * 600);
+  });
+}
+
 
 /* ══════════════ GENERATE / PROCESS / RESULTS ══════════════ */
 let procTimer = null;
@@ -1142,6 +1287,7 @@ async function generateClips(){
   outLabel.style.display = "none";
   resultsSection.style.display = "none";
   sheetScroll.innerHTML = "";
+  document.getElementById('downloadAllBtn').style.display = "none";
   document.getElementById('procStatus').innerText = "RENDERING";
   document.getElementById('procTitle').innerText = "Analyzing source video";
   document.getElementById('procSub').innerText = "Usually takes 2–5 minutes. Keep this tab open.";
@@ -1166,12 +1312,17 @@ async function generateClips(){
 
   function showClips(clips){
     stopProcAnimation(true);
+    lastGeneratedClips = clips || [];
     setTimeout(() => {
       procLabel.style.display = "none";
       procCard.style.display = "none";
       document.getElementById('procTitle').classList.remove('proc-error');
       outLabel.style.display = "flex";
       document.getElementById('outName').innerText = `${clips.length} clip${clips.length === 1 ? '' : 's'} generated`;
+      const downloadAllBtn = document.getElementById('downloadAllBtn');
+      downloadAllBtn.style.display = clips.length > 1 ? 'block' : 'none';
+      downloadAllBtn.disabled = false;
+      downloadAllBtn.innerText = 'Download All';
       if (!clips.length) {
         sheetScroll.outerHTML = '<div class="sheet-empty">No clips came back — try a different video.</div>';
       } else {
@@ -1241,7 +1392,10 @@ async function generateClips(){
   const incomingUrl = params.get("ytUrl");
   const autostart = params.get("autostart") === "1";
 
-  if (incomingUrl) document.getElementById("clipUrl").value = incomingUrl;
+  if (incomingUrl) {
+    document.getElementById("clipUrl").value = incomingUrl;
+    if (YT_URL_REGEX.test(incomingUrl)) fetchVideoPreview(incomingUrl);
+  }
 
   await resolveIdentity();
   await loadUserPlan();
