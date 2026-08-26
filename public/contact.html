@@ -4,187 +4,166 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Contact — ReelScribe</title>
-<meta name="description" content="Get in touch with the ReelScribe team — Instagram, email, or send us a message directly. Most messages answered within 24 hours.">
+<meta name="description" content="Get in touch with ReelScribe support — email, Instagram, or send a message directly.">
 <link rel="canonical" href="https://reelscribe.site/contact.html">
-<link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-  --bg: #0e0d10; --s1: #161418; --s2: #1c191e;
-  --border: #2a262b; --border2: #38333a;
-  --red: #ff3b30; --text: #f5f2ee; --sub: #a39d95; --muted: #665f5c;
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0a0b; --s1:#111113; --s2:#18181b;
+  --border:#232326; --border2:#2c2c30;
+  --accent:#ff3b30; --accent-dim:#2a120f;
+  --text:#eeeeee; --text-dim:#a4a4a8; --muted:#5c5c60;
 }
-body {
-  background: var(--bg); color: var(--text);
-  font-family: 'Archivo', -apple-system, sans-serif;
-  max-width: 480px; margin: 0 auto;
-  -webkit-font-smoothing: antialiased;
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',-apple-system,sans-serif;
+  max-width:480px; margin:0 auto; min-height:100vh;
+  font-size:14px; line-height:1.5;
 }
-.mono { font-family: 'IBM Plex Mono', monospace; }
+.mono{font-family:'IBM Plex Mono',monospace;}
+:focus-visible{outline:1.5px solid var(--accent); outline-offset:2px;}
 
-.nav {
-  position: sticky; top: 0; z-index: 999;
-  background: rgba(14,13,16,0.9); backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 13px 20px;
-}
-.nav-logo { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 7px; }
-.nav-logo .ndot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); }
-.nav-back {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 600; color: var(--sub);
-  background: none; border: none; cursor: pointer;
-  font-family: 'Archivo', sans-serif; transition: color .2s;
-}
-.nav-back svg { width: 14px; height: 14px; }
-.nav-back:hover { color: var(--text); }
+/* NAV */
+.nav{position:sticky; top:0; z-index:99; background:rgba(10,10,11,.94); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:14px 20px;}
+.nav-back{display:flex; align-items:center; gap:6px; color:var(--text-dim); text-decoration:none; font-size:12px; font-family:'IBM Plex Mono',monospace;}
+.nav-logo{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; display:flex; align-items:center; gap:8px;}
+.nav-logo .mark{width:5px; height:5px; background:var(--accent); border-radius:50%;}
 
-.hero { padding: 36px 22px 26px; }
-.eyebrow {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 10.5px; font-weight: 500; letter-spacing: 1.5px;
-  text-transform: uppercase; color: var(--red); margin-bottom: 16px;
-  font-family: 'IBM Plex Mono', monospace;
+.wrap{padding:0 20px 60px;}
+
+/* SLATE HEADER — same system as About */
+.slate{margin-top:20px; border:1px solid var(--border2); background:var(--s1);}
+.slate-top{display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border); background:var(--s2);}
+.slate-top span{font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+.slate-body{padding:22px 18px 20px;}
+.slate-row{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); font-family:'IBM Plex Mono',monospace; font-size:10.5px;}
+.slate-row:last-child{border-bottom:none;}
+.slate-row .k{color:var(--muted); letter-spacing:.5px; text-transform:uppercase;}
+.slate-row .v{color:var(--text-dim);}
+.slate-row .v.accent{color:var(--accent); font-weight:600;}
+
+/* TITLE */
+.title-block{padding:30px 0 6px;}
+.eyebrow{font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); font-family:'IBM Plex Mono',monospace; margin-bottom:10px;}
+h1{font-size:28px; font-weight:700; letter-spacing:-.6px; line-height:1.15; margin-bottom:14px;}
+.lede{font-size:13.5px; color:var(--text-dim); line-height:1.7; max-width:44ch;}
+
+/* CONTACT CHANNELS — spec-list system, reused */
+.section-label{display:flex; align-items:baseline; gap:8px; margin:32px 0 14px;}
+.section-label span:first-child{font-size:10px; font-weight:600; color:var(--muted); font-family:'IBM Plex Mono',monospace; letter-spacing:1.2px; text-transform:uppercase;}
+.section-label .line{flex:1; height:1px; background:var(--border);}
+
+.channel-list{display:flex; flex-direction:column;}
+.channel{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 0; border-bottom:1px solid var(--border); text-decoration:none; color:inherit;}
+.channel:first-child{padding-top:0;}
+.channel-body h3{font-size:13.5px; font-weight:700; margin-bottom:4px; letter-spacing:-.1px; color:var(--text);}
+.channel-body p{font-size:11.5px; color:var(--text-dim); line-height:1.5;}
+.channel-arrow{font-size:14px; color:var(--muted); flex-shrink:0; transition:transform .15s, color .15s;}
+.channel:hover .channel-arrow{color:var(--accent); transform:translateX(2px);}
+
+/* FORM */
+.form-box{margin-top:6px; border:1px solid var(--border); background:var(--s1); padding:18px;}
+.form-row{margin-bottom:14px;}
+.form-row:last-child{margin-bottom:0;}
+.form-row label{display:block; font-size:10px; font-weight:600; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); margin-bottom:7px; font-family:'IBM Plex Mono',monospace;}
+.form-row input, .form-row textarea{width:100%; padding:11px 12px; background:var(--s2); border:1px solid var(--border2); color:var(--text);
+  font-size:12.5px; font-family:'Inter',sans-serif; outline:none; transition:border-color .15s;}
+.form-row input:focus, .form-row textarea:focus{border-color:var(--accent);}
+.form-row textarea{resize:vertical; min-height:90px; font-family:'IBM Plex Mono',monospace; font-size:12px; line-height:1.6;}
+.form-submit{width:100%; margin-top:4px; padding:13px; border:none; background:var(--accent); color:#fff; font-size:11.5px; font-weight:600;
+  letter-spacing:.4px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif;}
+
+.response-note{margin-top:20px; padding:14px 16px; background:var(--s1); border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;}
+.response-note span:first-child{font-size:11.5px; color:var(--text-dim);}
+.response-note span:last-child{font-size:11px; color:var(--accent); font-weight:600; font-family:'IBM Plex Mono',monospace;}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border); padding:26px 0 30px; margin-top:36px;}
+.foot-logo{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; display:flex; align-items:center; gap:9px; margin-bottom:4px;}
+.foot-logo .mark{width:5px; height:5px; background:var(--accent); border-radius:50%;}
+.foot-tag{font-size:10px; color:var(--muted); margin-bottom:14px; font-family:'IBM Plex Mono',monospace;}
+.foot-links{display:flex; flex-wrap:wrap; gap:6px 14px; margin-bottom:14px;}
+.foot-links a{color:var(--muted); font-size:11px; text-decoration:none; transition:color .2s;}
+.foot-links a:hover{color:var(--text-dim);}
+.foot-copy{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+
+@media (min-width:700px){
+  body{max-width:700px;}
+  .wrap{padding:0 40px 80px;}
+  h1{font-size:38px;}
+  .lede{font-size:14.5px; max-width:52ch;}
+  .channel-list{display:grid; grid-template-columns:1fr 1fr; gap:0 24px;}
+  .channel{border-bottom:1px solid var(--border);}
 }
-.eyebrow::before { content: ''; width: 14px; height: 1px; background: var(--border2); }
-.page-h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.15; margin-bottom: 12px; }
-.page-h1 em { font-style: normal; color: var(--red); }
-.page-sub { font-size: 14px; color: var(--sub); line-height: 1.7; }
-
-.main { padding: 0 22px 36px; }
-.section { margin-bottom: 14px; background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
-.section-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--s2); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
-.section-icon svg { width: 16px; height: 16px; color: var(--red); }
-.section h2 { font-size: 15px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.2px; }
-.section p { font-size: 13px; color: var(--sub); line-height: 1.7; margin-bottom: 14px; }
-
-.btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 100%; padding: 13px; border: none; border-radius: 6px;
-  background: var(--red); color: #1a0a08; font-size: 12.5px; font-weight: 600;
-  letter-spacing: 0.4px; text-transform: uppercase; text-decoration: none;
-  cursor: pointer; font-family: 'Archivo', sans-serif; transition: opacity .2s;
-}
-.btn:hover { opacity: .88; }
-
-.field {
-  width: 100%; padding: 13px 14px; margin-bottom: 10px;
-  background: var(--s2); border: 1px solid var(--border2); border-radius: 6px;
-  color: var(--text); font-size: 13px; font-family: 'Archivo', sans-serif;
-  outline: none; transition: border-color .2s;
-}
-.field:focus { border-color: var(--red); }
-.field::placeholder { color: var(--muted); }
-textarea.field { min-height: 96px; resize: vertical; font-family: 'Archivo', sans-serif; }
-
-.success-msg {
-  display: none; margin-top: 12px; padding: 12px; border-radius: 6px;
-  background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.25);
-  color: var(--text); font-size: 12.5px; text-align: center;
-}
-
-footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
-.foot-logo { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
-.foot-logo .fdot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
-.foot-tag { font-size: 11px; color: var(--muted); margin-bottom: 20px; font-family: 'IBM Plex Mono', monospace; }
-.foot-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 20px; }
-.foot-links a { color: var(--muted); font-size: 12px; text-decoration: none; }
-.foot-links a:hover { color: var(--sub); }
-.foot-sep { height: 1px; background: var(--border); margin-bottom: 16px; }
-.foot-copy { font-size: 11px; color: var(--muted); text-align: center; font-family: 'IBM Plex Mono', monospace; }
 </style>
 </head>
 <body>
 
-<nav class="nav">
-  <div class="nav-logo"><span class="ndot"></span>ReelScribe</div>
-  <button class="nav-back" onclick="window.location.href='/'">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3L5 8l5 5"/></svg>
-    Home
-  </button>
-</nav>
-
-<div class="hero">
-  <div class="eyebrow"><span class="mono">Contact</span></div>
-  <h1 class="page-h1">Need help? <em>We're here for you.</em></h1>
-  <p class="page-sub">Questions, feedback, or an issue with your account — reach out through any of the channels below.</p>
+<div class="nav">
+  <a class="nav-back" href="/">← Home</a>
+  <div class="nav-logo"><span class="mark"></span>ReelScribe</div>
+  <div style="width:40px"></div>
 </div>
 
-<div class="main">
-  <div class="section">
-    <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></div>
-    <h2>Instagram Support</h2>
-    <p>Message us directly on Instagram for the fastest response.</p>
-    <a class="btn" href="https://www.instagram.com/tarunraj1517/" target="_blank" rel="noopener">Open Instagram</a>
+<div class="wrap">
+
+  <div class="slate">
+    <div class="slate-top"><span>Support Desk</span><span>Rev. 02</span></div>
+    <div class="slate-body">
+      <div class="slate-row"><span class="k">Channel</span><span class="v">Email, Instagram, form</span></div>
+      <div class="slate-row"><span class="k">Response time</span><span class="v accent">Within 24 hours</span></div>
+      <div class="slate-row"><span class="k">Status</span><span class="v">Accepting messages</span></div>
+    </div>
   </div>
 
-  <div class="section">
-    <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
-    <h2>Email Support</h2>
-    <p>support@reelscribe.site</p>
-    <a class="btn" href="mailto:support@reelscribe.site">Send Email</a>
+  <div class="title-block">
+    <div class="eyebrow">Contact</div>
+    <h1>Talk to a real person, not a bot.</h1>
+    <p class="lede">Questions about billing, a stuck transcript, or a feature you wish existed — reach us however's easiest for you.</p>
   </div>
 
-  <div class="section">
-    <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-    <h2>Send Us a Message</h2>
-    <p>Have feedback, ideas, or need support? Send us a message and we'll get back to you.</p>
-
-    <input type="text" class="field" id="name" placeholder="Your name">
-    <input type="email" class="field" id="email" placeholder="Your email">
-    <textarea class="field" id="message" placeholder="Your message"></textarea>
-    <button class="btn" onclick="sendMessage()">Send Message</button>
-    <div class="success-msg" id="successMsg">Your email app should now be open with the message ready to send.</div>
+  <div class="section-label"><span>Channels</span><div class="line"></div></div>
+  <div class="channel-list">
+    <a class="channel" href="mailto:support@reelscribe.site">
+      <div class="channel-body"><h3>Email support</h3><p>support@reelscribe.site</p></div>
+      <span class="channel-arrow">→</span>
+    </a>
+    <a class="channel" href="https://www.instagram.com/tarunraj1517/" target="_blank" rel="noopener">
+      <div class="channel-body"><h3>Instagram DM</h3><p>Message us directly, fastest for quick questions</p></div>
+      <span class="channel-arrow">→</span>
+    </a>
   </div>
 
-  <div class="section">
-    <div class="section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-    <h2>Response Time</h2>
-    <p style="margin-bottom:0">Most messages are answered within 24 hours.</p>
+  <div class="section-label"><span>Send A Message</span><div class="line"></div></div>
+  <div class="form-box">
+    <div class="form-row"><label>Name</label><input type="text" placeholder="Your name"></div>
+    <div class="form-row"><label>Email</label><input type="email" placeholder="you@example.com"></div>
+    <div class="form-row"><label>Message</label><textarea placeholder="What's going on?"></textarea></div>
+    <button class="form-submit">Send Message</button>
   </div>
+
+  <div class="response-note">
+    <span>Most messages get a reply within</span>
+    <span>24 HOURS</span>
+  </div>
+
+  <footer>
+    <div class="foot-logo"><span class="mark"></span>ReelScribe</div>
+    <div class="foot-tag">transcribe · repurpose · scale</div>
+    <div class="foot-links">
+      <a href="/about.html">About</a>
+      <a href="/pricing.html">Pricing</a>
+      <a href="/contact.html">Contact</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy</a>
+    </div>
+    <div class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</div>
+  </footer>
+
 </div>
 
-<footer>
-  <div class="foot-logo"><span class="fdot"></span>ReelScribe</div>
-  <div class="foot-tag">Transcribe · Repurpose · Scale</div>
-  <div class="foot-links">
-    <a href="/about.html">About</a>
-    <a href="/pricing.html">Pricing</a>
-    <a href="/contact.html">Contact</a>
-    <a href="/terms.html">Terms</a>
-    <a href="/privacy.html">Privacy</a>
-  </div>
-  <div class="foot-sep"></div>
-  <p class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</p>
-</footer>
-
-<script>
-function isValidEmail(email){
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function sendMessage(){
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const message = document.getElementById("message").value.trim();
-
-  if(!name || !email || !message){
-    alert("Please fill in all fields before sending.");
-    return;
-  }
-  if(!isValidEmail(email)){
-    alert("Please enter a valid email address.");
-    return;
-  }
-
-  const subject = encodeURIComponent("ReelScribe Contact Form");
-  const body = encodeURIComponent(`Name: ${name}\n\nEmail: ${email}\n\nMessage:\n${message}`);
-  window.location.href = `mailto:support@reelscribe.site?subject=${subject}&body=${body}`;
-  document.getElementById("successMsg").style.display = "block";
-}
-</script>
 </body>
 </html>
