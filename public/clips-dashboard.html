@@ -101,6 +101,16 @@ body::before{
 .upgrade-btn{width:100%; padding:11px; border:none; background:var(--accent); color:#fff; font-size:11.5px; font-weight:600;
   letter-spacing:.4px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif;}
 
+/* QUICK ACTIONS */
+.qa-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; animation:frameIn .4s ease both;}
+.qa-card{display:block; text-decoration:none; border:1px solid var(--border); background:var(--s1); border-radius:12px; padding:16px; transition:transform .15s ease, border-color .15s ease;}
+.qa-card:hover{transform:translateY(-2px); border-color:var(--border2);}
+.qa-card:active{transform:scale(.98);}
+.qa-icon{width:38px; height:38px; border-radius:10px; background:var(--s2); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; margin-bottom:12px;}
+.qa-icon svg{width:18px; height:18px; color:var(--accent);}
+.qa-title{font-size:13.5px; font-weight:700; color:var(--text); margin-bottom:3px;}
+.qa-sub{font-size:10.5px; color:var(--muted); line-height:1.4;}
+
 /* SOURCE INPUT */
 .src-card{border:1px solid var(--border); background:var(--s1); padding:16px; position:relative; animation:frameIn .4s ease both;}
 .reg{position:absolute; width:8px; height:8px; pointer-events:none; opacity:.5;}
@@ -375,6 +385,8 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
   .stat-strip .stat-cell { padding: 16px 12px; }
 
   .cp-preview { max-width: 180px; }
+
+  .qa-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
 @media (min-width: 1000px) {
@@ -628,6 +640,31 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
         <button class="download-all-btn" id="downloadAllBtn" onclick="downloadAllClips()" style="display:none;">Download All</button>
       </div>
       <div class="download-all-note">Browser may ask permission for multiple downloads</div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Quick Actions</span><span class="frame-line"></span></div>
+    <div class="qa-grid">
+      <a class="qa-card" href="/">
+        <div class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div class="qa-title">Home</div>
+        <div class="qa-sub">Back to the main page</div>
+      </a>
+      <a class="qa-card" href="/dashboard.html">
+        <div class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div class="qa-title">Transcript Dashboard</div>
+        <div class="qa-sub">View your saved transcripts</div>
+      </a>
+      <a class="qa-card" href="/pricing.html">
+        <div class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+        <div class="qa-title">Upgrade Plan</div>
+        <div class="qa-sub">Get more transcripts & clips</div>
+      </a>
+      <a class="qa-card" href="/contact.html">
+        <div class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="qa-title">Support</div>
+        <div class="qa-sub">Contact us anytime</div>
+      </a>
     </div>
 
     <!-- UPGRADE BANNER (free users) -->
