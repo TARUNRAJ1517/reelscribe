@@ -6,138 +6,165 @@
 <title>Privacy Policy — ReelScribe</title>
 <meta name="description" content="How ReelScribe collects, uses, and protects your data — account info, transcripts, clips, cookies, and your rights.">
 <link rel="canonical" href="https://reelscribe.site/privacy.html">
-<link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-:root {
-  --bg: #0e0d10; --s1: #161418; --s2: #1c191e;
-  --border: #2a262b; --border2: #38333a;
-  --red: #ff3b30; --text: #f5f2ee; --sub: #a39d95; --muted: #665f5c;
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0a0b; --s1:#111113; --s2:#18181b;
+  --border:#232326; --border2:#2c2c30;
+  --accent:#ff3b30; --accent-dim:#2a120f;
+  --text:#eeeeee; --text-dim:#a4a4a8; --muted:#5c5c60;
 }
-body {
-  background: var(--bg); color: var(--text);
-  font-family: 'Archivo', -apple-system, sans-serif;
-  max-width: 480px; margin: 0 auto;
-  -webkit-font-smoothing: antialiased;
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',-apple-system,sans-serif;
+  max-width:480px; margin:0 auto; min-height:100vh;
+  font-size:14px; line-height:1.5;
 }
-.mono { font-family: 'IBM Plex Mono', monospace; }
-.nav {
-  position: sticky; top: 0; z-index: 999;
-  background: rgba(14,13,16,0.9); backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 13px 20px;
-}
-.nav-logo { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 7px; }
-.nav-logo .ndot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); }
-.nav-back {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 600; color: var(--sub);
-  background: none; border: none; cursor: pointer;
-  font-family: 'Archivo', sans-serif; transition: color .2s;
-}
-.nav-back svg { width: 14px; height: 14px; }
-.nav-back:hover { color: var(--text); }
+.mono{font-family:'IBM Plex Mono',monospace;}
+:focus-visible{outline:1.5px solid var(--accent); outline-offset:2px;}
 
-.main { padding: 30px 22px 36px; }
-.page-title { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
-.last-updated { color: var(--muted); font-size: 12px; margin-bottom: 26px; font-family: 'IBM Plex Mono', monospace; }
-.section { margin-bottom: 14px; background: var(--s1); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
-.section h3 { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: var(--red); }
-.section p { font-size: 13px; color: var(--sub); line-height: 1.7; }
-.section a { color: var(--red); }
+/* NAV */
+.nav{position:sticky; top:0; z-index:99; background:rgba(10,10,11,.94); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:14px 20px;}
+.nav-back{display:flex; align-items:center; gap:6px; color:var(--text-dim); text-decoration:none; font-size:12px; font-family:'IBM Plex Mono',monospace;}
+.nav-logo{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; display:flex; align-items:center; gap:8px;}
+.nav-logo .mark{width:5px; height:5px; background:var(--accent); border-radius:50%;}
 
-footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; }
-.foot-logo { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
-.foot-logo .fdot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); }
-.foot-tag { font-size: 11px; color: var(--muted); margin-bottom: 20px; font-family: 'IBM Plex Mono', monospace; }
-.foot-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 20px; }
-.foot-links a { color: var(--muted); font-size: 12px; text-decoration: none; }
-.foot-links a:hover { color: var(--sub); }
-.foot-sep { height: 1px; background: var(--border); margin-bottom: 16px; }
-.foot-copy { font-size: 11px; color: var(--muted); text-align: center; font-family: 'IBM Plex Mono', monospace; }
+.wrap{padding:0 20px 60px;}
+
+/* SLATE HEADER — same system as About/Contact */
+.slate{margin-top:20px; border:1px solid var(--border2); background:var(--s1);}
+.slate-top{display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border); background:var(--s2);}
+.slate-top span{font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+.slate-body{padding:22px 18px 20px;}
+.slate-row{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); font-family:'IBM Plex Mono',monospace; font-size:10.5px;}
+.slate-row:last-child{border-bottom:none;}
+.slate-row .k{color:var(--muted); letter-spacing:.5px; text-transform:uppercase;}
+.slate-row .v{color:var(--text-dim);}
+
+/* TITLE */
+.title-block{padding:30px 0 6px;}
+.eyebrow{font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); font-family:'IBM Plex Mono',monospace; margin-bottom:10px;}
+h1{font-size:26px; font-weight:700; letter-spacing:-.5px; line-height:1.15; margin-bottom:10px;}
+.lede{font-size:12px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+
+/* CLAUSE LIST — spec-list system, reused for legal clauses */
+.section-label{display:flex; align-items:baseline; gap:8px; margin:30px 0 14px;}
+.section-label span:first-child{font-size:10px; font-weight:600; color:var(--muted); font-family:'IBM Plex Mono',monospace; letter-spacing:1.2px; text-transform:uppercase;}
+.section-label .line{flex:1; height:1px; background:var(--border);}
+
+.clause-list{display:flex; flex-direction:column;}
+.clause{display:flex; gap:16px; padding:18px 0; border-bottom:1px solid var(--border);}
+.clause:first-child{padding-top:0;}
+.clause-num{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace; flex-shrink:0; width:22px; padding-top:2px;}
+.clause-body h3{font-size:13.5px; font-weight:700; margin-bottom:6px; letter-spacing:-.1px;}
+.clause-body p{font-size:12.5px; color:var(--text-dim); line-height:1.65;}
+.clause-body a{color:var(--accent); text-decoration:none;}
+.clause-body a:hover{text-decoration:underline;}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border); padding:26px 0 30px; margin-top:36px;}
+.foot-logo{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; display:flex; align-items:center; gap:9px; margin-bottom:4px;}
+.foot-logo .mark{width:5px; height:5px; background:var(--accent); border-radius:50%;}
+.foot-tag{font-size:10px; color:var(--muted); margin-bottom:14px; font-family:'IBM Plex Mono',monospace;}
+.foot-links{display:flex; flex-wrap:wrap; gap:6px 14px; margin-bottom:14px;}
+.foot-links a{color:var(--muted); font-size:11px; text-decoration:none; transition:color .2s;}
+.foot-links a:hover{color:var(--text-dim);}
+.foot-copy{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+
+@media (min-width:700px){
+  body{max-width:760px;}
+  .wrap{padding:0 40px 80px;}
+  h1{font-size:34px;}
+  .clause-body p{max-width:62ch;}
+}
 </style>
 </head>
 <body>
 
-<nav class="nav">
-  <div class="nav-logo"><span class="ndot"></span>ReelScribe</div>
-  <button class="nav-back" onclick="window.location.href='/'">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3L5 8l5 5"/></svg>
-    Home
-  </button>
-</nav>
-
-<div class="main">
-  <div class="page-title">Privacy Policy</div>
-  <div class="last-updated">Last updated: August 2026</div>
-
-  <div class="section">
-    <h3>1. Information We Collect</h3>
-    <p>We store your email address to manage your account and sign-in. Uploaded videos are processed temporarily and deleted immediately after a transcript is generated.</p>
-  </div>
-
-  <div class="section">
-    <h3>2. How We Use Your Data</h3>
-    <p>Your email is used only to manage your account, plan, and usage limits. We never sell your data to third parties.</p>
-  </div>
-
-  <div class="section">
-    <h3>3. Transcripts & Clips</h3>
-    <p>Generated transcripts are linked to your account and saved in your history, accessible any time from your dashboard. Generated clips are stored temporarily and automatically deleted — either 5 minutes after you download them, or within 24 hours if not downloaded.</p>
-  </div>
-
-  <div class="section">
-    <h3>4. Cookies</h3>
-    <p>We use only the cookies necessary to keep you signed in (session cookies). We don't use tracking or advertising cookies.</p>
-  </div>
-
-  <div class="section">
-    <h3>5. Third-Party Services</h3>
-    <p>We use Google (for sign-in), Groq (for AI transcription), Razorpay (for payment processing on paid plans), and a third-party API (for Instagram video access). Each of these has its own privacy policy governing how they handle data passed to them. We don't store your card or payment details — Razorpay handles that directly.</p>
-  </div>
-
-  <div class="section">
-    <h3>6. Data Security</h3>
-    <p>Your data is stored on secure servers. Uploaded videos are deleted immediately after processing. We take the security of your account and content seriously.</p>
-  </div>
-
-  <div class="section">
-    <h3>7. Data Retention</h3>
-    <p>We keep your account details, transcript history, and usage records for as long as your account is active. If you delete your account, this data is permanently removed within 30 days, except where we're required to retain it for legal or billing reasons.</p>
-  </div>
-
-  <div class="section">
-    <h3>8. Children's Privacy</h3>
-    <p>ReelScribe is not intended for anyone under 13. We don't knowingly collect data from children. If you believe a child has created an account, contact us and we'll remove it.</p>
-  </div>
-
-  <div class="section">
-    <h3>9. Changes to This Policy</h3>
-    <p>We may update this privacy policy from time to time. Material changes will be reflected by updating the "Last updated" date above. Continued use of ReelScribe after a change means you accept the updated policy.</p>
-  </div>
-
-  <div class="section">
-    <h3>10. Your Rights</h3>
-    <p>You can request deletion of your account and associated data at any time. Contact us via <a href="/contact.html">our contact page</a> or on Instagram at <a href="https://www.instagram.com/tarunraj1517/" target="_blank" rel="noopener">@tarunraj1517</a>.</p>
-  </div>
+<div class="nav">
+  <a class="nav-back" href="/">← Home</a>
+  <div class="nav-logo"><span class="mark"></span>ReelScribe</div>
+  <div style="width:40px"></div>
 </div>
 
-<footer>
-  <div class="foot-logo"><span class="fdot"></span>ReelScribe</div>
-  <div class="foot-tag">Transcribe · Repurpose · Scale</div>
-  <div class="foot-links">
-    <a href="/about.html">About</a>
-    <a href="/pricing.html">Pricing</a>
-    <a href="/contact.html">Contact</a>
-    <a href="/terms.html">Terms</a>
-    <a href="/privacy.html">Privacy</a>
+<div class="wrap">
+
+  <div class="slate">
+    <div class="slate-top"><span>Legal Document</span><span>02 / 02</span></div>
+    <div class="slate-body">
+      <div class="slate-row"><span class="k">Document</span><span class="v">Privacy Policy</span></div>
+      <div class="slate-row"><span class="k">Third parties</span><span class="v">Google, Groq, Razorpay</span></div>
+      <div class="slate-row"><span class="k">Last updated</span><span class="v">August 2026</span></div>
+    </div>
   </div>
-  <div class="foot-sep"></div>
-  <p class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</p>
-</footer>
+
+  <div class="title-block">
+    <div class="eyebrow">Privacy Policy</div>
+    <h1>How your data is handled.</h1>
+    <p class="lede">What we collect, why, and how to control it.</p>
+  </div>
+
+  <div class="section-label"><span>Policy</span><div class="line"></div></div>
+  <div class="clause-list">
+    <div class="clause">
+      <div class="clause-num mono">01</div>
+      <div class="clause-body"><h3>Information We Collect</h3><p>We store your email address to manage your account and sign-in. Uploaded videos are processed temporarily and deleted immediately after a transcript is generated.</p></div>
+    </div>
+    <div class="clause">
+      <div class="clause-num mono">02</div>
+      <div class="clause-body"><h3>How We Use Your Data</h3><p>Your email is used only to manage your account, plan, and usage limits. We never sell your data to third parties.</p></div>
+    </div>
+    <div class="clause">
+      <div class="clause-num mono">03</div>
+      <div class="clause-body"><h3>Transcripts & Clips</h3><p>Generated transcripts are linked to your account and saved in your history, accessible any time from your dashboard. Generated clips are stored temporarily and automatically deleted — either 5 minutes after you download them, or within 24 hours if not downloaded.</p></div>
+    </div>
+    <div class="clause">
+      <div class="clause-num mono">04</div>
+      <div class="clause-body"><h3>Cookies</h3><p>We use only the cookies necessary to keep you signed in (session cookies). We don't use tracking or advertising cookies.</p></div>
+    </div>
+    <div class="clause">
+      <div class="clause-num mono">05</div>
+      <div class="clause-body"><h3>Third-Party Services</h3><p>We use Google (for sign-in), Groq (for AI transcription), Razorpay (for payment processing on paid plans), and a third-party API (for Instagram video access). Each of these has its own privacy policy governing how they handle data passed to them. We don't store your card or payment details — Razorpay handles that directly.</p></div>
+    </div>
+    <div class="clause">
+      <div class="clause-num mono">06</div>
+      <div class="clause-body"><h3>Data Security</h3><p>Your data is stored on secure servers. Uploaded videos are deleted immediately after processing. We take the security of your account and content seriously.</p></div>
+    </div>
+    <div class="clause">
+      <div class="clause-num mono">07</div>
+      <div class="clause-body"><h3>Data Retention</h3><p>We keep your account details, transcript history, and usage records for as long as your account is active. If you delete your account, this data is permanently removed within 30 days, except where we're required to retain it for legal or billing reasons.</p></div>
+    </div>
+    <div class="clause">
+      <div class="clause-num mono">08</div>
+      <div class="clause-body"><h3>Children's Privacy</h3><p>ReelScribe is not intended for anyone under 13. We don't knowingly collect data from children. If you believe a child has created an account, contact us and we'll remove it.</p></div>
+    </div>
+    <div class="clause">
+      <div class="clause-num mono">09</div>
+      <div class="clause-body"><h3>Changes to This Policy</h3><p>We may update this privacy policy from time to time. Material changes will be reflected by updating the "Last updated" date above. Continued use of ReelScribe after a change means you accept the updated policy.</p></div>
+    </div>
+    <div class="clause">
+      <div class="clause-num mono">10</div>
+      <div class="clause-body"><h3>Your Rights</h3><p>You can request deletion of your account and associated data at any time. Contact us via <a href="/contact.html">our contact page</a>.</p></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="foot-logo"><span class="mark"></span>ReelScribe</div>
+    <div class="foot-tag">transcribe · repurpose · scale</div>
+    <div class="foot-links">
+      <a href="/about.html">About</a>
+      <a href="/pricing.html">Pricing</a>
+      <a href="/contact.html">Contact</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy</a>
+    </div>
+    <div class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</div>
+  </footer>
+
+</div>
 
 </body>
 </html>
