@@ -18,6 +18,17 @@ const UserSchema = new mongoose.Schema({
     default: null
   },
 
+  // ── LAST PAID PLAN (kept even after downgrade, for churn/win-back detection) ──
+  lastPaidPlan: {
+    type: String,
+    enum: ["starter", "pro", "agency", null],
+    default: null
+  },
+
+  // ── ACCOUNT STATUS ──
+  isSuspended: { type: Boolean, default: false },
+  suspendedAt: { type: Date, default: null },
+
   // ── TRANSCRIPTION TRACKING ──
   transcriptsUsedToday:     { type: Number, default: 0 },
   transcriptsUsedMonth:     { type: Number, default: 0 },
