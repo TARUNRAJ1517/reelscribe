@@ -278,6 +278,18 @@ tr.user-row:hover { background: rgba(255,255,255,0.02); }
         <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Paid Users</div></div>
       </div>
       <div class="plan-breakdown" id="planBreakdown"></div>
+
+      <div class="card">
+        <h2>Revenue</h2>
+        <p class="subtitle">From confirmed Razorpay payments.</p>
+        <div class="stats-grid" id="revenueGrid" style="margin-bottom:0;">
+          <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Total Revenue</div></div>
+          <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">This Month</div></div>
+          <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Today</div></div>
+          <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Paid → Free</div></div>
+        </div>
+      </div>
+
       <div class="card">
         <h2>Quick Actions</h2>
         <p class="subtitle">Jump straight to a common task.</p>
@@ -476,6 +488,7 @@ function switchTab(name){
 
 function initPanel(){
   loadStats();
+  loadRevenue();
   loadUsers();
 }
 
@@ -501,6 +514,21 @@ async function loadStats(){
       <div class="plan-chip">Agency: <b>${data.byPlan.agency||0}</b></div>
     `;
   } catch(e){ toast("Could not load stats.", "error"); }
+}
+
+async function loadRevenue(){
+  try {
+    const res = await fetch("/admin/revenue");
+    const data = await res.json();
+    if(!data.success) return;
+
+    const fmt = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+    const cards = document.querySelectorAll("#revenueGrid .stat-num");
+    cards[0].innerText = fmt(data.totalRevenue);
+    cards[1].innerText = fmt(data.monthRevenue);
+    cards[2].innerText = fmt(data.todayRevenue);
+    cards[3].innerText = data.paidToFreeConversions;
+  } catch(e){ toast("Could not load revenue.", "error"); }
 }
 
 /* ══════════════════════════════════════════════════════════
