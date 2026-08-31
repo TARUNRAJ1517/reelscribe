@@ -25,6 +25,7 @@ const User        = require("./models/User");
 const GuestUsage  = require("./models/GuestUsage");
 const ClipJob     = require("./models/Clip");
 const AdminLog    = require("./models/AdminLog");
+const Payment     = require("./models/Payment");
 const Razorpay    = require("razorpay");
 const crypto      = require("crypto");
 const FormData    = require("form-data");
@@ -870,6 +871,7 @@ app.post("/verify-payment", async (req, res) => {
     } else {
       planExpiry.setMonth(planExpiry.getMonth() + 1);
     }
+    const amountRupees = isYearly ? PLAN_PRICING[plan].y * 12 : PLAN_PRICING[plan].m;
 
     const user = await User.findOneAndUpdate(
       { email },
@@ -889,6 +891,16 @@ app.post("/verify-payment", async (req, res) => {
     );
 
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
+
+    Payment.create({
+      userEmail: email,
+      plan,
+      billingCycle: isYearly ? "yearly" : "monthly",
+      amount: amountRupees,
+      status: "paid",
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+    }).catch(() => {});
 
     res.json({ success: true, message: `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan activated successfully!`, plan, planExpiresAt: planExpiry });
   } catch (err) {
@@ -986,6 +998,32 @@ app.get("/admin/stats", adminAuth, async (req, res) => {
     planCounts.forEach(p => { if (byPlan[p._id] !== undefined) byPlan[p._id] = p.count; });
 
     res.json({ success: true, totalUsers, newToday, newThisWeek, byPlan });
+  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+});
+
+app.get("/admin/revenue", adminAuth, async (req, res) => {
+  try {
+    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0, 0, 0, 0);
+
+    const [totalAgg, monthAgg, todayAgg, paidEmails] = await Promise.all([
+      Payment.aggregate([{ $match: { status: "paid" } }, { $group: { _id: null, sum: { $sum: "$amount" } } }]),
+      Payment.aggregate([{ $match: { status: "paid", createdAt: { $gte: startOfMonth } } }, { $group: { _id: null, sum: { $sum: "$amount" } } }]),
+      Payment.aggregate([{ $match: { status: "paid", createdAt: { $gte: startOfToday } } }, { $group: { _id: null, sum: { $sum: "$amount" } } }]),
+      Payment.distinct("userEmail", { status: "paid" }),
+    ]);
+
+    // "Paid → Free conversions": users who have paid at least once but are
+    // currently back on the free plan.
+    const paidToFreeConversions = await User.countDocuments({ email: { $in: paidEmails }, plan: "free" });
+
+    res.json({
+      success: true,
+      totalRevenue: totalAgg[0]?.sum || 0,
+      monthRevenue: monthAgg[0]?.sum || 0,
+      todayRevenue: todayAgg[0]?.sum || 0,
+      paidToFreeConversions,
+    });
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
