@@ -109,19 +109,33 @@ input[type="password"] { letter-spacing: 3px; }
 .card .subtitle { color: var(--muted); font-size: 12px; margin-bottom: 18px; }
 
 /* ── Users table ── */
-.table-toolbar { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; }
-.table-toolbar input { margin-bottom: 0; flex: 1; }
+.table-toolbar { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; flex-wrap: wrap; }
+.table-toolbar input { margin-bottom: 0; flex: 1; min-width: 180px; }
+.table-toolbar select { margin-bottom: 0; width: auto; min-width: 130px; }
+.filter-chips { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.filter-chip {
+  padding: 6px 12px; border-radius: 100px; border: 1px solid var(--border2);
+  background: var(--s2); color: var(--sub); font-size: 11.5px; cursor: pointer;
+  font-family: 'Archivo', sans-serif; transition: all .15s;
+}
+.filter-chip.active { background: rgba(255,59,48,0.12); border-color: rgba(255,59,48,0.4); color: var(--red); }
+.filter-chip .cnt { color: var(--muted); margin-left: 4px; }
+.filter-chip.active .cnt { color: var(--red); opacity: .8; }
+
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 th { text-align: left; padding: 10px 12px; color: var(--muted); font-weight: 600; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border2); font-family: 'IBM Plex Mono', monospace; white-space: nowrap; }
 td { padding: 11px 12px; border-bottom: 1px solid var(--border); color: var(--sub); white-space: nowrap; }
 tr:last-child td { border-bottom: none; }
+tr.user-row { cursor: pointer; }
+tr.user-row:hover { background: rgba(255,255,255,0.02); }
 .email-cell { color: var(--text); }
 .plan-badge { display: inline-block; padding: 3px 9px; border-radius: 100px; font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; background: var(--s2); border: 1px solid var(--border2); }
 .plan-badge.paid { color: var(--red); border-color: rgba(255,59,48,0.3); background: rgba(255,59,48,0.08); }
+.plan-badge.churned { color: #f5b942; border-color: rgba(245,185,66,0.35); background: rgba(245,185,66,0.08); }
 .row-actions { display: flex; gap: 6px; }
 
-.pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; font-size: 12px; color: var(--muted); }
+.pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; font-size: 12px; color: var(--muted); flex-wrap: wrap; gap: 10px; }
 .pagination-btns { display: flex; gap: 8px; }
 
 .state-msg { text-align: center; color: var(--muted); font-size: 13px; padding: 30px 0; }
@@ -137,6 +151,22 @@ tr:last-child td { border-bottom: none; }
 .modal-box p { font-size: 13px; color: var(--sub); line-height: 1.6; margin-bottom: 20px; }
 .modal-actions { display: flex; gap: 10px; }
 .modal-actions .btn { flex: 1; }
+
+/* ── User detail modal ── */
+.detail-box { max-width: 420px; }
+.detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.detail-header h3 { font-size: 16px; }
+.detail-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1; }
+.detail-sub { color: var(--muted); font-size: 12px; margin-bottom: 18px; word-break: break-all; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.detail-item { background: var(--s2); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 12px; }
+.detail-item .dl { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; margin-bottom: 4px; }
+.detail-item .dv { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.detail-banner { padding: 10px 12px; border-radius: 8px; font-size: 12px; line-height: 1.5; margin-bottom: 16px; display: none; }
+.detail-banner.show { display: block; }
+.detail-banner.winback { background: rgba(245,185,66,0.08); border: 1px solid rgba(245,185,66,0.3); color: #f5b942; }
+.detail-banner.expiring { background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.3); color: var(--red); }
+.detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* ── Toasts ── */
 .toast-stack { position: fixed; top: 16px; right: 16px; z-index: 300; display: flex; flex-direction: column; gap: 8px; max-width: 320px; }
@@ -154,6 +184,7 @@ tr:last-child td { border-bottom: none; }
   .grid-2 { grid-template-columns: 1fr; }
   .page { padding: 18px 14px 50px; }
   .tabs { padding: 14px 14px 0; }
+  .detail-grid { grid-template-columns: 1fr 1fr; }
 }
 </style>
 </head>
@@ -170,6 +201,36 @@ tr:last-child td { border-bottom: none; }
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
       <button class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- User detail modal -->
+<div class="modal-overlay" id="userDetailModal">
+  <div class="modal-box detail-box">
+    <div class="detail-header">
+      <h3 id="detailEmail">—</h3>
+      <button class="detail-close" onclick="closeUserDetail()">&times;</button>
+    </div>
+    <div class="detail-sub" id="detailSub">—</div>
+
+    <div class="detail-banner winback" id="winbackBanner">
+      ⚠️ This user had a <b id="winbackPlan"></b> plan that expired on <span id="winbackDate"></span> and is now on Free. Good candidate for a win-back offer.
+    </div>
+    <div class="detail-banner expiring" id="expiringBanner">
+      ⏳ This user's plan expires in <b id="expiringDays"></b> day(s) — consider a renewal reminder.
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-item"><div class="dl">Plan</div><div class="dv" id="detailPlan">—</div></div>
+      <div class="detail-item"><div class="dl">Credits</div><div class="dv" id="detailCredits">—</div></div>
+      <div class="detail-item"><div class="dl">Joined</div><div class="dv" id="detailJoined">—</div></div>
+      <div class="detail-item"><div class="dl">Plan Expiry</div><div class="dv" id="detailExpiry">—</div></div>
+    </div>
+
+    <div class="detail-actions">
+      <button class="btn btn-ghost btn-sm" onclick="manageFromDetail()">Manage Plan/Credits</button>
+      <button class="btn btn-ghost btn-sm" id="copyEmailBtn" onclick="copyDetailEmail()">Copy Email</button>
     </div>
   </div>
 </div>
@@ -224,6 +285,7 @@ tr:last-child td { border-bottom: none; }
           <button class="btn btn-ghost" onclick="switchTab('actions')">Add Credits</button>
           <button class="btn btn-ghost" onclick="switchTab('actions')">Set Plan</button>
           <button class="btn btn-ghost" onclick="switchTab('users')">Search Users</button>
+          <button class="btn btn-ghost" onclick="switchTab('users'); setTimeout(()=>applyFilter('churned'),0)">Win-back List</button>
           <button class="btn btn-ghost" onclick="switchTab('logs')">View Audit Log</button>
         </div>
       </div>
@@ -233,11 +295,27 @@ tr:last-child td { border-bottom: none; }
     <div class="page-section" id="section-users">
       <div class="card">
         <h2>All Users</h2>
-        <p class="subtitle">Search, page through, and export your user base.</p>
+        <p class="subtitle">Search, filter, page through, and export your user base.</p>
 
         <div class="table-toolbar">
           <input type="text" id="userSearch" placeholder="Search by email…" oninput="debouncedSearch()">
-          <button class="btn btn-ghost" onclick="exportUsersCSV()">Export CSV</button>
+          <select id="planFilter" onchange="applyFilter('plan')">
+            <option value="">All Plans</option>
+            <option value="free">Free</option>
+            <option value="starter">Starter</option>
+            <option value="pro">Pro</option>
+            <option value="agency">Agency</option>
+          </select>
+          <button class="btn btn-ghost" onclick="exportUsersCSV(false)">Export Page</button>
+          <button class="btn btn-ghost" id="exportAllBtn" onclick="exportUsersCSV(true)">Export All</button>
+        </div>
+
+        <div class="filter-chips">
+          <button class="filter-chip active" id="chip-all" onclick="applyFilter('all')">All</button>
+          <button class="filter-chip" id="chip-paid" onclick="applyFilter('paid')">Paid</button>
+          <button class="filter-chip" id="chip-free" onclick="applyFilter('free')">Free</button>
+          <button class="filter-chip" id="chip-expiring" onclick="applyFilter('expiring')">Expiring soon (≤7d)</button>
+          <button class="filter-chip" id="chip-churned" onclick="applyFilter('churned')">⚠️ Win-back (expired paid)</button>
         </div>
 
         <div class="table-wrap">
@@ -426,9 +504,9 @@ async function loadStats(){
 }
 
 /* ══════════════════════════════════════════════════════════
-   USERS TABLE — search + pagination + CSV export
+   USERS TABLE — search + filters + pagination + CSV export
    ══════════════════════════════════════════════════════════ */
-const usersState = { page: 1, totalPages: 1, search: "", data: [] };
+const usersState = { page: 1, totalPages: 1, search: "", planFilter: "", quickFilter: "all", data: [], total: 0 };
 let searchDebounceTimer = null;
 function debouncedSearch(){
   clearTimeout(searchDebounceTimer);
@@ -439,6 +517,47 @@ function debouncedSearch(){
   }, 350);
 }
 
+/*
+  NOTE on "Win-back" / churned detection:
+  This relies on the user object having a `planExpiresAt` field even after
+  the plan reverts to "free" (i.e. the backend should NOT wipe planExpiresAt
+  on downgrade — just leave the last expiry timestamp there, and optionally
+  a `lastPaidPlan` field so we know WHICH plan they had). If your backend
+  currently clears these fields on downgrade, this filter will undercount —
+  ask your backend dev to preserve `lastPaidPlan` + `planExpiresAt` on churn
+  for accurate results. Until then, this does best-effort detection with
+  whatever the /admin/users response already contains.
+*/
+function isChurned(u){
+  const plan = (u.plan || "free").toLowerCase();
+  if (plan !== "free") return false;
+  const hadPlan = u.lastPaidPlan || null;
+  const expiry = u.planExpiresAt ? new Date(u.planExpiresAt) : null;
+  if (hadPlan) return true;
+  if (expiry && expiry.getTime() < Date.now()) return true;
+  return false;
+}
+function isExpiringSoon(u, days){
+  const plan = (u.plan || "free").toLowerCase();
+  if (plan === "free") return false;
+  if (!u.planExpiresAt) return false;
+  const diffDays = (new Date(u.planExpiresAt).getTime() - Date.now()) / 86400000;
+  return diffDays >= 0 && diffDays <= days;
+}
+
+function applyFilter(type){
+  if (type === "plan"){
+    usersState.planFilter = document.getElementById("planFilter").value;
+  } else {
+    usersState.quickFilter = type;
+    ["all","paid","free","expiring","churned"].forEach(f => {
+      document.getElementById("chip-" + f).classList.toggle("active", f === type);
+    });
+  }
+  usersState.page = 1;
+  loadUsers();
+}
+
 async function loadUsers(){
   const tbody = document.getElementById("usersTableBody");
   const stateEl = document.getElementById("usersState");
@@ -446,35 +565,47 @@ async function loadUsers(){
 
   try {
     const params = new URLSearchParams({ page: usersState.page, limit: 20, search: usersState.search });
+    if (usersState.planFilter) params.set("plan", usersState.planFilter);
     const res = await fetch("/admin/users?" + params.toString());
     const data = await res.json();
 
     if(!data.success){ stateEl.style.display = "block"; stateEl.innerText = "Could not load users."; tbody.innerHTML = ""; return; }
 
-    usersState.data = data.data;
-    usersState.totalPages = data.totalPages;
+    // Client-side quick filter (paid / free / expiring / churned) on top of the page's data.
+    let rows = data.data;
+    if (usersState.quickFilter === "paid") rows = rows.filter(u => (u.plan || "free") !== "free");
+    if (usersState.quickFilter === "free") rows = rows.filter(u => (u.plan || "free") === "free" && !isChurned(u));
+    if (usersState.quickFilter === "expiring") rows = rows.filter(u => isExpiringSoon(u, 7));
+    if (usersState.quickFilter === "churned") rows = rows.filter(u => isChurned(u));
 
-    if(data.data.length === 0){
+    usersState.data = rows;
+    usersState.rawPageData = data.data;
+    usersState.totalPages = data.totalPages;
+    usersState.total = data.total;
+
+    if(rows.length === 0){
       tbody.innerHTML = "";
       stateEl.style.display = "block";
-      stateEl.innerText = usersState.search ? "No users match that search." : "No users yet.";
+      stateEl.innerText = usersState.quickFilter !== "all"
+        ? "No users on this page match that filter — try Next page, or Export All to check the full base."
+        : (usersState.search ? "No users match that search." : "No users yet.");
     } else {
-      tbody.innerHTML = data.data.map(u => `
-        <tr>
+      tbody.innerHTML = rows.map(u => `
+        <tr class="user-row" onclick="openUserDetail('${escapeAttr(u.email)}')">
           <td class="email-cell">${escapeHtml(u.email)}</td>
-          <td><span class="plan-badge ${u.plan && u.plan !== 'free' ? 'paid' : ''}">${(u.plan || 'free')}</span></td>
+          <td><span class="plan-badge ${isChurned(u) ? 'churned' : ((u.plan && u.plan !== 'free') ? 'paid' : '')}">${isChurned(u) ? 'churned' : (u.plan || 'free')}</span></td>
           <td>${u.credits ?? 0}</td>
           <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString("en-IN") : "—"}</td>
           <td>
             <div class="row-actions">
-              <button class="btn btn-ghost btn-sm" onclick="prefillActions('${escapeAttr(u.email)}')">Manage</button>
+              <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); prefillActions('${escapeAttr(u.email)}')">Manage</button>
             </div>
           </td>
         </tr>
       `).join("");
     }
 
-    document.getElementById("usersPageInfo").innerText = `Page ${data.page} of ${data.totalPages} · ${data.total} users`;
+    document.getElementById("usersPageInfo").innerText = `Page ${data.page} of ${data.totalPages} · ${data.total} users total`;
     document.getElementById("usersPrevBtn").disabled = data.page <= 1;
     document.getElementById("usersNextBtn").disabled = data.page >= data.totalPages;
   } catch(e){
@@ -496,19 +627,116 @@ function prefillActions(email){
   document.getElementById("planEmail").value = email;
 }
 
-function exportUsersCSV(){
-  if(usersState.data.length === 0){ toast("No users loaded to export yet.", "error"); return; }
-  const rows = [["Email","Plan","Credits","Joined"]];
-  usersState.data.forEach(u => rows.push([
-    u.email, u.plan || "free", u.credits ?? 0, u.createdAt ? new Date(u.createdAt).toISOString() : ""
-  ]));
-  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+/* ── User Detail Modal ── */
+let currentDetailUser = null;
+function openUserDetail(email){
+  const u = (usersState.rawPageData || usersState.data).find(x => x.email === email);
+  if(!u) return;
+  currentDetailUser = u;
+
+  document.getElementById("detailEmail").innerText = u.email;
+  document.getElementById("detailSub").innerText = u.email;
+  document.getElementById("detailPlan").innerText = u.plan || "free";
+  document.getElementById("detailCredits").innerText = u.credits ?? 0;
+  document.getElementById("detailJoined").innerText = u.createdAt ? new Date(u.createdAt).toLocaleDateString("en-IN") : "—";
+  document.getElementById("detailExpiry").innerText = u.planExpiresAt ? new Date(u.planExpiresAt).toLocaleDateString("en-IN") : "—";
+
+  const winback = document.getElementById("winbackBanner");
+  const expiring = document.getElementById("expiringBanner");
+  winback.classList.remove("show");
+  expiring.classList.remove("show");
+
+  if (isChurned(u)){
+    document.getElementById("winbackPlan").innerText = u.lastPaidPlan || "paid";
+    document.getElementById("winbackDate").innerText = u.planExpiresAt ? new Date(u.planExpiresAt).toLocaleDateString("en-IN") : "recently";
+    winback.classList.add("show");
+  } else if (isExpiringSoon(u, 7)){
+    const days = Math.ceil((new Date(u.planExpiresAt).getTime() - Date.now()) / 86400000);
+    document.getElementById("expiringDays").innerText = days;
+    expiring.classList.add("show");
+  }
+
+  document.getElementById("userDetailModal").classList.add("active");
+}
+function closeUserDetail(){
+  document.getElementById("userDetailModal").classList.remove("active");
+  currentDetailUser = null;
+}
+document.getElementById("userDetailModal").addEventListener("click", (e) => {
+  if (e.target.id === "userDetailModal") closeUserDetail();
+});
+function manageFromDetail(){
+  if(!currentDetailUser) return;
+  closeUserDetail();
+  prefillActions(currentDetailUser.email);
+}
+function copyDetailEmail(){
+  if(!currentDetailUser) return;
+  navigator.clipboard.writeText(currentDetailUser.email).then(() => toast("Email copied.", "success"))
+    .catch(() => toast("Could not copy email.", "error"));
+}
+
+/* ── CSV Export (page or full) ── */
+function rowsToCSV(rows){
+  const head = ["Email","Plan","Credits","Joined","PlanExpiry","Status"];
+  const body = rows.map(u => [
+    u.email,
+    u.plan || "free",
+    u.credits ?? 0,
+    u.createdAt ? new Date(u.createdAt).toISOString() : "",
+    u.planExpiresAt ? new Date(u.planExpiresAt).toISOString() : "",
+    isChurned(u) ? "churned (win-back candidate)" : (u.plan && u.plan !== "free" ? "active paid" : "free")
+  ]);
+  return [head, ...body].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+}
+function downloadCSV(csv, filename){
   const blob = new Blob([csv], { type: "text/csv" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `reelscribe-users-page${usersState.page}.csv`;
+  a.download = filename;
   a.click();
-  toast("Exported the current page to CSV.", "success");
+}
+
+function exportUsersCSV(all){
+  if (!all){
+    if(usersState.data.length === 0){ toast("No users loaded to export yet.", "error"); return; }
+    downloadCSV(rowsToCSV(usersState.data), `reelscribe-users-page${usersState.page}.csv`);
+    toast("Exported the current page to CSV.", "success");
+    return;
+  }
+  exportAllUsers();
+}
+
+async function exportAllUsers(){
+  const btn = document.getElementById("exportAllBtn");
+  btn.disabled = true;
+  btn.innerText = "Exporting…";
+  try {
+    let page = 1, all = [], totalPages = 1;
+    do {
+      const params = new URLSearchParams({ page, limit: 100, search: usersState.search });
+      if (usersState.planFilter) params.set("plan", usersState.planFilter);
+      const res = await fetch("/admin/users?" + params.toString());
+      const data = await res.json();
+      if(!data.success) throw new Error("failed");
+      all = all.concat(data.data);
+      totalPages = data.totalPages;
+      page++;
+    } while (page <= totalPages);
+
+    if (usersState.quickFilter === "paid") all = all.filter(u => (u.plan || "free") !== "free");
+    if (usersState.quickFilter === "free") all = all.filter(u => (u.plan || "free") === "free" && !isChurned(u));
+    if (usersState.quickFilter === "expiring") all = all.filter(u => isExpiringSoon(u, 7));
+    if (usersState.quickFilter === "churned") all = all.filter(u => isChurned(u));
+
+    downloadCSV(rowsToCSV(all), `reelscribe-users-all-${usersState.quickFilter}.csv`);
+    toast(`Exported ${all.length} users to CSV.`, "success");
+  } catch(e){
+    toast("Could not export all users. Falling back to current page.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "Export All";
+  }
 }
 
 /* ══════════════════════════════════════════════════════════
