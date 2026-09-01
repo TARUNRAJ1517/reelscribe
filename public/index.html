@@ -407,6 +407,15 @@ footer{border-top:1px solid var(--border); padding:22px 0 66px;}
   .reel-body { padding: 0 40px; }
 }
 </style>
+<style>
+/* ReelScribe responsive referral navigation */
+.rs-referral-link{display:inline-flex!important;align-items:center;justify-content:center;gap:5px;
+  text-decoration:none!important;white-space:nowrap;cursor:pointer;
+  background:var(--accent)!important;color:#fff!important;font-weight:700;font-size:12px;
+  padding:8px 12px;border-radius:4px;flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:520px){.rs-referral-link{padding:7px 8px!important;font-size:11px!important;gap:3px}
+  .rs-referral-link .rs-full{display:none}}
+</style>
 </head>
 <body>
 
@@ -417,6 +426,7 @@ footer{border-top:1px solid var(--border); padding:22px 0 66px;}
     <button class="nav-btn active" id="btnT" onclick="switchMode('transcript')">Transcript</button>
     <button class="nav-btn" id="btnC" onclick="switchMode('clips')">Cut Clips</button>
   </div>
+<a class="rs-referral-link" href="/referral.html">🎁 <span class="rs-full">Invite &amp; </span>Earn</a>
   <button class="nav-menu" onclick="openMenu()" aria-label="Open menu">≡</button>
 </nav>
 
