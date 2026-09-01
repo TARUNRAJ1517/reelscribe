@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  // Canonical identity used to stop Gmail dot/plus alias abuse.
+  emailIdentity: { type: String, index: true, sparse: true },
   name:  { type: String, required: true },
   credits: { type: Number, default: 5, min: 0 },
   creditsUsedTotal: { type: Number, default: 0, min: 0 },
@@ -36,6 +38,12 @@ const UserSchema = new mongoose.Schema({
   referredBy:     { type: String, default: null, uppercase: true, trim: true },
   referralCuts:   { type: Number, default: 0, min: 0 },
   referralsCount: { type: Number, default: 0, min: 0 },
+
+  // One-way request fingerprints used for referral anti-abuse checks.
+  signupIpHash: { type: String, default: null, index: true },
+  signupUaHash: { type: String, default: null },
+  lastSeenIpHash: { type: String, default: null },
+  lastSeenUaHash: { type: String, default: null },
 
 }, { timestamps: true });
 
