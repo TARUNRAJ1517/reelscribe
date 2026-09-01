@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Clips Dashboard – ReelScribe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0a0b; --s1:#111113; --s2:#18181b;
+  --border:#232326; --border2:#2c2c30;
+  --accent:#ff3b30; --accent-dim:#2a120f;
+  --text:#eeeeee; --text-dim:#a4a4a8; --muted:#5c5c60;
+}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',-apple-system,sans-serif;
+  max-width:480px; margin:0 auto; min-height:100vh;
+  -webkit-font-smoothing:antialiased; font-size:14px; line-height:1.5;
+  position:relative;
+}
+body::before{
+  content:''; position:fixed; inset:0; z-index:1; pointer-events:none;
+  opacity:.035; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+@keyframes markPulse{0%,100%{opacity:1; box-shadow:0 0 0 0 rgba(255,59,48,.5);}50%{opacity:.55; box-shadow:0 0 0 3px rgba(255,59,48,0);}}
+@keyframes frameIn{from{opacity:0; transform:translateY(6px);}to{opacity:1; transform:translateY(0);}}
+.mono{font-family:'IBM Plex Mono',monospace;}
+:focus-visible{outline:1.5px solid var(--accent); outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important;} }
+
+/* NAV */
+.nav{position:sticky; top:0; z-index:999; background:rgba(10,10,11,.94); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:14px 20px;}
+.nav-logo{font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; display:flex; align-items:center; gap:9px;}
+.nav-logo .mark{width:6px; height:6px; background:var(--accent); flex-shrink:0; border-radius:50%; animation:markPulse 2.6s ease-in-out infinite;}
+.nav-right{display:flex; align-items:center; gap:10px;}
+.nav-badge{font-size:9.5px; font-weight:500; letter-spacing:.6px; text-transform:uppercase; padding:4px 8px;
+  border:1px solid var(--border2); color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
+.nav-badge.paid{border-color:var(--accent); color:var(--accent);}
+.nav-menu{background:none; border:1px solid var(--border2); width:30px; height:30px; color:var(--text-dim); font-size:14px; cursor:pointer; transition:all .15s;}
+.nav-menu:hover{border-color:var(--accent); color:var(--text);}
+.nav-menu:active{transform:scale(.93);}
+
+/* DRAWER */
+.drawer-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:9998; backdrop-filter:blur(4px);}
+.drawer-overlay.active{display:block;}
+.drawer{position:fixed; top:0; right:-320px; width:80%; max-width:300px; height:100%;
+  background:var(--s1); border-left:1px solid var(--border2); transition:right .28s ease;
+  z-index:9999; display:flex; flex-direction:column;}
+.drawer.active{right:0;}
+.drawer-head{padding:26px 20px 18px; border-bottom:1px solid var(--border);}
+.drawer-avatar{width:42px; height:42px; background:var(--s2); border:1px solid var(--border2);
+  display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700;
+  color:var(--accent); margin-bottom:12px; font-family:'IBM Plex Mono',monospace;}
+.drawer-name{font-size:14px; font-weight:600; margin-bottom:3px;}
+.drawer-email{font-size:11px; color:var(--muted); word-break:break-all; margin-bottom:12px; font-family:'IBM Plex Mono',monospace;}
+.drawer-plan-row{display:flex; align-items:center; justify-content:space-between; background:var(--s2); border:1px solid var(--border2); padding:9px 12px;}
+.drawer-plan-label{font-size:9.5px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-family:'IBM Plex Mono',monospace;}
+.drawer-plan-value{font-size:12px; font-weight:600; color:var(--accent);}
+.drawer-body{flex:1; padding:14px 20px; display:flex; flex-direction:column; gap:2px; overflow-y:auto;}
+.drawer-link{display:flex; align-items:center; gap:10px; padding:11px 12px; background:transparent; border:1px solid transparent;
+  color:var(--text-dim); font-size:12.5px; font-weight:500; cursor:pointer; font-family:'Inter',sans-serif; transition:all .15s; text-decoration:none;}
+.drawer-link svg{width:15px; height:15px; flex-shrink:0;}
+.drawer-link:hover{background:var(--s2); border-color:var(--border2); color:var(--text);}
+.drawer-link-danger{color:#ff6b5f;}
+.drawer-link-danger:hover{background:var(--accent-dim); border-color:var(--border2); color:#ff6b5f;}
+.drawer-foot{padding:14px 20px 20px; border-top:1px solid var(--border);}
+.drawer-upgrade{width:100%; padding:12px; border:none; background:var(--accent); color:#fff; font-size:11.5px; font-weight:600;
+  letter-spacing:.5px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif;}
+
+/* SPROCKET RAIL */
+.reel{display:flex; position:relative; z-index:2;}
+.reel-body{flex:1; min-width:0; padding:0 20px; position:relative; z-index:2;}
+
+/* FRAME LABEL */
+.frame-label{display:flex; align-items:baseline; gap:8px; padding:22px 0 12px;}
+.frame-num{font-size:10px; font-weight:600; color:var(--accent); font-family:'IBM Plex Mono',monospace; letter-spacing:.5px;}
+.frame-name{font-size:10px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+.frame-line{flex:1; height:1px; background:var(--border);}
+
+/* STAT STRIP */
+.stat-strip{display:flex; border:1px solid var(--border); background:var(--s1); animation:frameIn .4s ease both;}
+.stat-cell{flex:1; padding:12px 10px; text-align:center; border-right:1px solid var(--border);}
+.stat-cell:last-child{border-right:none;}
+.stat-num{font-size:16px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--accent); letter-spacing:-.3px;}
+.stat-label{font-size:8.5px; font-weight:500; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); margin-top:3px; font-family:'IBM Plex Mono',monospace;}
+
+/* REFERRAL CREDIT BANNER */
+.ref-credit-banner{display:none; align-items:center; gap:12px; border:1px solid var(--accent); background:var(--accent-dim); padding:12px 14px; animation:frameIn .4s ease both;}
+.ref-credit-icon{width:34px; height:34px; flex-shrink:0; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:15px;}
+.ref-credit-text{flex:1; min-width:0;}
+.ref-credit-title{font-size:12.5px; font-weight:700; color:var(--text);}
+.ref-credit-sub{font-size:10.5px; color:var(--text-dim); margin-top:1px; line-height:1.4;}
+.ref-credit-count{font-size:15px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--accent); flex-shrink:0;}
+
+/* LOGIN WALL / UPGRADE */
+.login-wall{border:1px solid var(--border); background:var(--s1); padding:24px 16px; text-align:center; animation:frameIn .4s ease both;}
+.login-wall p{font-size:12px; color:var(--text-dim); margin-bottom:14px; line-height:1.6;}
+.login-wall-btn{padding:11px 22px; border:none; background:var(--accent); color:#fff; font-size:11.5px; font-weight:600;
+  letter-spacing:.4px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif;}
+.upgrade-banner{border:1px solid var(--border2); background:var(--accent-dim); padding:18px 16px; text-align:center;}
+.upgrade-banner h3{font-size:14px; font-weight:600; margin-bottom:6px;}
+.upgrade-banner p{font-size:11.5px; color:var(--text-dim); margin-bottom:14px; line-height:1.6;}
+.upgrade-btn{width:100%; padding:11px; border:none; background:var(--accent); color:#fff; font-size:11.5px; font-weight:600;
+  letter-spacing:.4px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif;}
+
+/* QUICK ACTIONS */
+.qa-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; animation:frameIn .4s ease both;}
+.qa-card{display:block; text-decoration:none; border:1px solid var(--border); background:var(--s1); border-radius:12px; padding:16px; transition:transform .15s ease, border-color .15s ease;}
+.qa-card:hover{transform:translateY(-2px); border-color:var(--border2);}
+.qa-card:active{transform:scale(.98);}
+.qa-icon{width:38px; height:38px; border-radius:10px; background:var(--s2); border:1px solid var(--border2); display:flex; align-items:center; justify-content:center; margin-bottom:12px;}
+.qa-icon svg{width:18px; height:18px; color:var(--accent);}
+.qa-title{font-size:13.5px; font-weight:700; color:var(--text); margin-bottom:3px;}
+.qa-sub{font-size:10.5px; color:var(--muted); line-height:1.4;}
+
+/* SOURCE INPUT */
+.src-card{border:1px solid var(--border); background:var(--s1); padding:16px; position:relative; animation:frameIn .4s ease both;}
+.reg{position:absolute; width:8px; height:8px; pointer-events:none; opacity:.5;}
+.reg::before,.reg::after{content:''; position:absolute; background:var(--border2);}
+.reg::before{top:50%; left:0; right:0; height:1px; transform:translateY(-50%);}
+.reg::after{left:50%; top:0; bottom:0; width:1px; transform:translateX(-50%);}
+.reg.tl{top:-4px; left:-4px;} .reg.tr{top:-4px; right:-4px;} .reg.bl{bottom:-4px; left:-4px;} .reg.br{bottom:-4px; right:-4px;}
+.src-title{font-size:14px; font-weight:600; margin-bottom:3px;}
+.src-sub{font-size:11.5px; color:var(--muted); margin-bottom:14px;}
+.src-row{display:flex; align-items:center; gap:0; background:var(--s2); border:1px solid var(--border2); transition:border-color .2s, box-shadow .2s;}
+.src-row:focus-within{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-dim);}
+.src-row input{flex:1; background:none; border:none; outline:none; color:var(--text); font-size:12px; font-family:'IBM Plex Mono',monospace; padding:11px 12px; min-width:0;}
+.generate-main{
+  width:100%; margin:16px 0 4px; padding:15px 16px; border:none; border-radius:10px; background:var(--accent); color:#fff;
+  cursor:pointer; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px;
+  font-size:13.5px; font-weight:700; letter-spacing:.2px;
+  transition:background .15s, transform .1s;
+}
+.generate-main svg{width:16px; height:16px; flex-shrink:0;}
+.generate-main:hover{background:#e6342b;}
+.generate-main:active{transform:scale(.985);}
+.generate-main:disabled{opacity:.5; cursor:not-allowed;}
+.generate-hint{text-align:center; font-size:10px; color:var(--muted); margin-bottom:4px; font-family:'IBM Plex Mono',monospace;}
+.generate-hint.ref{color:var(--accent); font-weight:600;}
+.src-meter{display:flex; align-items:center; justify-content:space-between; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);}
+.src-meter-label{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+.src-meter-val{font-size:10px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
+.src-meter-val b{color:var(--accent);}
+
+/* VIDEO PREVIEW */
+.video-preview-card{display:none; gap:10px; align-items:center; margin-top:12px; padding:10px; background:var(--s2); border:1px solid var(--border2); animation:frameIn .3s ease both;}
+.vp-thumb{width:64px; height:36px; object-fit:cover; background:#000; flex-shrink:0; border:1px solid var(--border);}
+.vp-info{min-width:0;}
+.vp-title{font-size:11.5px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.vp-channel{font-size:10px; color:var(--muted); margin-top:2px;}
+
+/* CAPTION PANEL */
+.panel{border:1px solid var(--border); background:var(--s1); position:relative; animation:frameIn .4s ease both; animation-delay:.06s;}
+.panel-pad{padding:14px 16px;}
+.cp-master-row{display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:14px; margin-bottom:14px; border-bottom:1px solid var(--border);}
+.cp-master-title{font-size:13px; font-weight:600; color:var(--text);}
+.cp-master-desc{font-size:10.5px; color:var(--muted); margin-top:2px; line-height:1.4;}
+#cpBody{transition:opacity .2s;}
+#cpBody.disabled{opacity:.35; pointer-events:none; filter:grayscale(.6);}
+.cp-off-note{display:none; font-size:11.5px; color:var(--muted); padding:8px 0 2px; text-align:center;}
+.cp-off-note.show{display:block;}
+
+.cp-preview{border:1px solid var(--border2); background:#000; aspect-ratio:9/16; position:relative; margin:0 auto 14px; overflow:hidden; max-width:150px;}
+.cp-preview::before{content:''; position:absolute; inset:0; background:radial-gradient(circle at 30% 25%, rgba(255,59,48,.14), transparent 55%), linear-gradient(165deg,#141416,#000);}
+.cp-preview-tag{position:absolute; top:8px; left:9px; z-index:3; font-size:7.5px; letter-spacing:.6px; text-transform:uppercase; color:rgba(255,255,255,.35); font-family:'IBM Plex Mono',monospace;}
+.cp-words{position:absolute; left:10px; right:10px; z-index:2; bottom:10%; display:flex; flex-wrap:wrap; gap:5px 6px; justify-content:center; transition:top .25s ease, bottom .25s ease, transform .25s ease;}
+.cp-word{font-size:11px; font-weight:800; line-height:1.3;}
+.style-red span{color:#fff; text-shadow:0 0 8px var(--accent), 0 0 16px var(--accent);}
+.style-outline span{color:transparent; -webkit-text-stroke:1px #fff;}
+.style-boxed span{background:#fff; color:#0a0a0b; padding:2px 5px;}
+.style-mono span{color:#fff; font-family:'IBM Plex Mono',monospace;}
+.style-classic span{color:#fff; -webkit-text-stroke:1.3px #000; paint-order:stroke fill;}
+.style-highlight span{background:var(--accent); color:#fff; padding:2px 5px;}
+.style-karaoke span{color:var(--muted);}
+.style-karaoke .filled{color:var(--accent);}
+.style-minimal span{color:#fff; background:rgba(255,255,255,.08); padding:2px 5px;}
+.style-cyan span{color:#3ce6e6; text-shadow:0 0 8px rgba(60,230,230,.6);}
+.style-gold span{color:#ffd93c;}
+.style-white span{color:#fff;}
+.style-gradient span{background:linear-gradient(90deg,var(--accent),#ffd93c); -webkit-background-clip:text; background-clip:text; color:transparent;}
+
+.cp-tabbar{display:flex; gap:1px; background:var(--border); border:1px solid var(--border); margin-bottom:14px;}
+.cp-tab{flex:1; text-align:center; padding:9px 4px 8px; background:var(--s1); font-size:9.5px; font-weight:600; letter-spacing:.5px;
+  text-transform:uppercase; color:var(--text-dim); cursor:pointer; border-bottom:2px solid transparent; transition:color .15s, border-color .15s; font-family:'IBM Plex Mono',monospace;}
+.cp-tab.active{color:var(--text); border-color:var(--accent); background:var(--s2);}
+.cp-tab:active{transform:scale(.98);}
+.cp-panel{display:none;}
+.cp-panel.active{display:block; animation:frameIn .25s ease both;}
+
+.cp-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); border:1px solid var(--border); margin-bottom:14px;}
+.cp-tile{position:relative; background:var(--s1); cursor:pointer; transition:transform .1s, box-shadow .15s;}
+.cp-tile.selected{box-shadow:inset 0 0 0 1.5px var(--accent);}
+.cp-tile:active{transform:scale(.96);}
+.cp-swatch{height:50px; background:#000; display:flex; align-items:center; justify-content:center; padding:4px;}
+.cp-swatch span{font-size:9px; font-weight:700; text-align:center;}
+.cp-tile-label{padding:6px 4px; text-align:center; background:var(--s2); border-top:1px solid var(--border); font-size:8px; font-weight:500;
+  color:var(--text-dim); font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:.3px;}
+.cp-tile.selected .cp-tile-label{color:var(--accent);}
+.cp-tile-tag{position:absolute; top:3px; right:3px; z-index:2; font-size:6px; font-weight:700; letter-spacing:.3px; text-transform:uppercase;
+  background:var(--accent); color:#fff; padding:2px 4px; font-family:'IBM Plex Mono',monospace;}
+
+.opt-row{display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-top:1px solid var(--border); gap:10px;}
+.opt-row:first-child{border-top:none;}
+.opt-label{font-size:11.5px; color:var(--text-dim); flex-shrink:0;}
+.opt-value{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;}
+.opt-btn{padding:8px 13px; border:1px solid var(--border2); border-bottom:2.5px solid var(--border2); background:var(--s2); color:var(--text-dim); font-size:11px;
+  font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:all .1s; border-radius:3px; box-shadow:0 1px 0 rgba(0,0,0,.3);}
+.opt-btn.selected{border-color:var(--accent); border-bottom-color:var(--accent); color:#fff; background:var(--accent);}
+.opt-btn:hover:not(.selected){border-color:#3a3a3f; color:var(--text);}
+.opt-btn:active{transform:translateY(2px); border-bottom-width:1px;}
+.opt-btn:disabled{opacity:.35; pointer-events:none;}
+
+.cp-lang-note{font-size:10px;color:var(--muted);line-height:1.45;margin-top:7px;}
+.cp-lang-buttons{display:flex;gap:6px;flex-wrap:wrap;}
+.cp-lang-btn{padding:8px 13px;border:1px solid var(--border2);border-bottom:2.5px solid var(--border2);background:var(--s2);color:var(--text-dim);font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .1s;border-radius:3px;}
+.cp-lang-btn.selected{border-color:var(--accent);border-bottom-color:var(--accent);color:#fff;background:var(--accent);}
+.cp-block{margin-top:14px; padding-top:14px; border-top:1px solid var(--border);}
+.cp-block-title{font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:9px; font-family:'IBM Plex Mono',monospace;}
+.cp-mode-desc{font-size:10.5px; color:var(--muted); line-height:1.5; margin-top:8px;}
+
+.cp-toggle-card{border:1px solid var(--border); background:var(--s2); padding:12px; margin-top:14px;}
+.cp-toggle-head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+.cp-toggle-title-row{display:flex; align-items:center; gap:6px;}
+.cp-toggle-title{font-size:12px; font-weight:600; color:var(--text);}
+.cp-new-badge{font-size:7.5px; font-weight:700; letter-spacing:.3px; text-transform:uppercase; background:var(--accent); color:#fff; padding:2px 5px; font-family:'IBM Plex Mono',monospace;}
+.cp-toggle-desc{font-size:10.5px; color:var(--muted); line-height:1.5; margin-top:4px;}
+.cp-switch{position:relative; display:inline-block; width:36px; height:20px; flex-shrink:0;}
+.cp-switch input{opacity:0; width:0; height:0;}
+.cp-switch-track{position:absolute; inset:0; background:var(--border2); cursor:pointer; transition:background .2s;}
+.cp-switch-track::before{content:''; position:absolute; height:14px; width:14px; left:3px; top:3px; background:#fff; transition:transform .2s;}
+.cp-switch input:checked + .cp-switch-track{background:var(--accent);}
+.cp-switch input:checked + .cp-switch-track::before{transform:translateX(16px);}
+.cp-subpos-row{display:flex; align-items:center; gap:10px; margin-top:12px;}
+.cp-subpos-row .opt-label{flex-shrink:0;}
+
+.cp-custom-controls{margin-top:12px;}
+.cp-slider-label-row{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;}
+.cp-slider-label-row span:first-child{font-size:10.5px; color:var(--muted);}
+.cp-slider-label-row span:last-child{font-size:12px; font-weight:700; color:var(--text); font-family:'IBM Plex Mono',monospace;}
+.cp-custom-controls input[type="range"]{
+  -webkit-appearance:none; width:100%; height:3px;
+  background:linear-gradient(to right, var(--accent) 0%, var(--accent) var(--fill,45%), var(--border2) var(--fill,45%), var(--border2) 100%);
+  margin:6px 0 6px; cursor:pointer;
+}
+.cp-custom-controls input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none; width:15px; height:15px; background:#fff; border:3px solid var(--accent); cursor:pointer;
+}
+.cp-custom-controls input[type="range"]::-moz-range-thumb{width:15px; height:15px; background:#fff; border:3px solid var(--accent); cursor:pointer;}
+.cp-slider-range-labels{display:flex; justify-content:space-between; font-size:9px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+
+.cp-summary{margin-top:2px; padding:10px 12px; background:var(--s2); border:1px solid var(--border); font-size:10.5px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+.cp-summary strong{color:var(--text-dim); font-weight:600;}
+
+@keyframes cpBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+@keyframes cpShake{0%,100%{transform:rotate(-2deg);}50%{transform:rotate(2deg);}}
+@keyframes cpGlow{0%,100%{text-shadow:0 0 6px rgba(255,59,48,.4);}50%{text-shadow:0 0 16px rgba(255,59,48,.9),0 0 26px rgba(255,59,48,.5);}}
+
+/* PROCESSING */
+#procCard{animation:frameIn .35s ease both;}
+.proc-pad{padding:22px 16px;}
+.proc-scrub{position:relative; height:1px; background:var(--border2); margin-bottom:14px;}
+.proc-scrub-fill{position:absolute; left:0; top:-1px; height:3px; width:0; background:var(--accent); transition:width .3s linear; animation:flicker 1.6s ease-in-out infinite;}
+@keyframes flicker{0%,100%{opacity:1;}50%{opacity:.75;}}
+.proc-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+.proc-tc{font-size:11px; color:var(--accent); font-family:'IBM Plex Mono',monospace;}
+.proc-status{font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+.proc-title{font-size:13px; font-weight:500; margin-bottom:4px;}
+.proc-sub{font-size:11.5px; color:var(--muted); line-height:1.6;}
+.proc-steps{margin-top:16px; display:flex; flex-direction:column; gap:6px;}
+.proc-step{display:flex; align-items:center; gap:8px; font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+.proc-step-dot{width:5px; height:5px; border:1px solid var(--border2); flex-shrink:0;}
+.proc-step.done{color:var(--text-dim);}
+.proc-step.done .proc-step-dot{background:var(--accent); border-color:var(--accent);}
+.proc-step.active{color:var(--text);}
+.proc-step.active .proc-step-dot{background:var(--accent); border-color:var(--accent); animation:pulse 1s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.proc-error{color:var(--accent);}
+
+/* CONTACT SHEET */
+.sheet-scroll{display:flex; gap:1px; overflow-x:auto; background:var(--border); border:1px solid var(--border); scrollbar-width:none; scroll-snap-type:x proximity; padding-bottom:1px;}
+.sheet-scroll::-webkit-scrollbar{display:none;}
+.frame-card{flex:0 0 128px; background:var(--s1); position:relative; scroll-snap-align:start; transition:transform .18s ease, box-shadow .18s ease; animation:frameIn .4s ease both;}
+.frame-card:hover{transform:translateY(-3px); box-shadow:0 8px 18px rgba(0,0,0,.4); z-index:2;}
+.frame-thumb{aspect-ratio:9/16; background:linear-gradient(165deg,#1c1c1f,#0a0a0b); position:relative; display:flex; align-items:center; justify-content:center; border-bottom:1px solid var(--border);}
+.frame-thumb .play{width:0; height:0; border-left:9px solid var(--muted); border-top:6px solid transparent; border-bottom:6px solid transparent; margin-left:2px;}
+.frame-idx{position:absolute; top:6px; left:6px; font-size:9px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+.frame-dur{position:absolute; bottom:6px; right:6px; background:rgba(10,10,11,.85); border:1px solid var(--border2); padding:2px 5px; font-size:9px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
+.frame-body{padding:9px;}
+.frame-title{font-size:11px; font-weight:500; line-height:1.35; margin-bottom:4px; min-height:29px;}
+.frame-reason{font-size:9.5px; color:var(--muted); line-height:1.4; margin-bottom:8px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+.frame-tc{font-size:9px; color:var(--muted); font-family:'IBM Plex Mono',monospace; margin-bottom:8px;}
+.frame-dl{display:block; width:100%; text-align:center; padding:6px 0; border:1px solid var(--border2); background:var(--s2); color:var(--text); font-size:9.5px; font-weight:500; text-decoration:none; transition:all .15s;}
+.frame-dl:hover{border-color:var(--accent); color:var(--accent);}
+.frame-dl:active{transform:scale(.96);}
+.sheet-hint{font-size:10px; color:var(--muted); margin-top:8px; font-family:'IBM Plex Mono',monospace;}
+.sheet-empty{font-size:11.5px; color:var(--muted); padding:14px; text-align:center;}
+.sheet-footer{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:8px;}
+.download-all-btn{
+  padding:8px 16px; border:none; border-radius:999px; background:var(--accent); color:#fff;
+  font-size:10.5px; font-weight:700; letter-spacing:.3px; text-transform:uppercase; cursor:pointer;
+  font-family:'Inter',sans-serif; transition:opacity .15s, transform .1s; flex-shrink:0;
+}
+.download-all-btn:hover{opacity:.88;}
+.download-all-btn:active{transform:scale(.96);}
+.download-all-btn:disabled{opacity:.5; cursor:not-allowed;}
+.download-all-note{font-size:9px; color:var(--muted); margin-top:6px; font-family:'IBM Plex Mono',monospace;}
+
+/* LOG */
+.log-card{border:1px solid var(--border); background:var(--s1); padding:16px; animation:frameIn .4s ease both;}
+.log-card-head{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+.log-card-title{font-size:13.5px; font-weight:600; color:var(--text);}
+.log-card-sub{font-size:10.5px; color:var(--muted); margin-top:2px;}
+.log-toggle-pill{
+  display:flex; align-items:center; gap:6px; padding:8px 16px; border:none; border-radius:999px;
+  background:var(--accent); color:#fff; font-size:10.5px; font-weight:700; letter-spacing:.3px;
+  text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif; transition:opacity .15s, transform .1s; flex-shrink:0;
+}
+.log-toggle-pill:hover{opacity:.88;}
+.log-toggle-pill:active{transform:scale(.96);}
+.log-toggle-pill .chev{display:inline-block; transition:transform .2s; font-size:9px;}
+.log-toggle-pill.open .chev{transform:rotate(180deg);}
+.log-list{display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--border);}
+
+/* TIPS */
+.tips-card{border:1px solid var(--border); background:var(--s1); padding:4px 16px; animation:frameIn .4s ease both;}
+.tip-row{display:flex; gap:12px; padding:14px 0; border-top:1px solid var(--border);}
+.tip-row:first-child{border-top:none;}
+.tip-num{font-size:10px; font-weight:700; color:var(--accent); font-family:'IBM Plex Mono',monospace; flex-shrink:0; padding-top:1px;}
+.tip-row p{font-size:12px; color:var(--text-dim); line-height:1.6;}
+
+/* FAQ */
+.faq-list{border:1px solid var(--border); background:var(--s1); animation:frameIn .4s ease both;}
+.faq-item{border-top:1px solid var(--border);}
+.faq-item:first-child{border-top:none;}
+.faq-item summary{padding:14px 16px; font-size:12.5px; font-weight:600; color:var(--text); cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:10px;}
+.faq-item summary::-webkit-details-marker{display:none;}
+.faq-item summary::after{content:'+'; font-size:16px; color:var(--muted); flex-shrink:0; transition:transform .2s;}
+.faq-item[open] summary::after{content:'−';}
+.faq-item p{padding:0 16px 16px; font-size:11.5px; color:var(--muted); line-height:1.6;}
+
+.log-toggle{background:none; border:1px solid var(--border2); color:var(--muted); font-size:9.5px; font-weight:500; letter-spacing:.3px;
+  text-transform:uppercase; padding:4px 9px; cursor:pointer; font-family:'IBM Plex Mono',monospace; transition:all .15s;}
+.log-toggle:hover{border-color:var(--accent); color:var(--text);}
+.log-toggle:active{transform:scale(.95);}
+.log-item{padding:10px 0; border-top:1px solid var(--border); transition:padding-left .15s; cursor:pointer;}
+.log-item:first-child{border-top:none;}
+.log-item:hover{padding-left:4px;}
+.log-item-row{display:flex; align-items:center; gap:10px;}
+.log-tc{font-size:9.5px; color:var(--accent); font-family:'IBM Plex Mono',monospace; flex-shrink:0; width:62px;}
+.log-name{font-size:12px; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;}
+.log-src{font-size:8.5px; font-weight:500; letter-spacing:.3px; text-transform:uppercase; color:var(--muted); font-family:'IBM Plex Mono',monospace; flex-shrink:0;}
+.log-empty{font-size:11.5px; color:var(--muted); padding:12px 0;}
+.log-sub{display:none; margin:8px 0 2px; padding-left:0; border-left:1px solid var(--border2); padding-left:10px;}
+.log-sub-item{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:5px 0; font-size:10.5px; color:var(--text-dim);}
+.log-sub-item a{color:var(--accent); text-decoration:none; font-family:'IBM Plex Mono',monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.3px;}
+.log-sub-item a:hover{text-decoration:underline;}
+
+/* MORE / LINKS */
+footer{border-top:1px solid var(--border); padding:22px 0 26px;}
+.foot-logo{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; display:flex; align-items:center; gap:9px; margin-bottom:4px;}
+.foot-logo .mark{width:5px; height:5px; background:var(--accent);}
+.foot-tag{font-size:10px; color:var(--muted); margin-bottom:14px; font-family:'IBM Plex Mono',monospace;}
+.foot-links{display:flex; flex-wrap:wrap; gap:6px 14px; margin-bottom:14px;}
+.foot-links a{color:var(--muted); font-size:11px; text-decoration:none; transition:color .2s;}
+.foot-links a:hover{color:var(--text-dim);}
+.foot-copy{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — DESKTOP / TABLET
+   Mobile filmstrip layout above is untouched.
+   These rules only kick in on wider viewports.
+═══════════════════════════════════════════════ */
+@media (min-width: 700px) {
+  body { max-width: 920px; }
+  .reel-body { padding: 0 32px; }
+
+  .cp-grid { grid-template-columns: repeat(4, 1fr); }
+
+  .src-card, .panel, .tips-card, .faq-list, .log-card { padding: 20px 24px; }
+  .panel-pad { padding: 18px 24px; }
+
+  /* Clip results become a wrapping grid instead of a horizontal
+     scroll strip — more clips visible at once without swiping. */
+  .sheet-scroll {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    overflow-x: visible;
+  }
+  .frame-card { flex: unset; }
+  .sheet-hint { display: none; }
+
+  .stat-strip .stat-cell { padding: 16px 12px; }
+
+  .cp-preview { max-width: 180px; }
+
+  .qa-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (min-width: 1000px) {
+  body { max-width: 1040px; }
+  .reel-body { padding: 0 40px; }
+  .sheet-scroll { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+}
+</style>
+<style>
+/* ReelScribe responsive referral navigation */
+.rs-referral-link{display:inline-flex!important;align-items:center;justify-content:center;gap:5px;
+  text-decoration:none!important;white-space:nowrap;cursor:pointer;
+  background:var(--accent)!important;color:#fff!important;font-weight:700;font-size:12px;
+  padding:8px 12px;border-radius:4px;flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:520px){.rs-referral-link{padding:7px 8px!important;font-size:11px!important;gap:3px}
+  .rs-referral-link .rs-full{display:none}}
+</style>
+</head>
+<body>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-avatar mono" id="drawerAvatar">U</div>
+    <div class="drawer-name" id="drawerName">User</div>
+    <div class="drawer-email" id="drawerEmail">Loading...</div>
+    <div class="drawer-plan-row">
+      <span class="drawer-plan-label">Current Plan</span>
+      <span class="drawer-plan-value" id="drawerPlan">Free</span>
+    </div>
+  </div>
+  <div class="drawer-body">
+    <a class="drawer-link" href="/dashboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Transcript Dashboard
+    </a>
+    <a class="drawer-link" href="/">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Home
+    </a>
+    <a class="drawer-link" href="/pricing.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Pricing & Plans
+    </a>
+    <a class="drawer-link" href="/contact.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Support
+    </a>
+    <button class="drawer-link drawer-link-danger" onclick="logout()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Logout
+    </button>
+  </div>
+  <div class="drawer-foot">
+    <button class="drawer-upgrade" onclick="window.location.href='/pricing.html'">Upgrade Plan →</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo"><span class="mark"></span>ReelScribe</div>
+  <div class="nav-right">
+    <span class="nav-badge" id="navPlanBadge">Free</span>
+    <a class="rs-referral-link" href="/referral.html">🎁 <span class="rs-full">Invite &amp; </span>Earn</a>
+    <button class="nav-menu" onclick="openDrawer()" aria-label="Open menu">≡</button>
+  </div>
+</nav>
+
+<div class="reel">
+  <div class="reel-body">
+
+    <!-- STATS -->
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name" id="welcomeName">Cut Clips</span><span class="frame-line"></span></div>
+    <div class="stat-strip">
+      <div class="stat-cell"><div class="stat-num" id="statClipsLeft">—</div><div class="stat-label">Clips left today</div></div>
+      <div class="stat-cell"><div class="stat-num" id="statClipsHistory">—</div><div class="stat-label">Videos (24h)</div></div>
+      <div class="stat-cell"><div class="stat-num" id="statPlan">Free</div><div class="stat-label">Plan</div></div>
+    </div>
+
+    <!-- REFERRAL CREDIT BANNER (shown only when user has unused referral clips) -->
+    <div class="ref-credit-banner" id="refCreditBanner">
+      <div class="ref-credit-icon">🎁</div>
+      <div class="ref-credit-text">
+        <div class="ref-credit-title">Referral clip<span id="refCreditPlural">s</span> ready to use</div>
+        <div class="ref-credit-sub">No upgrade needed — generate now, free credit will be used automatically.</div>
+      </div>
+      <div class="ref-credit-count" id="refCreditCount">0</div>
+    </div>
+
+    <!-- LOGIN / UPGRADE WALL -->
+    <div class="frame-label" id="wallLabel" style="display:none;"><span class="frame-num">—</span><span class="frame-name">Access</span><span class="frame-line"></span></div>
+    <div class="login-wall" id="loginWall" style="display:none;">
+      <p id="loginWallText">Login karo Cut Clips use karne ke liye.</p>
+      <button class="login-wall-btn" id="loginWallBtn">Login Karo →</button>
+    </div>
+
+    <!-- 01 SOURCE -->
+    <div class="frame-label" id="srcLabel"><span class="frame-num">01</span><span class="frame-name">Source</span><span class="frame-line"></span></div>
+    <div class="src-card" id="generateCard">
+      <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+      <div class="src-title">Paste a link</div>
+      <div class="src-sub">Full video or a Short — we'll find what's worth cutting.</div>
+      <div class="src-row">
+        <input type="text" placeholder="youtube.com/watch?v=..." id="clipUrl">
+      </div>
+      <div class="src-meter">
+        <span class="src-meter-label">Clips left today</span>
+        <span class="src-meter-val"><b id="meterClipsLeft">—</b></span>
+      </div>
+      <div class="video-preview-card" id="videoPreviewCard">
+        <img id="vpThumb" class="vp-thumb" src="" alt="">
+        <div class="vp-info">
+          <div class="vp-title" id="vpTitle"></div>
+          <div class="vp-channel" id="vpChannel"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 CAPTIONS -->
+    <div class="frame-label" id="capLabel"><span class="frame-num">02</span><span class="frame-name">Captions</span><span class="frame-line"></span></div>
+    <div class="panel" id="captionPickerSection">
+      <div class="panel-pad">
+
+        <div class="cp-master-row">
+          <div>
+            <div class="cp-master-title">Burn in captions</div>
+            <div class="cp-master-desc">Off? We'll cut the clip with no on-screen text.</div>
+          </div>
+          <label class="cp-switch">
+            <input type="checkbox" id="cpCaptionsToggle" checked>
+            <span class="cp-switch-track"></span>
+          </label>
+        </div>
+
+        <div id="cpBody">
+        <div class="cp-block cp-language-block" style="margin-top:0; padding-top:0; border-top:none; margin-bottom:14px;">
+          <div class="cp-block-title" style="margin-top:0;">Caption Language</div>
+          <div class="cp-lang-buttons" id="cpLanguageButtons">
+            <button class="cp-lang-btn selected" data-lang="hindi">🇮🇳 Hindi</button>
+            <button class="cp-lang-btn" data-lang="hinglish">🔥 Hinglish</button>
+            <button class="cp-lang-btn" data-lang="english">🇬🇧 English</button>
+          </div>
+          <div class="cp-lang-note" id="cpLanguageNote">Original Hindi/Devanagari captions.</div>
+        </div>
+
+        <div class="cp-preview">
+          <div class="cp-preview-tag">Preview</div>
+          <div class="cp-words" id="cpWords"></div>
+        </div>
+
+        <div class="cp-tabbar" id="cpTabbar">
+          <div class="cp-tab active" data-tab="style">Style</div>
+          <div class="cp-tab" data-tab="animation">Motion</div>
+          <div class="cp-tab" data-tab="position">Position</div>
+          <div class="cp-tab" data-tab="output">Output</div>
+        </div>
+
+        <!-- STYLE -->
+        <div class="cp-panel active" id="cp-panel-style">
+          <div class="cp-grid" id="cpStyleGrid"></div>
+        </div>
+
+        <!-- ANIMATION -->
+        <div class="cp-panel" id="cp-panel-animation">
+          <div class="cp-grid" id="cpAnimGrid"></div>
+
+          <div class="cp-block">
+            <div class="cp-block-title">Caption Mode</div>
+            <div class="opt-value" id="cpModeButtons" style="justify-content:flex-start;">
+              <button class="opt-btn" data-mode="wordpop">Word Pop</button>
+              <button class="opt-btn" data-mode="karaoke">Karaoke</button>
+              <button class="opt-btn selected" data-mode="standard">Standard</button>
+            </div>
+            <p class="cp-mode-desc" id="cpModeDesc">Chunk-by-chunk traditional captions.</p>
+          </div>
+
+          <div class="cp-block">
+            <div class="cp-block-title">Max Words Per Line</div>
+            <div class="opt-value" id="cpWordsRow" style="justify-content:flex-start;">
+              <button class="opt-btn" data-n="2">2</button>
+              <button class="opt-btn" data-n="3">3</button>
+              <button class="opt-btn selected" data-n="4">4</button>
+              <button class="opt-btn" data-n="5">5</button>
+              <button class="opt-btn" data-n="6">6</button>
+              <button class="opt-btn" data-n="7">7</button>
+            </div>
+          </div>
+
+          <div class="cp-toggle-card">
+            <div class="cp-toggle-head">
+              <div>
+                <div class="cp-toggle-title-row">
+                  <span class="cp-toggle-title">Auto Emoji Reactions</span>
+                  <span class="cp-new-badge">New</span>
+                </div>
+                <p class="cp-toggle-desc">Auto-detects emotion → adds 🔥😱🧠🤑⚠️🏆❤️😂 and more</p>
+              </div>
+              <label class="cp-switch">
+                <input type="checkbox" id="cpEmojiToggle" checked>
+                <span class="cp-switch-track"></span>
+              </label>
+            </div>
+            <div class="cp-subpos-row">
+              <span class="opt-label">Position</span>
+              <div class="opt-value" id="cpSubposButtons" style="flex:1;">
+                <button class="opt-btn" data-subpos="start">Start</button>
+                <button class="opt-btn selected" data-subpos="end">End</button>
+                <button class="opt-btn" data-subpos="none">None</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- POSITION -->
+        <div class="cp-panel" id="cp-panel-position">
+          <div class="opt-value" id="cpPosButtons" style="justify-content:flex-start; margin-bottom:6px;">
+            <button class="opt-btn" data-pos="bottom">↓ Bottom</button>
+            <button class="opt-btn" data-pos="center">◎ Center</button>
+            <button class="opt-btn" data-pos="top">↑ Top</button>
+            <button class="opt-btn" data-pos="custom">⚙ Custom</button>
+          </div>
+          <div class="cp-custom-controls" id="cpCustomControls" style="display:none;">
+            <div class="cp-slider-label-row">
+              <span>Margin from bottom</span>
+              <span id="cpMarginValue">430px</span>
+            </div>
+            <input type="range" id="cpMarginSlider" min="0" max="960" value="430">
+            <div class="cp-slider-range-labels">
+              <span>Bottom (0)</span>
+              <span>Top (960)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- OUTPUT -->
+        <div class="cp-panel" id="cp-panel-output">
+          <div class="cp-block-title" style="margin-top:0;">Aspect Ratio</div>
+          <div class="cp-grid" id="cpRatioGrid"></div>
+          <div class="cp-block-title">Quality</div>
+          <div class="cp-grid" id="cpQualityGrid"></div>
+        </div>
+
+        <div class="cp-summary mono" id="cpSummary"></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="generate-main" id="genBtn" onclick="generateClips()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <span>Generate Clips</span>
+    </button>
+    <div class="generate-hint" id="genHint">2–5 min per video</div>
+
+    <!-- PROCESSING -->
+    <div class="frame-label" id="procLabel" style="display:none;"><span class="frame-num">—</span><span class="frame-name">Processing</span><span class="frame-line"></span></div>
+    <div class="panel" id="procCard" style="display:none;">
+      <div class="proc-pad">
+        <div class="proc-scrub"><div class="proc-scrub-fill" id="scrubFill"></div></div>
+        <div class="proc-row">
+          <span class="proc-tc mono" id="procTc">00:00:00:00</span>
+          <span class="proc-status" id="procStatus">RENDERING</span>
+        </div>
+        <div class="proc-title" id="procTitle">Analyzing source video</div>
+        <div class="proc-sub" id="procSub">Usually takes 2–5 minutes. Keep this tab open.</div>
+        <div class="proc-steps">
+          <div class="proc-step active" id="step1"><span class="proc-step-dot"></span>Downloading video</div>
+          <div class="proc-step" id="step2"><span class="proc-step-dot"></span>Transcribing audio</div>
+          <div class="proc-step" id="step3"><span class="proc-step-dot"></span>Scoring segments</div>
+          <div class="proc-step" id="step4"><span class="proc-step-dot"></span>Cutting & rendering</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 OUTPUT -->
+    <div class="frame-label" id="outLabel" style="display:none;"><span class="frame-num">03</span><span class="frame-name" id="outName">Output</span><span class="frame-line"></span></div>
+    <div id="resultsSection" style="display:none;">
+      <div class="sheet-scroll" id="sheetScroll"></div>
+      <div class="sheet-footer">
+        <div class="sheet-hint">← scroll for all clips</div>
+        <button class="download-all-btn" id="downloadAllBtn" onclick="downloadAllClips()" style="display:none;">Download All</button>
+      </div>
+      <div class="download-all-note">Browser may ask permission for multiple downloads</div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Quick Actions</span><span class="frame-line"></span></div>
+    <div class="qa-grid">
+      <a class="qa-card" href="/">
+        <div class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div class="qa-title">Home</div>
+        <div class="qa-sub">Back to the main page</div>
+      </a>
+      <a class="qa-card" href="/dashboard.html">
+        <div class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+        <div class="qa-title">Transcript Dashboard</div>
+        <div class="qa-sub">View your saved transcripts</div>
+      </a>
+      <a class="qa-card" href="/pricing.html">
+        <div class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+        <div class="qa-title">Upgrade Plan</div>
+        <div class="qa-sub">Get more transcripts & clips</div>
+      </a>
+      <a class="qa-card" href="/contact.html">
+        <div class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="qa-title">Support</div>
+        <div class="qa-sub">Contact us anytime</div>
+      </a>
+    </div>
+
+    <!-- UPGRADE BANNER (free users) -->
+    <div class="frame-label" id="upgradeLabel" style="display:none;"><span class="frame-num">—</span><span class="frame-name">Upgrade</span><span class="frame-line"></span></div>
+    <div class="upgrade-banner" id="upgradeBanner" style="display:none">
+      <h3>Unlock More Power</h3>
+      <p>AI clip generation, 30+ transcripts/month, and priority processing — starting at just ₹149/mo.</p>
+      <button class="upgrade-btn" onclick="window.location.href='/pricing.html'">View Plans →</button>
+    </div>
+    
+
+    <!-- LOG (history) -->
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Log</span><span class="frame-line"></span></div>
+    <div class="log-card">
+      <div class="log-card-head">
+        <div>
+          <div class="log-card-title">Past Clips</div>
+          <div class="log-card-sub" id="statClipsHistorySub">Your generated videos</div>
+        </div>
+        <button class="log-toggle-pill" id="histToggle" onclick="toggleClipHistory()">
+          <span class="btn-label">Show</span><span class="chev">▾</span>
+        </button>
+      </div>
+      <div class="log-list" id="clipHistoryList">
+        <div class="log-empty">Loading…</div>
+      </div>
+    </div>
+    
+    <!-- TIPS -->
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Tips</span><span class="frame-line"></span></div>
+    <div class="tips-card">
+      <div class="tip-row"><span class="tip-num">01</span><p>Longer source videos usually give the AI more moments to pick from — better hit rate on viral clips.</p></div>
+      <div class="tip-row"><span class="tip-num">02</span><p>Word Pop and Karaoke captions tend to perform best on Reels and Shorts — try them before Static.</p></div>
+      <div class="tip-row"><span class="tip-num">03</span><p>Download your clips within 24 hours — after that they're auto-deleted from our servers.</p></div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">FAQ</span><span class="frame-line"></span></div>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>Do I need to keep the tab open while it processes?</summary>
+        <p>Yes for now — keep this tab open until the clips finish rendering. We'll add background processing with a notification soon.</p>
+      </details>
+      <details class="faq-item">
+        <summary>What happens to my clips after 24 hours?</summary>
+        <p>Clips are automatically deleted from our servers 24 hours after they're generated. Download anything you want to keep before then.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can I change captions after generating?</summary>
+        <p>Not yet — caption style is baked into the clip during rendering. Set your style before hitting Generate, or re-run the video with a different style.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Why did I get fewer than 12 clips?</summary>
+        <p>The AI only cuts moments it scores as genuinely strong — a shorter or less eventful source video may yield fewer clips.</p>
+      </details>
+    </div>
+
+    <footer>
+      <div class="foot-logo"><span class="mark"></span>ReelScribe</div>
+      <div class="foot-tag">cut once, post everywhere</div>
+      <div class="foot-links">
+        <a href="/about.html">About</a>
+        <a href="/pricing.html">Pricing</a>
+        <a href="/contact.html">Contact</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/privacy.html">Privacy</a>
+      </div>
+      <div class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</div>
+    </footer>
+
+  </div>
+</div>
+
+<script>
+/* ══════════════ SECURITY HELPER ══════════════
+   Any text that ultimately comes from user/AI-generated data
+   (video titles, clip titles, AI reasons, file keys) must be
+   escaped before it's placed into innerHTML. YouTube titles are
+   attacker-controllable, so this is not optional. */
+function escapeHtml(str){
+  return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+/* ══════════════ AUTH / IDENTITY ══════════════
+   Identity comes from the server session (/me), not localStorage.
+   localStorage is kept only to show the email instantly on load —
+   it carries no authentication weight. */
+let email = localStorage.getItem("userEmail") || "";
+let isGuest = true;
+let userEmail = "";
+let currentPlan = "free";
+let currentReferralCuts = 0;
+
+async function resolveIdentity() {
+  try {
+    const res = await fetch("/me");
+    const data = await res.json();
+    isGuest = !data.loggedIn;
+    email = data.email || "";
+    userEmail = email;
+    if (email) localStorage.setItem("userEmail", email);
+    else localStorage.removeItem("userEmail");
+  } catch (e) { isGuest = !email; userEmail = email; }
+
+  const nameStr = isGuest ? "Guest" : email.split("@")[0];
+  const avatarStr = nameStr.charAt(0).toUpperCase();
+  document.getElementById("welcomeName").innerText = isGuest ? "Guest — Cut Clips" : nameStr;
+  document.getElementById("drawerName").innerText = nameStr;
+  document.getElementById("drawerEmail").innerText = isGuest ? "Not logged in" : email;
+  document.getElementById("drawerAvatar").innerText = avatarStr;
+}
+
+function openDrawer(){ document.getElementById("drawer").classList.add("active"); document.getElementById("drawerOverlay").classList.add("active"); }
+function closeDrawer(){ document.getElementById("drawer").classList.remove("active"); document.getElementById("drawerOverlay").classList.remove("active"); }
+document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeDrawer(); });
+
+async function logout(){
+  try { await fetch("/logout", { method: "POST" }); } catch (e) {}
+  localStorage.removeItem("userEmail");
+  window.location.href = "/";
+}
+
+/* Source, Captions and Generate are always visible — including to
+   guests and Free-plan users — so people can explore the product
+   (paste a link, play with caption styles) before ever signing up.
+   The login/upgrade wall only appears when they actually try to
+   generate, as a nudge at the point of value, not a locked door
+   up front.
+
+   Referral credits are a special case: a Free-plan user who has
+   earned an unused referral clip can generate WITHOUT upgrading —
+   that's the whole point of the reward. Once that credit is spent
+   (currentReferralCuts drops to 0) they fall back to the normal
+   Free-plan wall until they earn another one or upgrade. */
+function applyAccessState(){
+  const genHint = document.getElementById("genHint");
+  const refBanner = document.getElementById("refCreditBanner");
+  const refCount = document.getElementById("refCreditCount");
+  const refPlural = document.getElementById("refCreditPlural");
+
+  const hasReferralCredit = !isGuest && currentReferralCuts > 0;
+
+  // Referral banner on the dashboard — only visible when there's an
+  // unused credit sitting there, so it never distracts a user with 0.
+  if (hasReferralCredit) {
+    refBanner.style.display = "flex";
+    refCount.innerText = currentReferralCuts;
+    refPlural.innerText = currentReferralCuts === 1 ? "" : "s";
+  } else {
+    refBanner.style.display = "none";
+  }
+
+  if (isGuest) {
+    genHint.classList.remove("ref");
+    genHint.innerText = "sign up free to generate";
+  } else if (currentPlan === "free") {
+    if (hasReferralCredit) {
+      genHint.classList.add("ref");
+      genHint.innerText = `${currentReferralCuts} free referral clip${currentReferralCuts === 1 ? '' : 's'} available — generate now`;
+    } else {
+      genHint.classList.remove("ref");
+      genHint.innerText = "upgrade to generate";
+    }
+  } else {
+    genHint.classList.remove("ref");
+    genHint.innerText = "2–5 min per video";
+  }
+}
+
+function showAccessWall(){
+  const loginWall = document.getElementById("loginWall");
+  const loginWallText = document.getElementById("loginWallText");
+  const loginWallBtn = document.getElementById("loginWallBtn");
+  const wallLabel = document.getElementById("wallLabel");
+
+  if (isGuest) {
+    loginWallText.innerText = "Like what you see? Create a free account to generate this clip.";
+    loginWallBtn.innerText = "Sign Up Free →";
+    loginWallBtn.onclick = () => window.location.href = "/login.html?next=" + encodeURIComponent(location.pathname);
+  } else {
+    loginWallText.innerText = "Cut Clips generation isn't available on the Free plan. Upgrade to unlock it, or invite a friend to earn a free clip.";
+    loginWallBtn.innerText = "Upgrade Plan →";
+    loginWallBtn.onclick = () => window.location.href = "/pricing.html";
+  }
+  wallLabel.style.display = "flex";
+  loginWall.style.display = "block";
+  loginWall.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+async function loadUserPlan(){
+  if (isGuest) { applyAccessState(); return; }
+  try {
+    const res = await fetch("/user-plan");
+    const data = await res.json();
+    if (data.success && data.plan) {
+      currentPlan = data.plan;
+      currentReferralCuts = data.referralCuts || 0;
+      const planLabel = data.plan.charAt(0).toUpperCase() + data.plan.slice(1);
+      document.getElementById("statPlan").innerText = planLabel;
+      document.getElementById("drawerPlan").innerText = planLabel;
+      const badge = document.getElementById("navPlanBadge");
+      badge.innerText = planLabel;
+      if (data.plan !== "free") {
+        badge.classList.add("paid");
+      } else {
+        document.getElementById("upgradeLabel").style.display = "flex";
+        document.getElementById("upgradeBanner").style.display = "block";
+      }
+      if (data.usage) {
+        const left = Math.max(0, (data.usage.clipDayLimit || 0) - (data.usage.clipDay || 0));
+        const leftStr = data.usage.clipDayLimit ? String(left) : "—";
+        document.getElementById("statClipsLeft").innerText = leftStr;
+        document.getElementById("meterClipsLeft").innerText = data.usage.clipDayLimit ? `${left} / ${data.usage.clipDayLimit}` : "—";
+      }
+    }
+  } catch (e) {
+    document.getElementById("upgradeLabel").style.display = "flex";
+    document.getElementById("upgradeBanner").style.display = "block";
+  }
+  applyAccessState();
+}
+
+/* ══════════════ LOG / HISTORY ══════════════ */
+let clipHistoryOpen = false;
+let clipHistoryLoaded = false;
+
+function toggleClipHistory(){
+  clipHistoryOpen = !clipHistoryOpen;
+  const list = document.getElementById('clipHistoryList');
+  const btn = document.getElementById('histToggle');
+  list.style.display = clipHistoryOpen ? 'block' : 'none';
+  btn.classList.toggle('open', clipHistoryOpen);
+  btn.querySelector('.btn-label').innerText = clipHistoryOpen ? 'Hide' : 'Show';
+  if (clipHistoryOpen && !clipHistoryLoaded) { loadClipHistory(); clipHistoryLoaded = true; }
+}
+
+/* Delegated download-click handler for history items — avoids
+   building inline onclick="" strings out of server data (s3Key),
+   which is unsafe if that string ever contains a quote character. */
+document.getElementById('clipHistoryList').addEventListener('click', (e) => {
+  const link = e.target.closest('a[data-s3key]');
+  if (!link) return;
+  e.stopPropagation();
+  notifyDownload(link.dataset.s3key);
+});
+
+async function loadClipHistory(){
+  const list = document.getElementById('clipHistoryList');
+  const sub = document.getElementById('statClipsHistorySub');
+  if (isGuest) {
+    list.innerHTML = '<div class="log-empty">Log in to see your clip history.</div>';
+    document.getElementById("statClipsHistory").innerText = "0";
+    if (sub) sub.innerText = "Log in to see your history";
+    return;
+  }
+  try {
+    const res = await fetch(`/clip-history`);
+    const data = await res.json();
+    if (!data.success || !data.data || data.data.length === 0) {
+      list.innerHTML = '<div class="log-empty">No clip history yet.</div>';
+      document.getElementById("statClipsHistory").innerText = "0";
+      if (sub) sub.innerText = "No videos yet";
+      return;
+    }
+    document.getElementById("statClipsHistory").innerText = data.data.length;
+    if (sub) sub.innerText = `${data.data.length} video${data.data.length === 1 ? '' : 's'} in the last 24h`;
+    list.innerHTML = '';
+    data.data.forEach((job, jobIdx) => {
+      const date = new Date(job.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+      const title = job.ytTitle || job.ytUrl;
+      const item = document.createElement('div');
+      item.className = 'log-item';
+      item.innerHTML = `
+        <div class="log-item-row">
+          <span class="log-tc mono">${escapeHtml(date)}</span>
+          <span class="log-name">${escapeHtml(title)}</span>
+          <span class="log-src">${escapeHtml(String(job.clips.length))} clips</span>
+        </div>
+        <div class="log-sub" id="historyClips${jobIdx}">
+          ${job.clips.map((clip, i) => `
+            <div class="log-sub-item">
+              <span>${escapeHtml(clip.title || 'Clip ' + (i+1))} · ${escapeHtml(String(clip.duration))}s</span>
+              <a href="${escapeHtml(clip.url)}" download="clip_${i+1}.mp4" data-s3key="${escapeHtml(clip.s3Key || '')}">Download</a>
+            </div>
+          `).join('')}
+        </div>`;
+      item.addEventListener('click', () => {
+        const sub = document.getElementById(`historyClips${jobIdx}`);
+        sub.style.display = sub.style.display === 'block' ? 'none' : 'block';
+      });
+      list.appendChild(item);
+    });
+  } catch (e) {
+    list.innerHTML = '<div class="log-empty">Could not load your history.</div>';
+  }
+}
+
+async function notifyDownload(s3Key){
+  try { await fetch('/clip-downloaded', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ s3Key }) }); } catch (e) {}
+}
+
+/* ══════════════ CAPTION PICKER ══════════════ */
+const CP_STYLES = [
+  { name: "Bold Pop",      cls: "style-red",       text: "BOLD", tag: "Trending" },
+  { name: "Gradient",      cls: "style-gradient",  text: "FIRE", tag: "Trending" },
+  { name: "Karaoke",       cls: "style-karaoke",   html: '<span class="filled">KAR</span>A' },
+  { name: "Outline",       cls: "style-outline",   text: "EDGE" },
+  { name: "Boxed",         cls: "style-boxed",     text: "BOX" },
+  { name: "Highlight",     cls: "style-highlight", text: "POP" },
+  { name: "Classic Bold",  cls: "style-classic",   text: "MEME", tag: "Popular" },
+  { name: "Minimal",       cls: "style-minimal",   text: "CLEAN" },
+  { name: "Cyan Glow",     cls: "style-cyan",      text: "GLOW" },
+  { name: "Gold Shine",    cls: "style-gold",      text: "GOLD" },
+  { name: "Word Pop Mono", cls: "style-mono",      text: "MONO" },
+  { name: "White Clean",   cls: "style-white",     text: "PLAIN" },
+];
+let cpStyleIdx = 0;
+
+const CP_ANIMS = [
+  { name: "Static",     id: "static" },
+  { name: "Word Pop",   id: "wordpop",  tag: "Trending" },
+  { name: "Karaoke",    id: "karaoke",  tag: "Trending" },
+  { name: "Bounce",     id: "bounce",   tag: "Popular" },
+  { name: "Shake",      id: "shake" },
+  { name: "Typewriter", id: "typewriter", tag: "Trending" },
+  { name: "Slide Up",   id: "slideup" },
+  { name: "Scale In",   id: "scalein",  tag: "Popular" },
+  { name: "Glow Pulse", id: "glowpulse" },
+];
+let cpAnimIdx = 1;
+
+const CP_RATIOS = [
+  { name: "9:16 Reels", cls: "style-white", text: "9:16", tag: "Popular" },
+  { name: "1:1 Square", cls: "style-white", text: "1:1" },
+  { name: "16:9 Wide",  cls: "style-white", text: "16:9" },
+  { name: "4:5 Feed",   cls: "style-white", text: "4:5" },
+];
+let cpRatioIdx = 0;
+
+const CP_QUALITY = [
+  { name: "720p",  cls: "style-white", text: "720p" },
+  { name: "1080p", cls: "style-white", text: "1080p", tag: "Trending" },
+  { name: "4K",    cls: "style-white", text: "4K" },
+];
+let cpQualityIdx = 1;
+
+const CP_MODE_DESC = {
+  wordpop: "One word highlights at a time as it's spoken.",
+  karaoke: "Words fill in colour in sync with the audio.",
+  standard: "Chunk-by-chunk traditional captions.",
+};
+let cpCaptionMode = "standard";
+let cpCaptionLanguage = "hindi";
+let cpMaxWords = 4;
+let cpEmojiOn = true;
+let cpEmojiSubpos = "end";
+const CP_REACTION_EMOJIS = ["🔥", "😱", "🧠", "🤑", "⚠️", "🏆", "❤️", "😂"];
+
+let cpPosType = "bottom";
+let cpMarginFromBottom = 430;
+
+const CP_LANG_DESC = {
+  hindi: "Original Hindi/Devanagari captions.",
+  hinglish: "Hindi spoken words in easy-to-read English letters.",
+  english: "Natural English translation of the spoken words."
+};
+
+function cpRenderLanguageButtons(){
+  document.querySelectorAll("#cpLanguageButtons .cp-lang-btn").forEach(btn => {
+    btn.classList.toggle("selected", btn.dataset.lang === cpCaptionLanguage);
+  });
+  document.getElementById("cpLanguageNote").innerText = CP_LANG_DESC[cpCaptionLanguage];
+}
+
+document.getElementById("cpLanguageButtons").addEventListener("click", (e) => {
+  const btn = e.target.closest(".cp-lang-btn");
+  if (!btn) return;
+  cpCaptionLanguage = btn.dataset.lang;
+  cpRenderLanguageButtons();
+  cpRenderLive();
+  cpUpdateSummary();
+});
+
+function cpRenderStyleGrid(){
+  const grid = document.getElementById("cpStyleGrid");
+  grid.innerHTML = CP_STYLES.map((s, i) => `
+    <div class="cp-tile ${i === cpStyleIdx ? 'selected' : ''}" data-i="${i}">
+      ${s.tag ? `<div class="cp-tile-tag">${s.tag}</div>` : ''}
+      <div class="cp-swatch ${s.cls}"><span>${s.html || s.text}</span></div>
+      <div class="cp-tile-label">${s.name}</div>
+    </div>`).join('');
+  grid.querySelectorAll(".cp-tile").forEach(t => t.addEventListener("click", () => {
+    cpStyleIdx = parseInt(t.dataset.i); cpRenderStyleGrid(); cpRenderLive(); cpUpdateSummary();
+  }));
+}
+
+function cpRenderAnimGrid(){
+  const grid = document.getElementById("cpAnimGrid");
+  grid.innerHTML = CP_ANIMS.map((a, i) => `
+    <div class="cp-tile ${i === cpAnimIdx ? 'selected' : ''}" data-i="${i}">
+      ${a.tag ? `<div class="cp-tile-tag">${a.tag}</div>` : ''}
+      <div class="cp-swatch style-white"><span style="font-size:8px">${a.name.toUpperCase()}</span></div>
+      <div class="cp-tile-label">${a.name}</div>
+    </div>`).join('');
+  grid.querySelectorAll(".cp-tile").forEach(t => t.addEventListener("click", () => {
+    cpAnimIdx = parseInt(t.dataset.i); cpRenderAnimGrid(); cpRenderLive(); cpUpdateSummary();
+  }));
+}
+
+function cpRenderSimpleGrid(containerId, items, selectedIdx, onSelect){
+  const grid = document.getElementById(containerId);
+  grid.innerHTML = items.map((it, i) => `
+    <div class="cp-tile ${i === selectedIdx ? 'selected' : ''}" data-i="${i}">
+      ${it.tag ? `<div class="cp-tile-tag">${it.tag}</div>` : ''}
+      <div class="cp-swatch ${it.cls}"><span>${it.text}</span></div>
+      <div class="cp-tile-label">${it.name}</div>
+    </div>`).join('');
+  grid.querySelectorAll(".cp-tile").forEach(t => t.addEventListener("click", () => onSelect(parseInt(t.dataset.i))));
+}
+function cpRenderRatioGrid(){ cpRenderSimpleGrid("cpRatioGrid", CP_RATIOS, cpRatioIdx, (i) => { cpRatioIdx = i; cpRenderRatioGrid(); cpUpdateSummary(); }); }
+function cpRenderQualityGrid(){ cpRenderSimpleGrid("cpQualityGrid", CP_QUALITY, cpQualityIdx, (i) => { cpQualityIdx = i; cpRenderQualityGrid(); cpUpdateSummary(); }); }
+
+document.getElementById("cpTabbar").addEventListener("click", (e) => {
+  const tab = e.target.closest(".cp-tab");
+  if (!tab) return;
+  document.querySelectorAll(".cp-tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".cp-panel").forEach(p => p.classList.remove("active"));
+  tab.classList.add("active");
+  document.getElementById(`cp-panel-${tab.dataset.tab}`).classList.add("active");
+});
+
+document.getElementById("cpModeButtons").addEventListener("click", (e) => {
+  const btn = e.target.closest(".opt-btn");
+  if (!btn) return;
+  cpCaptionMode = btn.dataset.mode;
+  document.querySelectorAll("#cpModeButtons .opt-btn").forEach(b => b.classList.toggle("selected", b === btn));
+  document.getElementById("cpModeDesc").innerText = CP_MODE_DESC[cpCaptionMode];
+  cpRenderLive(); cpUpdateSummary();
+});
+
+document.getElementById("cpWordsRow").addEventListener("click", (e) => {
+  const btn = e.target.closest(".opt-btn");
+  if (!btn) return;
+  cpMaxWords = parseInt(btn.dataset.n);
+  document.querySelectorAll("#cpWordsRow .opt-btn").forEach(b => b.classList.toggle("selected", b === btn));
+  cpRenderLive(); cpUpdateSummary();
+});
+
+const cpEmojiToggle = document.getElementById("cpEmojiToggle");
+cpEmojiToggle.addEventListener("change", () => {
+  cpEmojiOn = cpEmojiToggle.checked;
+  document.querySelectorAll("#cpSubposButtons .opt-btn").forEach(b => b.disabled = !cpEmojiOn);
+  cpRenderLive(); cpUpdateSummary();
+});
+
+document.getElementById("cpSubposButtons").addEventListener("click", (e) => {
+  const btn = e.target.closest(".opt-btn");
+  if (!btn || !cpEmojiOn) return;
+  cpEmojiSubpos = btn.dataset.subpos;
+  document.querySelectorAll("#cpSubposButtons .opt-btn").forEach(b => b.classList.toggle("selected", b === btn));
+  cpRenderLive(); cpUpdateSummary();
+});
+
+function cpRenderPosButtons(){
+  document.querySelectorAll("#cpPosButtons .opt-btn").forEach(b => b.classList.toggle("selected", b.dataset.pos === cpPosType));
+  document.getElementById("cpCustomControls").style.display = cpPosType === "custom" ? "block" : "none";
+}
+document.getElementById("cpPosButtons").addEventListener("click", (e) => {
+  const btn = e.target.closest(".opt-btn");
+  if (!btn) return;
+  cpPosType = btn.dataset.pos;
+  cpRenderPosButtons(); cpApplyPosition(); cpUpdateSummary();
+});
+
+const cpMarginSlider = document.getElementById("cpMarginSlider");
+const cpMarginValueLabel = document.getElementById("cpMarginValue");
+function cpUpdateSliderFill(){ const pct = (cpMarginSlider.value / cpMarginSlider.max) * 100; cpMarginSlider.style.setProperty('--fill', pct + '%'); }
+cpMarginSlider.addEventListener("input", () => {
+  cpMarginFromBottom = parseInt(cpMarginSlider.value);
+  cpMarginValueLabel.innerText = `${cpMarginFromBottom}px`;
+  cpUpdateSliderFill(); cpApplyPosition(); cpUpdateSummary();
+});
+
+function cpApplyPosition(){
+  const el = document.getElementById("cpWords");
+  el.style.top = "auto"; el.style.bottom = "auto"; el.style.transform = "none";
+  if (cpPosType === "top") { el.style.top = "8%"; }
+  else if (cpPosType === "center") { el.style.top = "50%"; el.style.transform = "translateY(-50%)"; }
+  else if (cpPosType === "bottom") { el.style.bottom = "8%"; }
+  else if (cpPosType === "custom") {
+    const pct = Math.min(Math.max(cpMarginFromBottom / 960, 0), 1) * 82;
+    el.style.bottom = pct + "%";
+  }
+}
+
+const CP_DEMO_WORDS = {
+  hindi: ["नहीं", "लगा", "गन", "रीलोड"],
+  hinglish: ["Nahi", "laga", "gun", "reload"],
+  english: ["The", "gun", "didn't", "reload"]
+};
+let cpLiveTimer = null;
+
+function cpRenderLive(){
+  clearInterval(cpLiveTimer);
+  const wrap = document.getElementById("cpWords");
+  const style = CP_STYLES[cpStyleIdx];
+  const anim = CP_ANIMS[cpAnimIdx];
+  let words = CP_DEMO_WORDS[cpCaptionLanguage].slice(0, Math.max(1, Math.min(cpMaxWords, CP_DEMO_WORDS[cpCaptionLanguage].length)));
+  if (cpEmojiOn && cpEmojiSubpos !== "none") {
+    const emoji = CP_REACTION_EMOJIS[cpStyleIdx % CP_REACTION_EMOJIS.length];
+    words = cpEmojiSubpos === "start" ? [emoji, ...words] : [...words, emoji];
+  }
+  wrap.innerHTML = words.map((w, i) => `<span class="cp-word ${style.cls}" data-i="${i}"><span>${w}</span></span>`).join('');
+  cpApplyAnimation(anim.id, wrap);
+  cpApplyPosition();
+}
+
+function cpApplyAnimation(id, wrap){
+  const words = [...wrap.children];
+  if (id === "static") { words.forEach(w => w.style.opacity = "1"); return; }
+
+  if (id === "wordpop" || id === "karaoke") {
+    let active = 0;
+    const tick = () => {
+      words.forEach((w, i) => {
+        const isActive = i === active;
+        w.style.transition = "transform .15s, opacity .15s";
+        w.style.opacity = (id === "karaoke") ? "1" : (isActive ? "1" : "0.35");
+        w.style.transform = isActive ? "scale(1.12)" : "scale(1)";
+        if (id === "karaoke") w.querySelector("span").style.color = i <= active ? "#fff" : "rgba(255,255,255,0.3)";
+      });
+      active = (active + 1) % words.length;
+    };
+    tick(); cpLiveTimer = setInterval(tick, 420); return;
+  }
+
+  if (id === "typewriter") {
+    words.forEach(w => w.style.opacity = "0");
+    let shown = 0;
+    const tick = () => { words.forEach((w, i) => { w.style.opacity = i < shown ? "1" : "0"; }); shown = shown >= words.length ? 0 : shown + 1; };
+    tick(); cpLiveTimer = setInterval(tick, 380); return;
+  }
+
+  if (id === "bounce") { words.forEach((w, i) => { w.style.opacity = "1"; w.style.animation = `cpBounce 1.1s ease-in-out ${i * 0.1}s infinite`; }); return; }
+  if (id === "shake") { words.forEach((w, i) => { w.style.opacity = "1"; w.style.animation = `cpShake 0.32s ease-in-out ${i * 0.05}s infinite`; }); return; }
+
+  if (id === "slideup") {
+    let idx = 0;
+    words.forEach(w => { w.style.opacity = "0"; w.style.transform = "translateY(10px)"; w.style.transition = "transform .25s, opacity .25s"; });
+    cpLiveTimer = setInterval(() => {
+      words.forEach(w => { w.style.opacity = "0"; w.style.transform = "translateY(10px)"; });
+      words[idx].style.opacity = "1"; words[idx].style.transform = "translateY(0)";
+      idx = (idx + 1) % words.length;
+    }, 450); return;
+  }
+
+  if (id === "scalein") {
+    let idx = 0;
+    words.forEach(w => { w.style.opacity = "0.3"; w.style.transform = "scale(0.85)"; w.style.transition = "transform .2s, opacity .2s"; });
+    cpLiveTimer = setInterval(() => {
+      words.forEach(w => { w.style.opacity = "0.3"; w.style.transform = "scale(0.85)"; });
+      words[idx].style.opacity = "1"; words[idx].style.transform = "scale(1.15)";
+      idx = (idx + 1) % words.length;
+    }, 420); return;
+  }
+
+  if (id === "glowpulse") { words.forEach((w, i) => { w.style.opacity = "1"; w.style.animation = `cpGlow 1.4s ease-in-out ${i * 0.15}s infinite`; }); return; }
+}
+
+let cpCaptionsOn = true;
+
+function cpGetSettings(){
+  if (!cpCaptionsOn) return { captionsEnabled: false };
+  return {
+    captionsEnabled: true,
+    style: CP_STYLES[cpStyleIdx].name,
+    animation: CP_ANIMS[cpAnimIdx].name,
+    captionMode: cpCaptionMode,
+    language: cpCaptionLanguage,
+    maxWordsPerLine: cpMaxWords,
+    emojiReactions: cpEmojiOn,
+    emojiPosition: cpEmojiOn ? cpEmojiSubpos : "none",
+    position: cpPosType === "custom" ? { type: "custom", marginFromBottom: cpMarginFromBottom } : { type: cpPosType },
+    aspectRatio: CP_RATIOS[cpRatioIdx].text,
+    quality: CP_QUALITY[cpQualityIdx].text,
+  };
+}
+
+function cpUpdateSummary(){
+  const s = cpGetSettings();
+  document.getElementById("cpSummary").innerHTML = s.captionsEnabled === false
+    ? `Applying to next clip: <strong>No captions</strong>`
+    : `Applying to next clip: <strong>${s.language}</strong> · <strong>${s.style}</strong> · <strong>${s.animation}</strong> · <strong>${s.aspectRatio}</strong> · <strong>${s.quality}</strong>`;
+}
+
+document.getElementById("cpCaptionsToggle").addEventListener("change", (e) => {
+  cpCaptionsOn = e.target.checked;
+  document.getElementById("cpBody").classList.toggle("disabled", !cpCaptionsOn);
+  cpUpdateSummary();
+});
+
+function cpInit(){
+  cpRenderLanguageButtons();
+  cpRenderStyleGrid(); cpRenderAnimGrid(); cpRenderRatioGrid(); cpRenderQualityGrid();
+  cpRenderPosButtons(); cpUpdateSliderFill(); cpRenderLive(); cpUpdateSummary();
+}
+cpInit();
+
+/* ══════════════ VIDEO PREVIEW ══════════════
+   Uses YouTube's public oEmbed endpoint (no API key, CORS-enabled)
+   to show a thumbnail/title/channel before the user commits to
+   generating — catches wrong links early instead of after a
+   2-5 minute wait. Text is inserted via innerText, never innerHTML,
+   so no escaping gap even though the title comes from YouTube. */
+const YT_URL_REGEX = /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{11})/;
+let vpDebounceTimer = null;
+
+function clearVideoPreview(){
+  document.getElementById('videoPreviewCard').style.display = 'none';
+}
+
+async function fetchVideoPreview(url){
+  const card = document.getElementById('videoPreviewCard');
+  try {
+    const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+    if (!res.ok) throw new Error('lookup failed');
+    const data = await res.json();
+    document.getElementById('vpThumb').src = data.thumbnail_url || '';
+    document.getElementById('vpTitle').innerText = data.title || 'Untitled video';
+    document.getElementById('vpChannel').innerText = data.author_name ? `by ${data.author_name}` : '';
+    card.style.display = 'flex';
+  } catch (e) {
+    clearVideoPreview();
+  }
+}
+
+document.getElementById('clipUrl').addEventListener('input', (e) => {
+  clearTimeout(vpDebounceTimer);
+  const val = e.target.value.trim();
+  if (!YT_URL_REGEX.test(val)) { clearVideoPreview(); return; }
+  vpDebounceTimer = setTimeout(() => fetchVideoPreview(val), 500);
+});
+
+/* ══════════════ DOWNLOAD ALL ══════════════
+   Browsers commonly block more than one or two simultaneous
+   programmatic downloads, so clips are triggered one at a time
+   with a short stagger. This is a reasonable default without
+   pulling in a zip library / fetching cross-origin blobs. */
+let lastGeneratedClips = [];
+
+async function downloadAllClips(){
+  if (!lastGeneratedClips.length) return;
+  const btn = document.getElementById('downloadAllBtn');
+  btn.disabled = true;
+  btn.innerText = 'Downloading…';
+  for (let i = 0; i < lastGeneratedClips.length; i++) {
+    const clip = lastGeneratedClips[i];
+    try {
+      const res = await fetch(clip.url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `clip_${i + 1}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(blobUrl);
+      notifyDownload(clip.s3Key);
+    } catch (e) { console.error('Download failed for clip', i, e); }
+    await new Promise(r => setTimeout(r, 400));
+  }
+  btn.disabled = false;
+  btn.innerText = 'Download All';
+}
+
+
+/* ══════════════ GENERATE / PROCESS / RESULTS ══════════════ */
+let procTimer = null;
+
+function startProcAnimation(){
+  const fill = document.getElementById('scrubFill');
+  const tc = document.getElementById('procTc');
+  const steps = ['step1','step2','step3','step4'];
+  let t = 0, stepIdx = 0;
+  clearInterval(procTimer);
+  procTimer = setInterval(() => {
+    t += 0.35 + Math.random() * 0.4;
+    const m = Math.floor(t / 60), s = Math.floor(t % 60), f = Math.floor((t % 1) * 30);
+    tc.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0') + ':' + String(f).padStart(2,'0') + ':' + String(f % 30).padStart(2,'0');
+    fill.style.width = Math.min(96, (t / 45) * 100) + '%';
+    const newIdx = Math.min(3, Math.floor(t / 12));
+    if (newIdx !== stepIdx) {
+      document.getElementById(steps[stepIdx]).classList.remove('active');
+      document.getElementById(steps[stepIdx]).classList.add('done');
+      stepIdx = newIdx;
+      document.getElementById(steps[stepIdx]).classList.add('active');
+    }
+  }, 300);
+}
+function stopProcAnimation(finish){
+  clearInterval(procTimer);
+  if (finish) {
+    document.getElementById('scrubFill').style.width = '100%';
+    ['step1','step2','step3','step4'].forEach(id => { document.getElementById(id).classList.remove('active'); document.getElementById(id).classList.add('done'); });
+  }
+}
+
+async function generateClips(){
+  const url = document.getElementById("clipUrl").value.trim();
+  if (!url) { alert("Please paste a YouTube URL!"); return; }
+  // Free plan can proceed ONLY if they still have an unused referral
+  // credit — this is what lets a referral reward be used without
+  // requiring an upgrade. Once the credit is spent, this falls back
+  // to the normal wall (handled by loadUserPlan() re-syncing
+  // currentReferralCuts after generation finishes).
+  if (isGuest || (currentPlan === "free" && currentReferralCuts <= 0)) { showAccessWall(); return; }
+
+  const usingReferralCredit = (currentPlan === "free" && currentReferralCuts > 0);
+
+  const genBtn = document.getElementById("genBtn");
+  const procLabel = document.getElementById("procLabel");
+  const procCard = document.getElementById("procCard");
+  const outLabel = document.getElementById("outLabel");
+  const resultsSection = document.getElementById("resultsSection");
+  const sheetScroll = document.getElementById("sheetScroll");
+
+  genBtn.disabled = true;
+  outLabel.style.display = "none";
+  resultsSection.style.display = "none";
+  sheetScroll.innerHTML = "";
+  document.getElementById('downloadAllBtn').style.display = "none";
+  document.getElementById('procStatus').innerText = "RENDERING";
+  document.getElementById('procTitle').innerText = "Analyzing source video";
+  document.getElementById('procSub').innerText = usingReferralCredit
+    ? "Using your referral credit. Usually takes 2–5 minutes. Keep this tab open."
+    : "Usually takes 2–5 minutes. Keep this tab open.";
+  ['step1','step2','step3','step4'].forEach((id,i) => { const el = document.getElementById(id); el.classList.remove('done','active'); if(i===0) el.classList.add('active'); });
+  document.getElementById('scrubFill').style.width = '0%';
+  procLabel.style.display = "flex";
+  procCard.style.display = "block";
+  startProcAnimation();
+  procCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  function refreshHistoryAfterJob(){ clipHistoryLoaded = false; if (clipHistoryOpen) { loadClipHistory(); clipHistoryLoaded = true; } }
+
+  function showError(msg){
+    stopProcAnimation(false);
+    document.getElementById('procStatus').innerText = "ERROR";
+    document.getElementById('procTitle').innerText = "Something went wrong";
+    document.getElementById('procTitle').classList.add('proc-error');
+    document.getElementById('procSub').innerText = msg || "Please try again.";
+    genBtn.disabled = false;
+    refreshHistoryAfterJob();
+    // Re-sync plan/referral state in case the error was e.g. "referral
+    // cut already used" — keeps the UI (banner, hint, wall) honest.
+    loadUserPlan();
+  }
+
+  function showClips(clips){
+    stopProcAnimation(true);
+    lastGeneratedClips = clips || [];
+    setTimeout(() => {
+      procLabel.style.display = "none";
+      procCard.style.display = "none";
+      document.getElementById('procTitle').classList.remove('proc-error');
+      outLabel.style.display = "flex";
+      document.getElementById('outName').innerText = `${clips.length} clip${clips.length === 1 ? '' : 's'} generated`;
+      const downloadAllBtn = document.getElementById('downloadAllBtn');
+      downloadAllBtn.style.display = clips.length > 1 ? 'block' : 'none';
+      downloadAllBtn.disabled = false;
+      downloadAllBtn.innerText = 'Download All';
+      if (!clips.length) {
+        sheetScroll.innerHTML = '<div class="sheet-empty">No clips came back — try a different video.</div>';
+      } else {
+        // All dynamic fields (title, reason, s3Key, url) are escaped
+        // before insertion — YouTube titles are attacker-controllable
+        // text and must never be trusted with raw innerHTML.
+        sheetScroll.innerHTML = clips.map((clip, i) => `
+          <div class="frame-card">
+            <div class="frame-thumb">
+              <div class="frame-idx">${String(i+1).padStart(2,'0')}</div>
+              <div class="frame-dur">${escapeHtml(String(clip.duration))}s</div>
+              <div class="play"></div>
+            </div>
+            <div class="frame-body">
+              <div class="frame-title">${escapeHtml(clip.title || 'Clip ' + (i+1))}</div>
+              ${clip.reason ? `<div class="frame-reason">${escapeHtml(clip.reason)}</div>` : ''}
+              <a href="${escapeHtml(clip.url)}" download="clip_${i+1}.mp4" class="frame-dl" data-s3key="${escapeHtml(clip.s3Key || '')}">Download</a>
+            </div>
+          </div>`).join('');
+        sheetScroll.querySelectorAll('.frame-dl').forEach(a => {
+          a.addEventListener('click', () => notifyDownload(a.dataset.s3key));
+        });
+      }
+      resultsSection.style.display = "block";
+      genBtn.disabled = false;
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 400);
+    refreshHistoryAfterJob();
+    // The referral credit (if one was used) has now been consumed
+    // server-side. Re-pull /user-plan so currentReferralCuts drops
+    // to its real value immediately — this is what stops the user
+    // from generating again on the referral credit alone once it's
+    // spent, without needing a page refresh.
+    loadUserPlan();
+  }
+
+  try {
+    const res = await fetch("/cut-clips", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ytUrl: url, captionSettings: cpGetSettings() })
+    });
+    const data = await res.json();
+
+    if (data.loginRequired) { showAccessWall(); procLabel.style.display = "none"; procCard.style.display = "none"; genBtn.disabled = false; return; }
+    if (!data.success || !data.jobId) { showError(data.error); return; }
+
+    const jobId = data.jobId;
+    const startTime = Date.now();
+    const maxWaitMs = 30 * 60 * 1000;
+
+    const poll = setInterval(async () => {
+      if (Date.now() - startTime > maxWaitMs) { clearInterval(poll); showError("Timed out. Please try again."); return; }
+      try {
+        const statusRes = await fetch(`/clip-status/${jobId}`);
+        const statusData = await statusRes.json();
+        if (!statusData.success) { clearInterval(poll); showError(statusData.error); return; }
+        if (statusData.status === "done") { clearInterval(poll); showClips(statusData.clips || []); }
+        else if (statusData.status === "error") { clearInterval(poll); showError(statusData.error); }
+      } catch (e) { /* transient — retry next tick */ }
+    }, 4000);
+
+  } catch (e) {
+    showError("Server error. Please try again.");
+  }
+}
+
+/* Init — if we arrived here from the main page with a link already
+   pasted (Generate button on "/"), prefill it and kick off processing
+   automatically as soon as access checks pass. */
+(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const incomingUrl = params.get("ytUrl");
+  const autostart = params.get("autostart") === "1";
+
+  if (incomingUrl) {
+    document.getElementById("clipUrl").value = incomingUrl;
+    if (YT_URL_REGEX.test(incomingUrl)) fetchVideoPreview(incomingUrl);
+  }
+
+  await resolveIdentity();
+  await loadUserPlan();
+
+  // Preload the history count silently (list itself stays hidden via
+  // CSS until the user hits "Show") so the "Videos (24h)" stat is
+  // correct on first paint instead of showing "—" indefinitely.
+  if (!isGuest) { loadClipHistory(); clipHistoryLoaded = true; }
+
+  if (incomingUrl || autostart) window.history.replaceState({}, document.title, "/clips-dashboard.html");
+  if (incomingUrl && autostart && !isGuest && currentPlan !== "free") generateClips();
+})();
+</script>
+</body>
+</html>
