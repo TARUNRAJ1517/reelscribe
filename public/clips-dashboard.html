@@ -90,6 +90,14 @@ body::before{
 .stat-num{font-size:16px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--accent); letter-spacing:-.3px;}
 .stat-label{font-size:8.5px; font-weight:500; letter-spacing:.6px; text-transform:uppercase; color:var(--muted); margin-top:3px; font-family:'IBM Plex Mono',monospace;}
 
+/* REFERRAL CREDIT BANNER */
+.ref-credit-banner{display:none; align-items:center; gap:12px; border:1px solid var(--accent); background:var(--accent-dim); padding:12px 14px; animation:frameIn .4s ease both;}
+.ref-credit-icon{width:34px; height:34px; flex-shrink:0; border-radius:50%; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-size:15px;}
+.ref-credit-text{flex:1; min-width:0;}
+.ref-credit-title{font-size:12.5px; font-weight:700; color:var(--text);}
+.ref-credit-sub{font-size:10.5px; color:var(--text-dim); margin-top:1px; line-height:1.4;}
+.ref-credit-count{font-size:15px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--accent); flex-shrink:0;}
+
 /* LOGIN WALL / UPGRADE */
 .login-wall{border:1px solid var(--border); background:var(--s1); padding:24px 16px; text-align:center; animation:frameIn .4s ease both;}
 .login-wall p{font-size:12px; color:var(--text-dim); margin-bottom:14px; line-height:1.6;}
@@ -134,6 +142,7 @@ body::before{
 .generate-main:active{transform:scale(.985);}
 .generate-main:disabled{opacity:.5; cursor:not-allowed;}
 .generate-hint{text-align:center; font-size:10px; color:var(--muted); margin-bottom:4px; font-family:'IBM Plex Mono',monospace;}
+.generate-hint.ref{color:var(--accent); font-weight:600;}
 .src-meter{display:flex; align-items:center; justify-content:space-between; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);}
 .src-meter-label{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
 .src-meter-val{font-size:10px; color:var(--text-dim); font-family:'IBM Plex Mono',monospace;}
@@ -467,6 +476,16 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
       <div class="stat-cell"><div class="stat-num" id="statPlan">Free</div><div class="stat-label">Plan</div></div>
     </div>
 
+    <!-- REFERRAL CREDIT BANNER (shown only when user has unused referral clips) -->
+    <div class="ref-credit-banner" id="refCreditBanner">
+      <div class="ref-credit-icon">🎁</div>
+      <div class="ref-credit-text">
+        <div class="ref-credit-title">Referral clip<span id="refCreditPlural">s</span> ready to use</div>
+        <div class="ref-credit-sub">No upgrade needed — generate now, free credit will be used automatically.</div>
+      </div>
+      <div class="ref-credit-count" id="refCreditCount">0</div>
+    </div>
+
     <!-- LOGIN / UPGRADE WALL -->
     <div class="frame-label" id="wallLabel" style="display:none;"><span class="frame-num">—</span><span class="frame-name">Access</span><span class="frame-line"></span></div>
     <div class="login-wall" id="loginWall" style="display:none;">
@@ -768,6 +787,7 @@ let email = localStorage.getItem("userEmail") || "";
 let isGuest = true;
 let userEmail = "";
 let currentPlan = "free";
+let currentReferralCuts = 0;
 
 async function resolveIdentity() {
   try {
@@ -803,14 +823,44 @@ async function logout(){
    (paste a link, play with caption styles) before ever signing up.
    The login/upgrade wall only appears when they actually try to
    generate, as a nudge at the point of value, not a locked door
-   up front. */
+   up front.
+
+   Referral credits are a special case: a Free-plan user who has
+   earned an unused referral clip can generate WITHOUT upgrading —
+   that's the whole point of the reward. Once that credit is spent
+   (currentReferralCuts drops to 0) they fall back to the normal
+   Free-plan wall until they earn another one or upgrade. */
 function applyAccessState(){
   const genHint = document.getElementById("genHint");
+  const refBanner = document.getElementById("refCreditBanner");
+  const refCount = document.getElementById("refCreditCount");
+  const refPlural = document.getElementById("refCreditPlural");
+
+  const hasReferralCredit = !isGuest && currentReferralCuts > 0;
+
+  // Referral banner on the dashboard — only visible when there's an
+  // unused credit sitting there, so it never distracts a user with 0.
+  if (hasReferralCredit) {
+    refBanner.style.display = "flex";
+    refCount.innerText = currentReferralCuts;
+    refPlural.innerText = currentReferralCuts === 1 ? "" : "s";
+  } else {
+    refBanner.style.display = "none";
+  }
+
   if (isGuest) {
+    genHint.classList.remove("ref");
     genHint.innerText = "sign up free to generate";
   } else if (currentPlan === "free") {
-    genHint.innerText = "upgrade to generate";
+    if (hasReferralCredit) {
+      genHint.classList.add("ref");
+      genHint.innerText = `${currentReferralCuts} free referral clip${currentReferralCuts === 1 ? '' : 's'} available — generate now`;
+    } else {
+      genHint.classList.remove("ref");
+      genHint.innerText = "upgrade to generate";
+    }
   } else {
+    genHint.classList.remove("ref");
     genHint.innerText = "2–5 min per video";
   }
 }
@@ -826,7 +876,7 @@ function showAccessWall(){
     loginWallBtn.innerText = "Sign Up Free →";
     loginWallBtn.onclick = () => window.location.href = "/login.html?next=" + encodeURIComponent(location.pathname);
   } else {
-    loginWallText.innerText = "Cut Clips generation isn't available on the Free plan. Upgrade to unlock it.";
+    loginWallText.innerText = "Cut Clips generation isn't available on the Free plan. Upgrade to unlock it, or invite a friend to earn a free clip.";
     loginWallBtn.innerText = "Upgrade Plan →";
     loginWallBtn.onclick = () => window.location.href = "/pricing.html";
   }
@@ -842,6 +892,7 @@ async function loadUserPlan(){
     const data = await res.json();
     if (data.success && data.plan) {
       currentPlan = data.plan;
+      currentReferralCuts = data.referralCuts || 0;
       const planLabel = data.plan.charAt(0).toUpperCase() + data.plan.slice(1);
       document.getElementById("statPlan").innerText = planLabel;
       document.getElementById("drawerPlan").innerText = planLabel;
@@ -1327,7 +1378,14 @@ function stopProcAnimation(finish){
 async function generateClips(){
   const url = document.getElementById("clipUrl").value.trim();
   if (!url) { alert("Please paste a YouTube URL!"); return; }
-  if (isGuest || currentPlan === "free") { showAccessWall(); return; }
+  // Free plan can proceed ONLY if they still have an unused referral
+  // credit — this is what lets a referral reward be used without
+  // requiring an upgrade. Once the credit is spent, this falls back
+  // to the normal wall (handled by loadUserPlan() re-syncing
+  // currentReferralCuts after generation finishes).
+  if (isGuest || (currentPlan === "free" && currentReferralCuts <= 0)) { showAccessWall(); return; }
+
+  const usingReferralCredit = (currentPlan === "free" && currentReferralCuts > 0);
 
   const genBtn = document.getElementById("genBtn");
   const procLabel = document.getElementById("procLabel");
@@ -1343,7 +1401,9 @@ async function generateClips(){
   document.getElementById('downloadAllBtn').style.display = "none";
   document.getElementById('procStatus').innerText = "RENDERING";
   document.getElementById('procTitle').innerText = "Analyzing source video";
-  document.getElementById('procSub').innerText = "Usually takes 2–5 minutes. Keep this tab open.";
+  document.getElementById('procSub').innerText = usingReferralCredit
+    ? "Using your referral credit. Usually takes 2–5 minutes. Keep this tab open."
+    : "Usually takes 2–5 minutes. Keep this tab open.";
   ['step1','step2','step3','step4'].forEach((id,i) => { const el = document.getElementById(id); el.classList.remove('done','active'); if(i===0) el.classList.add('active'); });
   document.getElementById('scrubFill').style.width = '0%';
   procLabel.style.display = "flex";
@@ -1361,6 +1421,9 @@ async function generateClips(){
     document.getElementById('procSub').innerText = msg || "Please try again.";
     genBtn.disabled = false;
     refreshHistoryAfterJob();
+    // Re-sync plan/referral state in case the error was e.g. "referral
+    // cut already used" — keeps the UI (banner, hint, wall) honest.
+    loadUserPlan();
   }
 
   function showClips(clips){
@@ -1404,6 +1467,12 @@ async function generateClips(){
       resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 400);
     refreshHistoryAfterJob();
+    // The referral credit (if one was used) has now been consumed
+    // server-side. Re-pull /user-plan so currentReferralCuts drops
+    // to its real value immediately — this is what stops the user
+    // from generating again on the referral credit alone once it's
+    // spent, without needing a page refresh.
+    loadUserPlan();
   }
 
   try {
