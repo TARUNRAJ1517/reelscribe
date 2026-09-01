@@ -1,0 +1,18 @@
+REELSCRIBE REFERRAL - RENDER DEPLOYMENT
+
+Replace/add:
+  server.js
+  models/User.js
+  models/Referral.js
+  public/index.html
+  public/dashboard.html
+  public/clips-dashboard.html
+  public/referral.html
+
+Keep the existing production .env unchanged.
+
+After deploy, restart/redeploy the Render service.
+
+Referral endpoints included:
+  /ref/CODE
+  /referral
