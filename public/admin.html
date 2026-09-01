@@ -384,8 +384,13 @@ tr.user-row:hover { background: rgba(255,255,255,0.02); }
         </div>
 
         <div class="card">
-          <h2>Send Marketing Email</h2>
-          <p class="subtitle">Choose a styled template. No HTML needed. The CTA opens the selected plan with the coupon already attached.</p>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+            <div>
+              <h2>Send Marketing Email</h2>
+              <p class="subtitle">Choose a styled template. No HTML needed. The CTA opens the selected plan with the coupon already attached.</p>
+            </div>
+            <button class="btn btn-ghost btn-sm" style="white-space:nowrap;" onclick="openTemplateManager()">🧩 Manage Templates</button>
+          </div>
           <div class="form-grid">
             <label>Template
               <select id="marketingTemplate" onchange="updateMarketingDefaults()">
@@ -393,6 +398,7 @@ tr.user-row:hover { background: rgba(255,255,255,0.02); }
                 <option value="upgrade">🚀 Upgrade Offer</option>
                 <option value="expiry">⏰ Subscription Expiring</option>
                 <option value="announcement">📢 New Feature / Announcement</option>
+                <optgroup id="customTemplateGroup" label="Your Custom Templates"></optgroup>
               </select>
             </label>
             <label>Send To
@@ -409,20 +415,20 @@ tr.user-row:hover { background: rgba(255,255,255,0.02); }
             <label id="targetEmailWrap" style="display:none;grid-column:1/-1;">Target User Email
               <input id="marketingTargetEmail" type="email" placeholder="user@gmail.com">
             </label>
-            <label>Plan
+            <label id="planFieldWrap">Plan
               <select id="marketingPlan" onchange="updateMarketingDefaults()">
                 <option value="starter">Starter</option>
                 <option value="pro" selected>Pro</option>
                 <option value="agency">Agency</option>
               </select>
             </label>
-            <label>Billing
+            <label id="billingFieldWrap">Billing
               <select id="marketingBilling" onchange="updateMarketingDefaults()">
                 <option value="monthly" selected>Monthly</option>
                 <option value="yearly">Yearly</option>
               </select>
             </label>
-            <label>Coupon
+            <label id="couponFieldWrap">Coupon
               <select id="marketingCoupon" onchange="updateMarketingDefaults()">
                 <option value="">No coupon</option>
               </select>
@@ -459,6 +465,40 @@ tr.user-row:hover { background: rgba(255,255,255,0.02); }
           <button class="btn btn-ghost btn-sm" onclick="closeMarketingPreview()">Close</button>
         </div>
         <iframe id="marketingPreviewFrame" style="width:100%;height:620px;border:1px solid var(--border);border-radius:8px;background:#fff;"></iframe>
+      </div>
+    </div>
+
+    <!-- TEMPLATE MANAGER: list view -->
+    <div class="modal-overlay" id="templateManagerModal">
+      <div class="modal-box" style="max-width:520px;width:96%;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <h3 style="margin:0;">Custom Templates</h3>
+          <button class="btn btn-ghost btn-sm" onclick="closeTemplateManager()">Close</button>
+        </div>
+        <p class="subtitle" style="margin-bottom:14px;">Add a new template here anytime — no code changes needed. It shows up in the Template dropdown instantly.</p>
+        <div id="templateManagerList" style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;margin-bottom:14px;"></div>
+        <button class="btn btn-block" onclick="openTemplateEditor()">+ New Template</button>
+      </div>
+    </div>
+
+    <!-- TEMPLATE MANAGER: editor view -->
+    <div class="modal-overlay" id="templateEditorModal">
+      <div class="modal-box" style="max-width:640px;width:96%;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <h3 style="margin:0;" id="templateEditorTitle">New Template</h3>
+          <button class="btn btn-ghost btn-sm" onclick="closeTemplateEditor()">Close</button>
+        </div>
+        <input type="hidden" id="tplEditId">
+        <label>Template Name<input id="tplEditName" placeholder="e.g. Referral Program Launch"></label>
+        <label>Email Subject<input id="tplEditSubject" placeholder="e.g. 🎁 Invite friends, earn free clips"></label>
+        <label>Email Body (HTML)
+          <textarea id="tplEditHtml" rows="10" style="width:100%;padding:12px 14px;border-radius:6px;border:1px solid var(--border2);background:var(--s2);color:var(--text);font-size:12.5px;font-family:'IBM Plex Mono',monospace;margin-bottom:14px;resize:vertical;"></textarea>
+        </label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-ghost" onclick="previewTemplateEditor()">👁 Preview</button>
+          <button class="btn" onclick="saveTemplateFromEditor()">Save Template</button>
+        </div>
+        <div class="resultBox" id="tplEditResult"></div>
       </div>
     </div>
     <!-- USERS -->
@@ -660,7 +700,7 @@ function switchTab(name){
   if (name === "payments" && paymentsState.data.length === 0) loadPayments();
   if (name === "payments" && paymentsState.data.length === 0) loadPayments();
   if (name === "usage") loadUsage();
-  if (name === "marketing") loadMarketing();
+  if (name === "marketing") { loadMarketing(); renderTemplateDropdown(); }
   if (name === "logs" && logsState.data.length === 0) loadLogs();
 }
 
@@ -836,6 +876,20 @@ function toggleTargetEmail(){
 
 function updateMarketingDefaults(){
   const tpl=document.getElementById("marketingTemplate").value;
+
+  // Custom template selected — hide the plan/billing/coupon fields (not relevant), pull subject from saved template
+  if(tpl.startsWith("custom:")){
+    ["planFieldWrap","billingFieldWrap","couponFieldWrap"].forEach(id=>document.getElementById(id).style.display="none");
+    const t=getCustomTemplates().find(x=>x.id===tpl.slice(7));
+    const subject=document.getElementById("marketingSubject");
+    if(t && (!subject.dataset.edited || !subject.value.trim())) subject.value=t.subject;
+    document.getElementById("marketingOfferInfo").innerHTML = t
+      ? `🧩 Custom template: <b>${escapeHtml(t.name)}</b> · sent exactly as saved, no checkout link.`
+      : `Template not found — it may have been deleted.`;
+    return;
+  }
+  ["planFieldWrap","billingFieldWrap","couponFieldWrap"].forEach(id=>document.getElementById(id).style.display="block");
+
   const plan=document.getElementById("marketingPlan").value;
   const billing=document.getElementById("marketingBilling").value;
   const couponCode=document.getElementById("marketingCoupon").value;
@@ -866,7 +920,17 @@ async function toggleCoupon(code){
 }
 
 async function previewMarketingEmail(){
-  const body={templateId:document.getElementById("marketingTemplate").value,plan:document.getElementById("marketingPlan").value,billing:document.getElementById("marketingBilling").value,couponCode:document.getElementById("marketingCoupon").value};
+  const tpl=document.getElementById("marketingTemplate").value;
+
+  if(tpl.startsWith("custom:")){
+    const t=getCustomTemplates().find(x=>x.id===tpl.slice(7));
+    if(!t){toast("Template not found.","error");return;}
+    document.getElementById("marketingPreviewFrame").srcdoc=t.html;
+    document.getElementById("marketingPreviewModal").classList.add("active");
+    return;
+  }
+
+  const body={templateId:tpl,plan:document.getElementById("marketingPlan").value,billing:document.getElementById("marketingBilling").value,couponCode:document.getElementById("marketingCoupon").value};
   try{
     const res=await fetch("/admin/marketing/preview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
     const d=await res.json();
@@ -882,13 +946,28 @@ async function sendMarketingEmail(){
   const targetEmail=document.getElementById("marketingTargetEmail").value.trim();
   const templateId=document.getElementById("marketingTemplate").value;
   const subject=document.getElementById("marketingSubject").value.trim();
-  const plan=document.getElementById("marketingPlan").value;
-  const billing=document.getElementById("marketingBilling").value;
-  const couponCode=document.getElementById("marketingCoupon").value;
   const box=document.getElementById("marketingResult");
   if(audience==="specific" && !targetEmail){box.innerText="Enter the target user's email.";box.className="resultBox error";return;}
   if(!subject){box.innerText="Subject is required.";box.className="resultBox error";return;}
   const targetText=audience==="specific"?targetEmail:`the selected ${audience} audience`;
+
+  // Custom template — send the saved HTML as-is, tagged templateId:"custom"
+  if(templateId.startsWith("custom:")){
+    const t=getCustomTemplates().find(x=>x.id===templateId.slice(7));
+    if(!t){box.innerText="Template not found.";box.className="resultBox error";return;}
+    if(!confirm(`Send "${t.name}" email to ${targetText}?`)) return;
+    try{
+      const res=await fetch("/admin/marketing/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({audience,targetEmail,templateId:"custom",subject,html:t.html})});
+      const d=await res.json();
+      box.innerText=d.success?`Sent ${d.sent}/${d.attempted} emails${d.capped?' (100 recipient cap reached).':'.'}`:(d.error||"Could not send emails.");
+      box.className="resultBox "+(d.success?"success":"error");
+    }catch(e){box.innerText="Server error.";box.className="resultBox error";}
+    return;
+  }
+
+  const plan=document.getElementById("marketingPlan").value;
+  const billing=document.getElementById("marketingBilling").value;
+  const couponCode=document.getElementById("marketingCoupon").value;
   if(!confirm(`Send this styled ${templateId} email to ${targetText}?`)) return;
   try{
     const res=await fetch("/admin/marketing/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({audience,targetEmail,templateId,subject,plan,billing,couponCode})});
@@ -896,6 +975,145 @@ async function sendMarketingEmail(){
     box.innerText=d.success?`Sent ${d.sent}/${d.attempted} emails${d.capped?' (100 recipient cap reached).':'.'}`:(d.error||"Could not send emails.");
     box.className="resultBox "+(d.success?"success":"error");
   }catch(e){box.innerText="Server error.";box.className="resultBox error";}
+}
+
+/* ══════════════════════════════════════════════════════════
+   CUSTOM TEMPLATES — stored in this browser, no code edits needed
+   ══════════════════════════════════════════════════════════ */
+const CUSTOM_TEMPLATES_KEY="reelscribe_custom_templates";
+
+const DEFAULT_REFERRAL_TEMPLATE_HTML=`<div style="font-family:Archivo,Helvetica,Arial,sans-serif;background:#0e0d10;padding:32px 16px;">
+  <div style="max-width:520px;margin:0 auto;background:#161418;border:1px solid #2a262b;border-radius:12px;overflow:hidden;">
+    <div style="padding:28px 28px 0;">
+      <div style="display:flex;align-items:center;gap:7px;font-weight:700;font-size:16px;color:#f5f2ee;margin-bottom:22px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:#ff3b30;display:inline-block;"></span> ReelScribe
+      </div>
+      <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#ff3b30;font-weight:700;margin-bottom:10px;">🎁 New — Invite & Earn</div>
+      <h1 style="font-size:22px;line-height:1.3;color:#f5f2ee;margin:0 0 14px;">Invite a friend, earn a free clip.</h1>
+      <p style="font-size:14px;line-height:1.7;color:#a39d95;margin:0 0 22px;">
+        You can now invite friends to ReelScribe and earn free clip-generation credits — no purchase needed.
+        When your friend signs up and completes their first transcript, you get 1 free clip credit. It works even on the Free plan.
+      </p>
+    </div>
+    <div style="padding:0 28px 28px;">
+      <a href="https://reelscribe.site/referral.html" style="display:inline-block;background:#ff3b30;color:#1a0a08;text-decoration:none;font-weight:700;font-size:13px;letter-spacing:0.3px;text-transform:uppercase;padding:13px 22px;border-radius:6px;">Get my referral link →</a>
+    </div>
+    <div style="padding:18px 28px;border-top:1px solid #2a262b;">
+      <p style="font-size:11.5px;line-height:1.6;color:#665f5c;margin:0;">
+        1. Share your link &nbsp;·&nbsp; 2. Friend signs up &amp; transcribes &nbsp;·&nbsp; 3. You earn 1 clip credit.
+      </p>
+    </div>
+  </div>
+</div>`;
+
+function getCustomTemplates(){
+  try{
+    const raw=localStorage.getItem(CUSTOM_TEMPLATES_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  // First run — seed with a ready-made referral announcement template
+  const seeded=[{
+    id:"referral-launch",
+    name:"Referral Program Launch",
+    subject:"🎁 Invite friends, earn free clips on ReelScribe",
+    html:DEFAULT_REFERRAL_TEMPLATE_HTML
+  }];
+  saveCustomTemplates(seeded);
+  return seeded;
+}
+function saveCustomTemplates(arr){ localStorage.setItem(CUSTOM_TEMPLATES_KEY, JSON.stringify(arr)); }
+
+function renderTemplateDropdown(){
+  const group=document.getElementById("customTemplateGroup");
+  const current=document.getElementById("marketingTemplate").value;
+  group.innerHTML = getCustomTemplates().map(t=>`<option value="custom:${escapeAttr(t.id)}">🧩 ${escapeHtml(t.name)}</option>`).join("");
+  if(current) document.getElementById("marketingTemplate").value=current;
+}
+
+function openTemplateManager(){
+  renderTemplateManagerList();
+  document.getElementById("templateManagerModal").classList.add("active");
+}
+function closeTemplateManager(){ document.getElementById("templateManagerModal").classList.remove("active"); }
+
+function renderTemplateManagerList(){
+  const list=document.getElementById("templateManagerList");
+  const templates=getCustomTemplates();
+  if(!templates.length){ list.innerHTML=`<div class="state-msg">No custom templates yet. Create your first one below.</div>`; return; }
+  list.innerHTML=templates.map(t=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;">
+      <div style="min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(t.name)}</div>
+        <div style="font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(t.subject)}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button class="btn btn-ghost btn-sm" onclick="openTemplateEditor('${escapeAttr(t.id)}')">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCustomTemplate('${escapeAttr(t.id)}')">Delete</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function deleteCustomTemplate(id){
+  if(!confirm("Delete this template? This can't be undone.")) return;
+  saveCustomTemplates(getCustomTemplates().filter(t=>t.id!==id));
+  renderTemplateManagerList();
+  renderTemplateDropdown();
+  toast("Template deleted.","success");
+}
+
+function openTemplateEditor(id){
+  document.getElementById("tplEditId").value=id||"";
+  document.getElementById("tplEditResult").style.display="none";
+  if(id){
+    const t=getCustomTemplates().find(x=>x.id===id);
+    document.getElementById("templateEditorTitle").innerText="Edit Template";
+    document.getElementById("tplEditName").value=t?.name||"";
+    document.getElementById("tplEditSubject").value=t?.subject||"";
+    document.getElementById("tplEditHtml").value=t?.html||"";
+  } else {
+    document.getElementById("templateEditorTitle").innerText="New Template";
+    document.getElementById("tplEditName").value="";
+    document.getElementById("tplEditSubject").value="";
+    document.getElementById("tplEditHtml").value="";
+  }
+  document.getElementById("templateManagerModal").classList.remove("active");
+  document.getElementById("templateEditorModal").classList.add("active");
+}
+function closeTemplateEditor(){
+  document.getElementById("templateEditorModal").classList.remove("active");
+  document.getElementById("templateManagerModal").classList.add("active");
+  renderTemplateManagerList();
+}
+
+function previewTemplateEditor(){
+  const html=document.getElementById("tplEditHtml").value.trim();
+  if(!html){ toast("Write some HTML first.","error"); return; }
+  document.getElementById("marketingPreviewFrame").srcdoc=html;
+  document.getElementById("marketingPreviewModal").classList.add("active");
+}
+
+function saveTemplateFromEditor(){
+  const id=document.getElementById("tplEditId").value;
+  const name=document.getElementById("tplEditName").value.trim();
+  const subject=document.getElementById("tplEditSubject").value.trim();
+  const html=document.getElementById("tplEditHtml").value.trim();
+  const box=document.getElementById("tplEditResult");
+  if(!name || !subject || !html){
+    box.style.display="block"; box.className="resultBox error"; box.innerText="Name, subject and HTML body are all required.";
+    return;
+  }
+  const templates=getCustomTemplates();
+  if(id){
+    const t=templates.find(x=>x.id===id);
+    if(t){ t.name=name; t.subject=subject; t.html=html; }
+  } else {
+    templates.push({ id:"tpl-"+Date.now(), name, subject, html });
+  }
+  saveCustomTemplates(templates);
+  renderTemplateDropdown();
+  toast("Template saved.","success");
+  closeTemplateEditor();
 }
 
 
