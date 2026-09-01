@@ -395,6 +395,15 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
   .sheet-scroll { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 }
 </style>
+<style>
+/* ReelScribe responsive referral navigation */
+.rs-referral-link{display:inline-flex!important;align-items:center;justify-content:center;gap:5px;
+  text-decoration:none!important;white-space:nowrap;cursor:pointer;
+  background:var(--accent)!important;color:#fff!important;font-weight:700;font-size:12px;
+  padding:8px 12px;border-radius:4px;flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:520px){.rs-referral-link{padding:7px 8px!important;font-size:11px!important;gap:3px}
+  .rs-referral-link .rs-full{display:none}}
+</style>
 </head>
 <body>
 
@@ -442,6 +451,7 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
   <div class="nav-logo"><span class="mark"></span>ReelScribe</div>
   <div class="nav-right">
     <span class="nav-badge" id="navPlanBadge">Free</span>
+    <a class="rs-referral-link" href="/referral.html">🎁 <span class="rs-full">Invite &amp; </span>Earn</a>
     <button class="nav-menu" onclick="openDrawer()" aria-label="Open menu">≡</button>
   </div>
 </nav>
