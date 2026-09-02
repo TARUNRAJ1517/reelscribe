@@ -8,21 +8,9 @@
 <link rel="canonical" href="https://reelscribe.site/terms.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --bg:#0a0a0b; --s1:#111113; --s2:#18181b;
-  --border:#232326; --border2:#2c2c30;
-  --accent:#ff3b30; --accent-dim:#2a120f;
-  --text:#eeeeee; --text-dim:#a4a4a8; --muted:#5c5c60;
-}
-body{
-  background:var(--bg); color:var(--text);
-  font-family:'Inter',-apple-system,sans-serif;
-  max-width:480px; margin:0 auto; min-height:100vh;
-  font-size:14px; line-height:1.5;
-}
-.mono{font-family:'IBM Plex Mono',monospace;}
+body{ max-width:480px; }
 :focus-visible{outline:1.5px solid var(--accent); outline-offset:2px;}
 
 /* NAV */
@@ -75,7 +63,6 @@ footer{border-top:1px solid var(--border); padding:26px 0 30px; margin-top:36px;
 .foot-copy{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
 
 @media (min-width:700px){
-  body{max-width:760px;}
   .wrap{padding:0 40px 80px;}
   h1{font-size:34px;}
   .clause-body p{max-width:62ch;}

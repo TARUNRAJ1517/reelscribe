@@ -257,19 +257,20 @@ body { overflow-x: hidden; }
   .hero h1 { font-size:46px; letter-spacing:-1.3px; }
   .hero p { max-width:none; font-size:16px; }
   .toggle-row { margin-bottom:32px; }
-  .wrap { max-width:1100px; padding:0 28px; }
+  .wrap { max-width:980px; padding:0 28px; }
   .plans { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:stretch; gap:18px; }
   .plan { padding:26px 22px 22px; display:flex; flex-direction:column; min-width:0; }
   .feat-list { flex:1; }
-  .free-card { max-width:1100px; margin-left:auto; margin-right:auto; padding:16px 20px; }
-  .note, .support-btn { max-width:1100px; margin-left:auto; margin-right:auto; }
-  footer { max-width:1100px; }
-  .current-plan-banner { max-width:1100px; }
+  .free-card { max-width:980px; margin-left:auto; margin-right:auto; padding:16px 20px; }
+  .note, .support-btn { max-width:980px; margin-left:auto; margin-right:auto; }
+  footer { max-width:980px; }
+  .current-plan-banner { max-width:980px; }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1000px) {
   .hero h1 { font-size:52px; }
-  .wrap { max-width:1180px; }
+  .wrap { max-width:1040px; }
+  .free-card, .note, .support-btn, footer, .current-plan-banner { max-width:1040px; }
   .plans { gap:22px; }
   .plan { padding:30px 26px 24px; }
 }

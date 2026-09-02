@@ -1,0 +1,63 @@
+/* ═══════════════════════════════════════════════════════
+   REELSCRIBE — SHARED STYLESHEET
+   Common reset, color tokens, and utilities used by:
+   index.html, about.html, contact.html, privacy.html,
+   terms.html, dashboard.html, clips-dashboard.html.
+
+   NOTE: login.html, history.html and pricing.html currently
+   use a second, separate palette (Archivo font / #0e0d10 bg).
+   They are NOT linked to this file yet so nothing on them
+   changes. Ask if you want that palette unified too — that's
+   a visual decision, not a sizing one, so it wasn't folded in
+   here automatically.
+═══════════════════════════════════════════════════════ */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0b;
+  --s1: #111113;
+  --s2: #18181b;
+  --border: #232326;
+  --border2: #2c2c30;
+  --accent: #ff3b30;
+  --accent-dim: #2a120f;
+  --text: #eeeeee;
+  --text-dim: #a4a4a8;
+  --muted: #5c5c60;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, sans-serif;
+  margin: 0 auto;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.mono { font-family: 'IBM Plex Mono', monospace; }
+
+:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+/* ── SHARED RESPONSIVE SCALE ──────────────────────────
+   Same breakpoints used site-wide so every page grows to
+   the same width as the home page on larger screens.
+   480px (mobile default, set per-page) → 980px → 1040px */
+@media (min-width: 700px) {
+  body { max-width: 980px; }
+}
+@media (min-width: 1000px) {
+  body { max-width: 1040px; }
+}

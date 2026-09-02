@@ -144,6 +144,20 @@ footer { padding: 18px 22px; border-top: 1px solid var(--border); text-align: ce
 footer p { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
 footer a { color: var(--muted); text-decoration: none; margin: 0 8px; }
 footer a:hover { color: var(--sub); }
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — DESKTOP / TABLET (matches home page)
+═══════════════════════════════════════════════ */
+@media (min-width: 700px) {
+  body { max-width: 980px; }
+  .nav { padding: 14px 40px; }
+  .main { max-width: 440px; margin: 0 auto; padding-top: 40px; }
+  footer { padding: 20px 40px 24px; }
+}
+
+@media (min-width: 1000px) {
+  body { max-width: 1040px; }
+}
 </style>
 </head>
 <body>

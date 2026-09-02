@@ -83,6 +83,22 @@ body {
 
 footer { border-top: 1px solid var(--border); padding: 28px 22px 24px; text-align: center; }
 .foot-copy { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — DESKTOP / TABLET (matches home page)
+═══════════════════════════════════════════════ */
+@media (min-width: 700px) {
+  body { max-width: 980px; }
+  .nav, .hero, .main, footer { padding-left: 40px; padding-right: 40px; }
+  .page-h1 { font-size: 30px; }
+  #historyList { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .history-item { margin-bottom: 0; }
+}
+
+@media (min-width: 1000px) {
+  body { max-width: 1040px; }
+  #historyList { grid-template-columns: 1fr 1fr 1fr; }
+}
 </style>
 </head>
 <body>
