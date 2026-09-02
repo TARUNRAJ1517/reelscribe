@@ -45,9 +45,14 @@ body::before{
   color:var(--accent); margin-bottom:12px; font-family:'IBM Plex Mono',monospace;}
 .drawer-name{font-size:14px; font-weight:600; margin-bottom:3px;}
 .drawer-email{font-size:11px; color:var(--muted); word-break:break-all; margin-bottom:12px; font-family:'IBM Plex Mono',monospace;}
-.drawer-plan-row{display:flex; align-items:center; justify-content:space-between; background:var(--s2); border:1px solid var(--border2); padding:9px 12px;}
+.drawer-plan-row{display:flex; align-items:center; justify-content:space-between; background:var(--s2); border:1px solid var(--border2); padding:9px 12px; gap:10px;}
 .drawer-plan-label{font-size:9.5px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-family:'IBM Plex Mono',monospace;}
+.drawer-plan-status{display:flex; align-items:center; gap:8px;}
 .drawer-plan-value{font-size:12px; font-weight:600; color:var(--accent);}
+.drawer-plan-value.is-free{color:var(--muted);}
+.drawer-upgrade-chip{font-size:10px; font-weight:700; letter-spacing:.3px; text-transform:uppercase; color:#fff;
+  background:var(--accent); border:none; padding:5px 9px; cursor:pointer; font-family:'Inter',sans-serif; white-space:nowrap;}
+.drawer-upgrade-chip:hover{opacity:.9;}
 .drawer-body{flex:1; padding:14px 20px; display:flex; flex-direction:column; gap:2px; overflow-y:auto;}
 .drawer-link{display:flex; align-items:center; gap:10px; padding:11px 12px; background:transparent; border:1px solid transparent;
   color:var(--text-dim); font-size:12.5px; font-weight:500; cursor:pointer; font-family:'Inter',sans-serif; transition:all .15s; text-decoration:none;}
@@ -55,9 +60,6 @@ body::before{
 .drawer-link:hover{background:var(--s2); border-color:var(--border2); color:var(--text);}
 .drawer-link-danger{color:#ff6b5f;}
 .drawer-link-danger:hover{background:var(--accent-dim); border-color:var(--border2); color:#ff6b5f;}
-.drawer-foot{padding:14px 20px 20px; border-top:1px solid var(--border);}
-.drawer-upgrade{width:100%; padding:12px; border:none; background:var(--accent); color:#fff; font-size:11.5px; font-weight:600;
-  letter-spacing:.5px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif;}
 
 /* SPROCKET RAIL */
 .reel{display:flex; position:relative; z-index:2;}
@@ -424,7 +426,10 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
     <div class="drawer-email" id="drawerEmail">Loading...</div>
     <div class="drawer-plan-row">
       <span class="drawer-plan-label">Current Plan</span>
-      <span class="drawer-plan-value" id="drawerPlan">Free</span>
+      <div class="drawer-plan-status">
+        <span class="drawer-plan-value" id="drawerPlan">Free</span>
+        <button class="drawer-upgrade-chip" id="drawerUpgradeChip" onclick="window.location.href='/pricing.html'">Upgrade</button>
+      </div>
     </div>
   </div>
   <div class="drawer-body">
@@ -448,9 +453,6 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Logout
     </button>
-  </div>
-  <div class="drawer-foot">
-    <button class="drawer-upgrade" onclick="window.location.href='/pricing.html'">Upgrade Plan →</button>
   </div>
 </div>
 
@@ -904,12 +906,21 @@ async function loadUserPlan(){
       currentReferralCuts = data.referralCuts || 0;
       const planLabel = data.plan.charAt(0).toUpperCase() + data.plan.slice(1);
       document.getElementById("statPlan").innerText = planLabel;
-      document.getElementById("drawerPlan").innerText = planLabel;
+
+      const drawerPlanEl = document.getElementById("drawerPlan");
+      const drawerChip = document.getElementById("drawerUpgradeChip");
+      drawerPlanEl.innerText = planLabel;
+
       const badge = document.getElementById("navPlanBadge");
       badge.innerText = planLabel;
+
       if (data.plan !== "free") {
         badge.classList.add("paid");
+        drawerPlanEl.classList.remove("is-free");
+        drawerChip.style.display = "none";
       } else {
+        drawerPlanEl.classList.add("is-free");
+        drawerChip.style.display = "inline-block";
         document.getElementById("upgradeLabel").style.display = "flex";
         document.getElementById("upgradeBanner").style.display = "block";
       }
