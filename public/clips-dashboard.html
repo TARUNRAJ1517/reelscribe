@@ -194,6 +194,11 @@ body::before{
 .style-gold span{color:#ffd93c;}
 .style-white span{color:#fff;}
 .style-gradient span{background:linear-gradient(90deg,var(--accent),#ffd93c); -webkit-background-clip:text; background-clip:text; color:transparent;}
+.style-rainbow span{color:#fff; font-weight:900;}
+.cp-word.style-rainbow:nth-child(1) span{color:#22d3ee;}
+.cp-word.style-rainbow:nth-child(2) span{color:#ff8a00;}
+.cp-word.style-rainbow:nth-child(3) span{color:#39ff14; background:#0b3d0b; padding:1px 5px; font-size:1.1em;}
+.cp-word.style-rainbow:nth-child(4) span{color:#ff4d9d;}
 
 .cp-tabbar{display:flex; gap:1px; background:var(--border); border:1px solid var(--border); margin-bottom:14px;}
 .cp-tab{flex:1; text-align:center; padding:9px 4px 8px; background:var(--s1); font-size:9.5px; font-weight:600; letter-spacing:.5px;
@@ -557,6 +562,16 @@ footer{border-top:1px solid var(--border); padding:22px 0 26px;}
         <!-- STYLE -->
         <div class="cp-panel active" id="cp-panel-style">
           <div class="cp-grid" id="cpStyleGrid"></div>
+
+          <div class="cp-block">
+            <div class="cp-block-title">Caption Language</div>
+            <div class="opt-value" id="cpLangButtons" style="justify-content:flex-start;">
+              <button class="opt-btn selected" data-lang="hindi">Hindi</button>
+              <button class="opt-btn" data-lang="english">English</button>
+              <button class="opt-btn" data-lang="hinglish">Hinglish</button>
+            </div>
+            <p class="cp-mode-desc" id="cpLangDesc">Captions in Hindi (Devanagari).</p>
+          </div>
         </div>
 
         <!-- ANIMATION -->
@@ -1028,6 +1043,7 @@ const CP_STYLES = [
   { name: "Gold Shine",      cls: "style-gold",     text: "GOLD" },
   { name: "Word Pop Mono",   cls: "style-mono",     text: "MONO" },
   { name: "White Clean",     cls: "style-white",    text: "PLAIN" },
+  { name: "Rainbow Pop",     cls: "style-rainbow",  html: '<b>SO</b> <b>I\'M</b> <b>AWARE</b> <b>OF</b>', tag: "NEW" },
 ];
 let cpStyleIdx = 0;
 
@@ -1072,6 +1088,13 @@ const CP_REACTION_EMOJIS = ["🔥", "😱", "🧠", "🤑", "⚠️", "🏆", "�
 
 let cpPosType = "bottom";
 let cpMarginFromBottom = 430;
+
+const CP_LANG_DESC = {
+  hindi: "Captions in Hindi (Devanagari).",
+  english: "Captions translated to English.",
+  hinglish: "Captions in Hinglish (Roman script, mixed Hindi-English).",
+};
+let cpLanguage = "hindi";
 
 function cpRenderStyleGrid(){
   const grid = document.getElementById("cpStyleGrid");
@@ -1151,6 +1174,15 @@ document.getElementById("cpSubposButtons").addEventListener("click", (e) => {
   cpEmojiSubpos = btn.dataset.subpos;
   document.querySelectorAll("#cpSubposButtons .opt-btn").forEach(b => b.classList.toggle("selected", b === btn));
   cpRenderLive(); cpUpdateSummary();
+});
+
+document.getElementById("cpLangButtons").addEventListener("click", (e) => {
+  const btn = e.target.closest(".opt-btn");
+  if (!btn) return;
+  cpLanguage = btn.dataset.lang;
+  document.querySelectorAll("#cpLangButtons .opt-btn").forEach(b => b.classList.toggle("selected", b === btn));
+  document.getElementById("cpLangDesc").innerText = CP_LANG_DESC[cpLanguage];
+  cpUpdateSummary();
 });
 
 function cpRenderPosButtons(){
@@ -1262,6 +1294,7 @@ function cpGetSettings(){
   return {
     captionsEnabled: true,
     style: CP_STYLES[cpStyleIdx].name,
+    language: cpLanguage,
     animation: CP_ANIMS[cpAnimIdx].name,
     captionMode: cpCaptionMode,
     maxWordsPerLine: cpMaxWords,
@@ -1277,7 +1310,7 @@ function cpUpdateSummary(){
   const s = cpGetSettings();
   document.getElementById("cpSummary").innerHTML = s.captionsEnabled === false
     ? `Applying to next clip: <strong>No captions</strong>`
-    : `Applying to next clip: <strong>${s.style}</strong> · <strong>${s.animation}</strong> · <strong>${s.aspectRatio}</strong> · <strong>${s.quality}</strong>`;
+    : `Applying to next clip: <strong>${s.style}</strong> · <strong>${s.language[0].toUpperCase()}${s.language.slice(1)}</strong> · <strong>${s.animation}</strong> · <strong>${s.aspectRatio}</strong> · <strong>${s.quality}</strong>`;
 }
 
 document.getElementById("cpCaptionsToggle").addEventListener("change", (e) => {
