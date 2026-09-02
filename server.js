@@ -5,6 +5,10 @@
 // ═══════════════════════════════════════════════════════
 require("dotenv").config();
 
+if (!process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET is required. Refusing to start with an insecure session configuration.");
+}
+
 const express    = require("express");
 const mongoose   = require("mongoose");
 const multer     = require("multer");
@@ -18,7 +22,6 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const axios      = require("axios");
 const https      = require("https");
 const { YoutubeTranscript } = require("youtube-transcript");
-const { uploadToS3 }        = require("./services/s3Service");
 const { Resend }            = require("resend");
 const Reel        = require("./models/Reel");
 const User        = require("./models/User");
@@ -53,6 +56,14 @@ const PLAN_LIMITS = {
 
 app.set("trust proxy", 1);
 
+// Lightweight security headers without introducing another dependency.
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
+
 app.use(cors({
   origin: ["https://reelscribe.site", "https://www.reelscribe.site"],
   credentials: true,
@@ -77,37 +88,26 @@ function getSessionEmail(req) {
   return (req.user && req.user.email) || req.session?.userEmail || null;
 }
 
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   const email = getSessionEmail(req);
   if (!email) return res.status(401).json({ success: false, loginRequired: true, error: "Please log in to continue." });
-  req.authEmail = email;
-  next();
+  try {
+    const user = await User.findOne({ email }).select("_id email isSuspended lastActiveAt");
+    if (!user) return res.status(401).json({ success: false, loginRequired: true, error: "Account not found. Please log in again." });
+    if (user.isSuspended) return res.status(403).json({ success: false, suspended: true, error: "Your account is currently suspended. Please contact support." });
+    req.authEmail = user.email;
+    // Keep activity useful without writing on every single request.
+    if (!user.lastActiveAt || Date.now() - new Date(user.lastActiveAt).getTime() > 5 * 60 * 1000) {
+      User.updateOne({ _id: user._id }, { $set: { lastActiveAt: new Date() } }).catch(() => {});
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
 }
 
-const uploadProxy = multer({ dest: "/tmp/", limits: { fileSize: 2 * 1024 * 1024 * 1024 } });
-
-app.post("/proxy-upload", uploadProxy.single("video"), async (req, res) => {
-  const { userEmail, fcmToken } = req.body;
-
-  const formData = new FormData();
-  formData.append("video", fs.createReadStream(req.file.path), req.file.originalname);
-  formData.append("userEmail", userEmail);
-  formData.append("fcmToken", fcmToken || "");
-
-  try {
-    const response = await axios.post(`${EC2_URL}/process-upload`, formData, {
-      headers: formData.getHeaders(),
-      timeout: 600000,
-      maxContentLength: Infinity,
-      maxBodyLength: Infinity,
-    });
-    fs.unlinkSync(req.file.path);
-    res.json(response.data);
-  } catch (err) {
-    if (fs.existsSync(req.file?.path)) fs.unlinkSync(req.file.path);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+// Legacy /proxy-upload has been removed. Large uploads should go through the
+// authenticated transcript flow or the dedicated clip-processing service.
 
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
@@ -191,7 +191,8 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename:    (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
 });
-const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } });
+const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } }); // Groq direct-upload limit used by the UI.
+
 
 const adminAuthAttempts = {};
 const ADMIN_MAX_ATTEMPTS  = 5;
@@ -210,7 +211,7 @@ function adminAuth(req, res, next) {
     return res.status(429).json({ success: false, error: `Too many incorrect attempts. Please try again in ${waitMin} minute${waitMin === 1 ? "" : "s"}.` });
   }
 
-  if (req.headers["x-admin-key"] !== process.env.ADMIN_SECRET) {
+  if (!process.env.ADMIN_SECRET || req.headers["x-admin-key"] !== process.env.ADMIN_SECRET) {
     if (!rec || now - rec.windowStart > ADMIN_WINDOW_MS) {
       adminAuthAttempts[ip] = { count: 1, windowStart: now, blockedUntil: null };
     } else {
@@ -233,7 +234,7 @@ setInterval(() => {
 }, 10 * 60 * 1000);
 
 function internalAuth(req, res, next) {
-  if (req.headers["x-internal-key"] !== INTERNAL_KEY)
+  if (!INTERNAL_KEY || req.headers["x-internal-key"] !== INTERNAL_KEY)
     return res.status(401).json({ success: false, error: "Unauthorized" });
   next();
 }
@@ -316,13 +317,23 @@ function isNewMonth(lastDate) {
 }
 
 async function checkGuestLimit(req) {
-  const ip = req.ip;
-  let guest = await GuestUsage.findOne({ ip });
-  if (!guest) guest = await GuestUsage.create({ ip, previewCount: 0 });
-  if (guest.previewCount >= 3) return { allowed: false };
-  guest.previewCount += 1;
-  await guest.save();
-  return { allowed: true };
+  const ipHash = fingerprint(getRequestIp(req));
+  // Atomically consume one of the three previews. If several requests arrive
+  // together, MongoDB still cannot let the counter exceed the limit.
+  const guest = await GuestUsage.findOneAndUpdate(
+    { ipHash, previewCount: { $lt: 3 } },
+    { $inc: { previewCount: 1 }, $set: { updatedAt: new Date() }, $setOnInsert: { ipHash } },
+    { new: true, upsert: false }
+  );
+  if (guest) return { allowed: true };
+
+  try {
+    const created = await GuestUsage.create({ ipHash, previewCount: 1 });
+    return { allowed: !!created };
+  } catch (err) {
+    if (err?.code === 11000) return { allowed: false };
+    throw err;
+  }
 }
 
 async function getInstagramVideoUrl(instagramUrl) {
@@ -500,7 +511,7 @@ app.get("/referral", requireAuth, async (req, res) => {
       activity: activity.map(r => ({
         name: r.referredEmail.split("@")[0],
         date: new Date(r.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
-        status: r.status === "credited" ? "done" : "pending"
+        status: r.status === "credited" ? "done" : r.status === "rejected" ? "rejected" : "pending"
       }))
     });
   } catch (e) {
@@ -517,6 +528,26 @@ function getYouTubeVideoId(url) {
   ];
   for (const p of patterns) { const m = url.match(p); if (m) return m[1]; }
   return null;
+}
+
+function isValidYouTubeUrl(value) {
+  try {
+    const u = new URL(String(value || "").trim());
+    const host = u.hostname.toLowerCase().replace(/^www\./, "");
+    if (host === "youtu.be") return /^\/[A-Za-z0-9_-]{6,20}$/.test(u.pathname);
+    if (host !== "youtube.com" && host !== "m.youtube.com") return false;
+    if (u.pathname === "/watch") return /^[A-Za-z0-9_-]{6,20}$/.test(u.searchParams.get("v") || "");
+    return /^\/(shorts|embed)\/[A-Za-z0-9_-]{6,20}$/.test(u.pathname);
+  } catch { return false; }
+}
+
+function isValidInstagramUrl(value) {
+  try {
+    const u = new URL(String(value || "").trim());
+    const host = u.hostname.toLowerCase().replace(/^www\./, "");
+    if (!["instagram.com", "m.instagram.com"].includes(host)) return false;
+    return /^\/(reel|reels|p|tv)\/[A-Za-z0-9_-]+/.test(u.pathname);
+  } catch { return false; }
 }
 
 async function getYouTubeDurationSeconds(url) {
@@ -601,7 +632,6 @@ app.post("/internal/update-usage", internalAuth, async (req, res) => {
   }
 });
 
-app.get("/test", (req, res) => res.send("TEST ROUTE WORKING"));
 app.get("/auth/google", (req, res, next) => {
   const next_ = req.query.next;
   const dest = (typeof next_ === "string" && next_.startsWith("/")) ? next_ : "/dashboard.html";
@@ -613,6 +643,7 @@ app.get("/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   async (req, res) => {
     req.session.userEmail = req.user.email;
+    User.updateOne({ _id: req.user._id }, { $set: { lastActiveAt: new Date(), lastSeenIpHash: requestFingerprints(req).ipHash, lastSeenUaHash: requestFingerprints(req).uaHash } }).catch(() => {});
     let dest = "/dashboard.html";
     try {
       const parsed = JSON.parse(String(req.query.state || "{}"));
@@ -644,7 +675,7 @@ app.post("/send-otp", async (req, res) => {
     const sendLimit = checkOtpSendLimit(email);
     if (!sendLimit.allowed) return res.status(429).json({ success: false, message: sendLimit.error });
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 1000000).toString();
     otpStore[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
 
     await resend.emails.send({
@@ -698,6 +729,8 @@ app.post("/verify-otp", async (req, res) => {
     }
 
     req.session.userEmail = email;
+    const fp = requestFingerprints(req);
+    await User.updateOne({ _id: user._id }, { $set: { lastActiveAt: new Date(), lastSeenIpHash: fp.ipHash, lastSeenUaHash: fp.uaHash } });
 
     res.json({ success: true, user });
   } catch (err) {
@@ -762,10 +795,10 @@ app.post("/transcribe-url", async (req, res) => {
   if (typeof url !== "string" || !url)
     return res.status(400).json({ success: false, error: "Please provide a video URL." });
 
-  const isYouTube   = url.includes("youtube.com") || url.includes("youtu.be");
-  const isInstagram = url.includes("instagram.com");
+  const isYouTube = isValidYouTubeUrl(url);
+  const isInstagram = isValidInstagramUrl(url);
   if (!isYouTube && !isInstagram)
-    return res.status(400).json({ success: false, error: "Only YouTube and Instagram URLs are supported." });
+    return res.status(400).json({ success: false, error: "Only valid YouTube and Instagram URLs are supported." });
 
   const email   = getSessionEmail(req);
   const user    = email ? await User.findOne({ email }) : null;
@@ -839,15 +872,6 @@ app.post("/transcribe-url", async (req, res) => {
   }
 });
 
-app.get("/debug-version", (req, res) => {
-  res.json({
-    version: "clips-fix-v4-plan-aware-analysis",
-    ec2Url: EC2_URL,
-    hasInternalKey: !!INTERNAL_KEY,
-    time: new Date().toISOString(),
-  });
-});
-
 async function checkClipLimit(user) {
   const plan   = getEffectivePlan(user);
   const limits = PLAN_LIMITS[plan];
@@ -884,17 +908,19 @@ function scheduleJobCleanup(jobId) {
   setTimeout(() => clipJobs.delete(jobId), 30 * 60 * 1000);
 }
 
-app.get("/clip-status/:jobId", (req, res) => {
+app.get("/clip-status/:jobId", requireAuth, (req, res) => {
   const job = clipJobs.get(req.params.jobId);
   if (!job) return res.status(404).json({ success: false, error: "Job not found or expired" });
-  res.json({ success: true, ...job });
+  if (job.email !== req.authEmail) return res.status(403).json({ success: false, error: "You do not have access to this job." });
+  const { email, ...safeJob } = job;
+  res.json({ success: true, ...safeJob });
 });
 
 app.post("/cut-clips", requireAuth, async (req, res) => {
   const { ytUrl, fcmToken, captionSettings } = req.body;
   const email = req.authEmail;
 
-  if (typeof ytUrl !== "string" || !ytUrl) return res.status(400).json({ success: false, error: "Please provide a YouTube URL." });
+  if (!isValidYouTubeUrl(ytUrl)) return res.status(400).json({ success: false, error: "Please provide a valid YouTube URL." });
 
   const user = await User.findOne({ email });
   if (!user) return res.status(401).json({ success: false, loginRequired: true, error: "Account not found. Please log in again." });
@@ -927,7 +953,7 @@ app.post("/cut-clips", requireAuth, async (req, res) => {
   }
 
   const jobId = crypto.randomUUID();
-  clipJobs.set(jobId, { status: "processing" });
+  clipJobs.set(jobId, { status: "processing", email });
   res.json({ success: true, jobId });
 
   (async () => {
@@ -1144,7 +1170,7 @@ app.post("/create-order", requireAuth, async (req, res) => {
     const order = await razorpay.orders.create({
       amount: Math.round(finalAmount * 100),
       currency: "INR",
-      receipt: `receipt_${Date.now()}`,
+      receipt: `receipt_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`,
       notes: {
         plan,
         billing: isYearly ? "yearly" : "monthly",
@@ -1168,7 +1194,7 @@ app.post("/create-order", requireAuth, async (req, res) => {
   }
 });
 
-app.post("/verify-payment", async (req, res) => {
+app.post("/verify-payment", requireAuth, async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
@@ -1179,8 +1205,10 @@ app.post("/verify-payment", async (req, res) => {
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(razorpay_order_id + "|" + razorpay_payment_id)
       .digest("hex");
+    const expectedBuf = Buffer.from(expectedSig, "hex");
+    const receivedBuf = Buffer.from(razorpay_signature, "hex");
 
-    if (expectedSig !== razorpay_signature)
+    if (receivedBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(expectedBuf, receivedBuf))
       return res.status(400).json({ success: false, error: "Payment verification failed. Please contact support if the amount was deducted." });
 
     const order = await razorpay.orders.fetch(razorpay_order_id);
@@ -1193,6 +1221,24 @@ app.post("/verify-payment", async (req, res) => {
 
     if (!isValidEmail(email))
       return res.status(400).json({ success: false, error: "We could not verify who this order belongs to. Please contact support." });
+    if (email.toLowerCase() !== req.authEmail.toLowerCase())
+      return res.status(403).json({ success: false, error: "This payment belongs to a different account." });
+
+    // Payment verification must be idempotent. A second callback for the same
+    // Razorpay order should never extend the subscription twice.
+    const alreadyPaid = await Payment.findOne({ razorpayOrderId: razorpay_order_id }).lean();
+    if (alreadyPaid) {
+      // A retry after a transient database failure should still leave the user
+      // on the plan that was actually paid for, but must not extend it twice.
+      const existingUser = await User.findOne({ email }).select("plan planExpiresAt").lean();
+      if (existingUser && (!existingUser.planExpiresAt || new Date(existingUser.planExpiresAt) < new Date(alreadyPaid.createdAt))) {
+        const repairedExpiry = new Date(alreadyPaid.createdAt);
+        if (alreadyPaid.billingCycle === "yearly") repairedExpiry.setFullYear(repairedExpiry.getFullYear() + 1);
+        else repairedExpiry.setMonth(repairedExpiry.getMonth() + 1);
+        await User.updateOne({ email }, { $set: { plan: alreadyPaid.plan, lastPaidPlan: alreadyPaid.plan, billingCycle: alreadyPaid.billingCycle, planExpiresAt: repairedExpiry } });
+      }
+      return res.json({ success: true, alreadyProcessed: true, message: "Payment was already processed.", plan: alreadyPaid.plan });
+    }
 
     const validPlans = ["starter", "pro", "agency"];
     if (!validPlans.includes(plan))
@@ -1213,10 +1259,37 @@ app.post("/verify-payment", async (req, res) => {
     if (Math.round(Number(order.amount) / 100 * 100) !== Math.round(finalAmount * 100))
       return res.status(400).json({ success: false, error: "Paid amount does not match this order." });
 
+    const existingAccount = await User.findOne({ email }).select("_id").lean();
+    if (!existingAccount) return res.status(404).json({ success: false, error: "User account not found. Please log in again." });
+
+    // Record the payment first. The unique order id makes this operation safe
+    // against duplicate browser callbacks/races.
+    let paymentRecord;
+    try {
+      paymentRecord = await Payment.create({
+        userEmail: email,
+        plan,
+        billingCycle: isYearly ? "yearly" : "monthly",
+        amount: finalAmount,
+        originalAmount,
+        discountAmount,
+        couponCode: couponCode || null,
+        status: "paid",
+        razorpayOrderId: razorpay_order_id,
+        razorpayPaymentId: razorpay_payment_id,
+      });
+    } catch (paymentErr) {
+      if (paymentErr?.code === 11000) {
+        return res.json({ success: true, alreadyProcessed: true, message: "Payment was already processed.", plan });
+      }
+      throw paymentErr;
+    }
+
     const user = await User.findOneAndUpdate(
       { email },
       {
         plan,
+        lastPaidPlan:            plan,
         billingCycle:            isYearly ? "yearly" : "monthly",
         planExpiresAt:           planExpiry,
         transcriptsUsedToday:    0,
@@ -1231,19 +1304,6 @@ app.post("/verify-payment", async (req, res) => {
     );
 
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
-
-    Payment.create({
-      userEmail: email,
-      plan,
-      billingCycle: isYearly ? "yearly" : "monthly",
-      amount: finalAmount,
-      originalAmount,
-      discountAmount,
-      couponCode: couponCode || null,
-      status: "paid",
-      razorpayOrderId: razorpay_order_id,
-      razorpayPaymentId: razorpay_payment_id,
-    }).catch(() => {});
 
     if (couponCode) {
       const existingRedemption = await CouponRedemption.findOne({ orderId: razorpay_order_id });
@@ -1326,7 +1386,7 @@ app.post("/admin/login", (req, res) => {
     return res.status(429).json({ success: false, error: `Too many incorrect attempts. Please try again in ${waitMin} minute${waitMin === 1 ? "" : "s"}.` });
   }
 
-  if (req.body?.key !== process.env.ADMIN_SECRET) {
+  if (!process.env.ADMIN_SECRET || req.body?.key !== process.env.ADMIN_SECRET) {
     if (!rec || now - rec.windowStart > ADMIN_WINDOW_MS) {
       adminAuthAttempts[ip] = { count: 1, windowStart: now, blockedUntil: null };
     } else {
@@ -1356,7 +1416,20 @@ app.get("/admin/stats", adminAuth, async (req, res) => {
       User.countDocuments(),
       User.countDocuments({ createdAt: { $gte: startOfToday } }),
       User.countDocuments({ createdAt: { $gte: startOfWeek } }),
-      User.aggregate([{ $group: { _id: { $ifNull: ["$plan", "free"] }, count: { $sum: 1 } } }]),
+      User.aggregate([
+        { $project: { effectivePlan: { $cond: [
+          { $or: [
+            { $eq: [{ $ifNull: ["$plan", "free"] }, "free"] },
+            { $and: [
+              { $ne: [{ $ifNull: ["$plan", "free"] }, "free"] },
+              { $ne: ["$planExpiresAt", null] },
+              { $lt: ["$planExpiresAt", new Date()] }
+            ] }
+          ] },
+          "free", { $ifNull: ["$plan", "free"] }
+        ] } } },
+        { $group: { _id: "$effectivePlan", count: { $sum: 1 } } }
+      ]),
     ]);
 
     const byPlan = { free: 0, starter: 0, pro: 0, agency: 0 };
@@ -1380,7 +1453,13 @@ app.get("/admin/revenue", adminAuth, async (req, res) => {
 
     // "Paid → Free conversions": users who have paid at least once but are
     // currently back on the free plan.
-    const paidToFreeConversions = await User.countDocuments({ email: { $in: paidEmails }, plan: "free" });
+    const paidToFreeConversions = await User.countDocuments({
+      email: { $in: paidEmails },
+      $or: [
+        { plan: "free" },
+        { plan: { $in: ["starter", "pro", "agency"] }, planExpiresAt: { $lt: new Date(), $ne: null } }
+      ]
+    });
 
     res.json({
       success: true,
@@ -1412,14 +1491,32 @@ app.get("/admin/users", adminAuth, async (req, res) => {
     const limit  = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
     const search = (req.query.search || "").trim();
 
-    const filter = search ? { email: { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" } } : {};
+    const filter = {};
+    if (search) filter.email = { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" };
+    if (["free","starter","pro","agency"].includes(req.query.plan)) filter.plan = req.query.plan;
+    if (req.query.status === "active") filter.isSuspended = false;
+    if (req.query.status === "suspended") filter.isSuspended = true;
+    const now = new Date();
+    if (req.query.joined === "today") { const d = new Date(now); d.setHours(0,0,0,0); filter.createdAt = { $gte: d }; }
+    if (req.query.joined === "7d") filter.createdAt = { $gte: new Date(Date.now() - 7*86400000) };
+    if (req.query.joined === "30d") filter.createdAt = { $gte: new Date(Date.now() - 30*86400000) };
+    if (req.query.quick === "paid") filter.$and = [{ plan: { $in: ["starter","pro","agency"] } }, { planExpiresAt: { $gte: now } }];
+    if (req.query.quick === "free") filter.$or = [{ plan: "free" }, { plan: { $in: ["starter","pro","agency"] }, planExpiresAt: { $lt: now, $ne: null } }];
+    if (req.query.quick === "expiring") filter.$and = [{ plan: { $in: ["starter","pro","agency"] } }, { planExpiresAt: { $gte: now, $lte: new Date(Date.now()+7*86400000) } }];
+    if (req.query.quick === "churned") filter.$and = [{ plan: "free" }, { $or: [{ lastPaidPlan: { $in: ["starter","pro","agency"] } }, { planExpiresAt: { $lt: now, $ne: null } }] }];
+
 
     const [users, total] = await Promise.all([
-      User.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
+      User.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
       User.countDocuments(filter),
     ]);
+    const data = users.map(u => ({
+      ...u,
+      rawPlan: u.plan || "free",
+      plan: getEffectivePlan(u)
+    }));
 
-    res.json({ success: true, data: users, page, totalPages: Math.max(1, Math.ceil(total / limit)), total });
+    res.json({ success: true, data, page, totalPages: Math.max(1, Math.ceil(total / limit)), total });
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
@@ -1443,18 +1540,9 @@ app.post("/admin/set-plan", adminAuth, async (req, res) => {
     if (!validPlans.includes(plan)) return res.status(400).json({ success: false, error: "Invalid plan" });
 
     let planExpiry = null;
-    if (plan !== "free") {
-      const days = parseInt(durationDays) || 30;
-      planExpiry = new Date();
-      planExpiry.setDate(planExpiry.getDate() + days);
-    }
-
-    const user = await User.findOneAndUpdate(
-      { email },
-      {
-        plan,
-        planExpiresAt:           planExpiry,
-        billingCycle:            plan === "free" ? null : "manual",
+    const update = {
+      plan,
+      billingCycle:            plan === "free" ? null : "manual",
         transcriptsUsedToday:    0,
         transcriptsUsedMonth:    0,
         clipsUsedToday:          0,
@@ -1462,7 +1550,21 @@ app.post("/admin/set-plan", adminAuth, async (req, res) => {
         lastTranscriptDate:      null,
         lastTranscriptResetDate: null,
         lastClipDate:            null,
-      },
+      };
+    if (plan !== "free") {
+      const days = parseInt(durationDays) || 30;
+      planExpiry = new Date();
+      planExpiry.setDate(planExpiry.getDate() + days);
+      update.planExpiresAt = planExpiry;
+      update.lastPaidPlan = plan;
+    } else {
+      // Keep the last expiry/paid plan so churn/win-back analytics remain accurate.
+      update.planExpiresAt = undefined;
+    }
+
+    const user = await User.findOneAndUpdate(
+      { email },
+      { $set: update },
       { new: true }
     );
 
@@ -1472,6 +1574,132 @@ app.post("/admin/set-plan", adminAuth, async (req, res) => {
   } catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
+
+app.post("/admin/credit", adminAuth, async (req, res) => {
+  try {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const action = String(req.body?.action || "add").toLowerCase();
+    const amount = Number(req.body?.amount || 0);
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, error: "Valid email required." });
+    if (!["add", "subtract", "deduct", "set", "reset"].includes(action)) return res.status(400).json({ success: false, error: "Invalid credit action." });
+    if (action === "reset") {
+      // reset ignores the entered amount.
+    } else if (!Number.isInteger(amount) || amount < 0 || amount > 100000 || ((action === "add" || action === "subtract" || action === "deduct") && amount === 0)) {
+      return res.status(400).json({ success: false, error: "Enter a whole number between 0 and 100000." });
+    }
+
+    let user;
+    if (action === "reset") {
+      user = await User.findOneAndUpdate({ email }, { $set: { credits: 0 } }, { new: true });
+    } else if (action === "add") {
+      user = await User.findOneAndUpdate({ email }, { $inc: { credits: amount } }, { new: true });
+    } else if (action === "set") {
+      user = await User.findOneAndUpdate({ email }, { $set: { credits: amount } }, { new: true });
+    } else {
+      user = await User.findOneAndUpdate({ email, credits: { $gte: amount } }, { $inc: { credits: -amount } }, { new: true });
+    }
+    if (!user) return res.status(404).json({ success: false, error: ["subtract","deduct"].includes(action) ? "User not found or not enough credits." : "User not found." });
+    logAdminAction("credit-" + action, email, `${action} ${amount || 0} credits (new total: ${user.credits})`, req);
+    res.json({ success: true, message: action === "reset" ? "Credits reset successfully" : `Credits ${action === "add" ? "added" : action === "set" ? "set" : action === "reset" ? "reset" : "subtracted"} successfully`, user });
+  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+});
+
+app.post("/admin/user-control", adminAuth, async (req, res) => {
+  try {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const action = String(req.body?.action || "").toLowerCase();
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, error: "Valid email required." });
+    if (!["suspend", "unsuspend", "delete"].includes(action)) return res.status(400).json({ success: false, error: "Invalid user action." });
+
+    if (action === "delete") {
+      const jobs = await ClipJob.find({ userEmail: email }).select("clips.s3Key").lean();
+      const keys = jobs.flatMap(j => (j.clips || []).map(c => c.s3Key).filter(Boolean));
+      if (keys.length && EC2_URL && INTERNAL_KEY) {
+        await axios.post(`${EC2_URL}/delete-clips`, { keys: [...new Set(keys)] }, { headers: { "x-internal-key": INTERNAL_KEY }, timeout: 60000 }).catch(() => {});
+      }
+      const user = await User.findOneAndDelete({ email });
+      if (!user) return res.status(404).json({ success: false, error: "User not found." });
+      await Promise.all([
+        Reel.deleteMany({ userEmail: email }),
+        ClipJob.deleteMany({ userEmail: email }),
+        Referral.deleteMany({ $or: [{ referrerEmail: email }, { referredEmail: email }] })
+      ]);
+      logAdminAction("delete-user", email, "User account and associated transcript/clip/referral data deleted; payment and audit records retained.", req);
+      return res.json({ success: true, message: "User account deleted." });
+    }
+
+    const user = await User.findOneAndUpdate(
+      { email },
+      { $set: { isSuspended: action === "suspend" } },
+      { new: true }
+    );
+    if (!user) return res.status(404).json({ success: false, error: "User not found." });
+    logAdminAction(action + "-user", email, `User ${action}d`, req);
+    res.json({ success: true, message: action === "suspend" ? "User suspended." : "User unsuspended.", user });
+  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+});
+
+app.get("/admin/users/:email/details", adminAuth, async (req, res) => {
+  try {
+    const email = decodeURIComponent(req.params.email || "").trim().toLowerCase();
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, error: "Invalid email." });
+    const [user, totalTranscriptions, totalClipJobs] = await Promise.all([
+      User.findOne({ email }).lean(),
+      Reel.countDocuments({ userEmail: email }),
+      ClipJob.countDocuments({ userEmail: email })
+    ]);
+    if (!user) return res.status(404).json({ success: false, error: "User not found." });
+    res.json({ success: true, details: { lastActive: user.lastActiveAt, totalTranscriptions, totalClipJobs, creditsUsedTotal: user.creditsUsedTotal || 0 } });
+  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+});
+
+app.get("/admin/referrals", adminAuth, async (req, res) => {
+  try {
+    const status = String(req.query.status || "pending_review");
+    const allowed = ["pending", "pending_review", "credited", "rejected"];
+    const filter = allowed.includes(status) ? { status } : {};
+    const data = await Referral.find(filter).sort({ createdAt: -1 }).limit(100).lean();
+    res.json({ success: true, data });
+  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+});
+
+app.post("/admin/referrals/:id/review", adminAuth, async (req, res) => {
+  try {
+    const action = String(req.body?.action || "").toLowerCase();
+    if (!["approve", "reject"].includes(action)) return res.status(400).json({ success: false, error: "Invalid review action." });
+
+    const referral = await Referral.findById(req.params.id);
+    if (!referral) return res.status(404).json({ success: false, error: "Referral not found." });
+    if (referral.status !== "pending_review") return res.status(409).json({ success: false, error: "This referral has already been reviewed." });
+
+    if (action === "reject") {
+      referral.status = "rejected";
+      await referral.save();
+      logAdminAction("reject-referral", referral.referredEmail, `Referral from ${referral.referrerEmail} rejected (${referral.riskReason || "review"})`, req);
+      return res.json({ success: true, message: "Referral rejected." });
+    }
+
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0,0,0,0);
+    const earned = await Referral.countDocuments({ referrerEmail: referral.referrerEmail, status: "credited", creditedAt: { $gte: monthStart } });
+    if (earned >= 5) return res.status(409).json({ success: false, error: "This referrer has already reached the 5-referral monthly reward cap." });
+
+    const referrerUser = await User.findOne({ email: referral.referrerEmail }).select("_id").lean();
+    if (!referrerUser) return res.status(404).json({ success: false, error: "The referring user no longer exists." });
+
+    const credited = await Referral.findOneAndUpdate(
+      { _id: referral._id, status: "pending_review" },
+      { $set: { status: "credited", creditedAt: new Date() } },
+      { new: true }
+    );
+    if (!credited) return res.status(409).json({ success: false, error: "Referral was already reviewed." });
+
+    await User.findOneAndUpdate({ email: credited.referrerEmail }, { $inc: { referralCuts: 1, referralsCount: 1 } });
+    logAdminAction("approve-referral", credited.referredEmail, `Referral from ${credited.referrerEmail} approved`, req);
+    res.json({ success: true, message: "Referral approved and one clip reward credited." });
+  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+});
 
 app.get("/admin/payments", adminAuth, async (req, res) => {
   try {
@@ -1633,6 +1861,16 @@ app.post("/admin/marketing/send", adminAuth, async (req,res)=>{
     logAdminAction("marketing-email",audience==="specific"?targetEmail:null,`Template ${templateId}; sent ${sent}/${users.length}`,req);
     res.json({success:true,attempted:users.length,sent,failed,capped:users.length>=100});
   } catch(e){res.status(500).json({success:false,error:e.message});}
+});
+
+// Consistent upload errors (especially the 25 MB direct-upload limit).
+app.use((err, req, res, next) => {
+  if (err?.code === "LIMIT_FILE_SIZE") return res.status(413).json({ success: false, error: "File is too large. Direct uploads are limited to 25 MB." });
+  next(err);
+});
+
+app.get("/health", (req, res) => {
+  res.json({ ok: true, uptime: Math.floor(process.uptime()), time: new Date().toISOString() });
 });
 
 // Friendly pricing route used by marketing email CTA links.
