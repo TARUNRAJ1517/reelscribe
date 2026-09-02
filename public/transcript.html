@@ -3,26 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ReelScribe — AI Viral Clip Generator</title>
-<meta name="description" content="Turn long YouTube videos into 5–12 ready-to-post viral clips with ReelScribe AI. Start free.">
+<title>ReelScribe — Transcribe Any Video Instantly</title>
+<meta name="description" content="ReelScribe instantly transcribes videos from YouTube, Instagram, TikTok and uploaded files. Free to start.">
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="apple-touch-icon" href="/assets/favicon.png">
-<link rel="canonical" href="https://reelscribe.site/">
+<link rel="canonical" href="https://reelscribe.site/transcript.html">
 
 <!-- Open Graph / Social Sharing -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ReelScribe">
-<meta property="og:title" content="ReelScribe — AI Viral Clip Generator">
-<meta property="og:description" content="Turn long YouTube videos into 5–12 ready-to-post viral clips with ReelScribe AI. Start free.">
-<meta property="og:url" content="https://reelscribe.site/">
+<meta property="og:title" content="ReelScribe — Transcribe Any Video Instantly">
+<meta property="og:description" content="ReelScribe instantly transcribes videos from YouTube, Instagram, TikTok and uploaded files. Free to start.">
+<meta property="og:url" content="https://reelscribe.site/transcript.html">
 <meta property="og:image" content="https://reelscribe.site/assets/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ReelScribe — AI Viral Clip Generator">
-<meta name="twitter:description" content="Turn long YouTube videos into 5–12 ready-to-post viral clips with ReelScribe AI. Start free.">
+<meta name="twitter:title" content="ReelScribe — Transcribe Any Video Instantly">
+<meta name="twitter:description" content="ReelScribe instantly transcribes videos from YouTube, Instagram, TikTok and uploaded files. Free to start.">
 <meta name="twitter:image" content="https://reelscribe.site/assets/og-cover.png">
 
 <!-- Structured Data -->
@@ -33,7 +33,7 @@
   "name": "ReelScribe",
   "applicationCategory": "MultimediaApplication",
   "operatingSystem": "Web",
-  "description": "AI-powered viral clip generator that turns long YouTube videos into ready-to-post short clips.",
+  "description": "AI-powered video transcription and viral clip generator supporting YouTube, Instagram, TikTok, and more.",
   "offers": {
     "@type": "Offer",
     "price": "149",
@@ -407,8 +407,8 @@ footer{border-top:1px solid var(--border); padding:22px 0 66px;}
 <nav class="nav">
   <div class="nav-logo"><span class="mark"></span>ReelScribe</div>
   <div class="nav-toggle">
-    <a class="nav-btn" id="btnT" href="/transcript.html">Transcript</a>
-    <a class="nav-btn active" id="btnC" href="/">Cut Clips</a>
+    <a class="nav-btn active" id="btnT" href="/transcript.html">Transcript</a>
+    <a class="nav-btn" id="btnC" href="/">Cut Clips</a>
   </div>
 <a class="rs-referral-link" href="/referral.html">🎁 <span class="rs-full">Invite &amp; </span>Earn</a>
   <button class="nav-menu" onclick="openMenu()" aria-label="Open menu">≡</button>
@@ -435,185 +435,158 @@ footer{border-top:1px solid var(--border); padding:22px 0 66px;}
 <div class="reel">
   <div class="reel-body">
 <div class="hero">
-    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">AI Powered · Login Required</span><span class="frame-line"></span></div>
-    <h1 class="hero-h1">Turn long videos into <em>viral clips.</em></h1>
-    <p class="hero-sub">Paste any YouTube link. AI scans the transcript, finds the <strong>best viral moments</strong>, and cuts 5–12 ready-to-post reels — automatically.</p>
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">AI Powered · Free To Start</span><span class="frame-line"></span></div>
+    <h1 class="hero-h1">Turn any video into a <em>viral script.</em></h1>
+    <p class="hero-sub">ReelScribe <strong>instantly extracts transcripts</strong> from any video. Study hooks, discover scripts, and create better content — in seconds.</p>
 
     <div class="hero-input-wrap">
       <svg style="width:15px;height:15px;color:var(--muted);margin:auto 0 auto 14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-      <input class="hero-input" type="url" id="clipUrl" placeholder="youtube.com/watch?v=...">
-      <button class="hero-input-btn" onclick="generateClips()">Generate</button>
+      <input class="hero-input" type="url" id="videoUrl" placeholder="youtube.com / instagram.com / tiktok.com ...">
+      <button class="hero-input-btn" onclick="transcribeVideo()">Get Transcript</button>
     </div>
+
+    <div class="hero-or">or</div>
+    <button class="hero-upload" id="uploadTrigger">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload Your Video File
+    </button>
+    <input type="file" id="videoFile" accept="video/*,audio/*" hidden>
 
     <div class="trust-pills">
-      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>YouTube supported</span>
-      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5–12 clips per video</span>
-      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Auto deleted after 24h</span>
-      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Download then 5min delete</span>
+      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>No editing needed</span>
+      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>50+ Languages</span>
+      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Free to start</span>
     </div>
 
-    <div class="demo-video-box">
-      <video autoplay loop muted playsinline preload="metadata">
-        <source src="/assets/videos/demo.mp4" type="video/mp4">
-      </video>
+    <div class="mockup-box" aria-hidden="true">
+      <div class="mockup-bar"><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-url">reelscribe.site/transcript</span></div>
+      <div class="mockup-body">
+        <div class="mockup-line"><span class="mockup-time">00:04</span><span class="mockup-text">So <b>nobody tells you this</b> when you start posting online —</span></div>
+        <div class="mockup-line"><span class="mockup-time">00:09</span><span class="mockup-text">the first three seconds decide if someone <b>keeps watching.</b></span></div>
+        <div class="mockup-line"><span class="mockup-time">00:14</span><span class="mockup-text">That's the hook. Everything after that is just <b>delivery.</b></span></div>
+      </div>
     </div>
 
-    <div class="clips-mockup" aria-hidden="true">
-      <div class="clip-thumb"><span class="clip-dur">0:34</span><span class="clip-cap">WAIT FOR<br>IT</span></div>
-      <div class="clip-thumb"><span class="clip-dur">0:51</span><span class="clip-cap">NOBODY<br>TELLS YOU</span></div>
-      <div class="clip-thumb"><span class="clip-dur">0:22</span><span class="clip-cap">THIS ONE<br>TRICK</span></div>
-    </div>
-
-    <!-- Login wall for guests -->
-    <div id="clipLoginWall">
-      <h3>Login Required</h3>
-      <p>Clip generation is for logged-in users only. Login to generate your viral clips.</p>
-      <button class="clip-login-btn" onclick="window.location.href='/login.html?next=' + encodeURIComponent('/')">Login →</button>
+    <div id="previewBox">
+      <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+      <h4>Transcript Preview</h4>
+      <div id="previewText"></div>
+      <div id="loginSection">
+        <div style="height:1px;background:var(--border);margin:14px 0;"></div>
+        <p class="lock-text">Login to unlock the full transcript</p>
+        <button id="googleBtn" onclick="googleLogin()">
+          <svg class="g-logo" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Continue with Google
+        </button>
+      </div>
+      <div id="dashboardSection">
+        <div style="height:1px;background:var(--border);margin:14px 0;"></div>
+        <p class="lock-text">Logged in — view the full transcript on your Dashboard.</p>
+        <button class="dash-btn" onclick="window.location.href='/dashboard.html'">Go to Dashboard →</button>
+      </div>
     </div>
   </div>
 
   <div class="ticker-wrap">
     <div class="ticker">
-      <span class="ticker-item">AI CLIPPING</span><span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">5–12 CLIPS PER VIDEO</span><span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">YOUTUBE · REELS · SHORTS</span><span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">AI BEST MOMENTS</span><span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">AUTO DELETE · SECURE</span><span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">AI CLIPPING</span><span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">5–12 CLIPS PER VIDEO</span><span class="ticker-item"><span>✦</span></span>
-      <span class="ticker-item">AUTO DELETE · SECURE</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">AI TRANSCRIPT</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">50+ LANGUAGES</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">YOUTUBE · INSTAGRAM · TIKTOK</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">FREE TO START</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">NO EDITING NEEDED</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">AI TRANSCRIPT</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">50+ LANGUAGES</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">YOUTUBE · INSTAGRAM · TIKTOK</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">FREE TO START</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">NO EDITING NEEDED</span><span class="ticker-item"><span>✦</span></span>
     </div>
   </div>
 
-  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Impact</span><span class="frame-line"></span></div>
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Numbers</span><span class="frame-line"></span></div>
   <div class="stat-strip">
-    <div class="stat-cell"><div class="stat-num">5–12</div><div class="stat-label">Clips Per Video</div></div>
-    <div class="stat-cell"><div class="stat-num">4K</div><div class="stat-label">Max Quality</div></div>
-    <div class="stat-cell"><div class="stat-num">2–5m</div><div class="stat-label">Avg Processing Time</div></div>
-    <div class="stat-cell"><div class="stat-num">24h</div><div class="stat-label">Auto Delete Timer</div></div>
-    <div class="stat-cell full"><div class="stat-num">₹149/mo</div><div class="stat-label">Start with Starter — 5x cheaper than competitors</div></div>
+    <div class="stat-cell"><div class="stat-num">12K+</div><div class="stat-label">Transcripts Generated</div></div>
+    <div class="stat-cell"><div class="stat-num">50+</div><div class="stat-label">Languages</div></div>
+    <div class="stat-cell"><div class="stat-num">4.9★</div><div class="stat-label">User Rating</div></div>
+    <div class="stat-cell"><div class="stat-num">10x</div><div class="stat-label">Faster Than Manual</div></div>
+    <div class="stat-cell full"><div class="stat-num">₹149/mo</div><div class="stat-label">Starting Price — 5x cheaper than competitors</div></div>
   </div>
 
-  <!-- Caption Styles -->
-  <div class="frame-label"><span class="frame-num">01</span><span class="frame-name">Included</span><span class="frame-line"></span></div>
-  <h2 class="caption-heading">Caption styles.<br>Built <em>right in.</em></h2>
-  <p class="caption-sub">Burned-in captions for every clip — pick a style and it's done. No editing app needed.</p>
-
-  <div class="marquee-wrap">
-    <div class="marquee-track">
-      <div class="caption-card"><div class="caption-preview style-red"><span>BOLD POP</span></div><div class="caption-label-bar"><span class="caption-name">Bold Pop</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-red"><span>NEON GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Neon Glow</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div><div class="caption-label-bar"><span class="caption-name">Karaoke</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-outline"><span>OUTLINE</span></div><div class="caption-label-bar"><span class="caption-name">Outline</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-mono"><span>WORD POP</span></div><div class="caption-label-bar"><span class="caption-name">Word Pop</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-classic"><span>CLASSIC</span></div><div class="caption-label-bar"><span class="caption-name">Classic Bold</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-classic"><span>MEME</span></div><div class="caption-label-bar"><span class="caption-name">Meme Impact</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-bounce"><span>BOUNCE</span></div><div class="caption-label-bar"><span class="caption-name">Bounce</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-red"><span>BOLD POP</span></div><div class="caption-label-bar"><span class="caption-name">Bold Pop</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-red"><span>NEON GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Neon Glow</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div><div class="caption-label-bar"><span class="caption-name">Karaoke</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-outline"><span>OUTLINE</span></div><div class="caption-label-bar"><span class="caption-name">Outline</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-mono"><span>WORD POP</span></div><div class="caption-label-bar"><span class="caption-name">Word Pop</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-classic"><span>CLASSIC</span></div><div class="caption-label-bar"><span class="caption-name">Classic Bold</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-classic"><span>MEME</span></div><div class="caption-label-bar"><span class="caption-name">Meme Impact</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-bounce"><span>BOUNCE</span></div><div class="caption-label-bar"><span class="caption-name">Bounce</span></div></div>
+  <div class="frame-label"><span class="frame-num">01</span><span class="frame-name">Everything You Need</span><span class="frame-line"></span></div>
+  <h2 class="feat-heading">Two engines.<br>One <em>platform.</em></h2>
+  <p class="feat-sub">Transcribe any video instantly. Cut viral clips automatically. All in one place.</p>
+  <div class="feat-cards">
+    <div class="feat-card">
+      <div class="feat-num mono">01 — TRANSCRIPT</div>
+      <h3>Extract Any Script</h3>
+      <p>Paste a link or upload a file. ReelScribe transcribes speech with high accuracy — study viral hooks, discover what works, repurpose content.</p>
+      <div class="feat-stats">
+        <div><div class="feat-stat-num">50+</div><div class="feat-stat-label">Languages</div></div>
+        <div><div class="feat-stat-num">~5s</div><div class="feat-stat-label">Avg Speed</div></div>
+      </div>
     </div>
-  </div>
-
-  <div class="marquee-wrap">
-    <div class="marquee-track reverse">
-      <div class="caption-card"><div class="caption-preview style-minimal"><span>Minimal Clean</span></div><div class="caption-label-bar"><span class="caption-name">Minimal Clean</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-mono"><span>GRADIENT</span></div><div class="caption-label-bar"><span class="caption-name">Gradient Fill</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-minimal"><span>Cinematic</span></div><div class="caption-label-bar"><span class="caption-name">Cinematic</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-red"><span>RED GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Red Glow</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-boxed"><span>BOXED</span></div><div class="caption-label-bar"><span class="caption-name">Boxed</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-highlight"><span>HIGHLIGHT</span></div><div class="caption-label-bar"><span class="caption-name">Highlight</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-classic"><span>DUOTONE</span></div><div class="caption-label-bar"><span class="caption-name">Duotone</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-shake"><span>SHAKE IT</span></div><div class="caption-label-bar"><span class="caption-name">Shake</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-minimal"><span>Minimal Clean</span></div><div class="caption-label-bar"><span class="caption-name">Minimal Clean</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-mono"><span>GRADIENT</span></div><div class="caption-label-bar"><span class="caption-name">Gradient Fill</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-minimal"><span>Cinematic</span></div><div class="caption-label-bar"><span class="caption-name">Cinematic</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-red"><span>RED GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Red Glow</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-boxed"><span>BOXED</span></div><div class="caption-label-bar"><span class="caption-name">Boxed</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-highlight"><span>HIGHLIGHT</span></div><div class="caption-label-bar"><span class="caption-name">Highlight</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-classic"><span>DUOTONE</span></div><div class="caption-label-bar"><span class="caption-name">Duotone</span></div></div>
-      <div class="caption-card"><div class="caption-preview style-shake"><span>SHAKE IT</span></div><div class="caption-label-bar"><span class="caption-name">Shake</span></div></div>
-    </div>
-  </div>
-
-  <div class="caption-cta">
-    <div class="caption-cta-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-    </div>
-    <div class="caption-cta-text">
-      <h4>Custom caption styles</h4>
-      <p>Pick a style, and it'll be burned into your clips automatically.</p>
+    <div class="feat-card live">
+      <div class="feat-num mono">02 — CLIPPING · LIVE</div>
+      <h3>Cut Clips Automatically</h3>
+      <p>Paste a YouTube link. AI finds the best moments and cuts 5–12 ready-to-post vertical clips. No timeline editing required.</p>
+      <div class="feat-stats">
+        <div><div class="feat-stat-num">5–12</div><div class="feat-stat-label">Clips Per Video</div></div>
+        <div><div class="feat-stat-num">Auto</div><div class="feat-stat-label">Delete After 24h</div></div>
+      </div>
     </div>
   </div>
 
   <div class="frame-label"><span class="frame-num">02</span><span class="frame-name">Process</span><span class="frame-line"></span></div>
-  <h2 class="how-heading">How Clip Generation Works</h2>
-  <p class="how-sub">Link to download — three steps.</p>
+  <h2 class="how-heading">How ReelScribe Works</h2>
+  <p class="how-sub">Paste to published — three steps.</p>
   <div class="steps">
     <div class="step">
       <div class="step-num-label">01</div>
       <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
-      <h4>Paste YouTube Link</h4>
-      <p>Any public video — podcast, interview, tutorial, vlog.</p>
+      <h4>Paste or Upload</h4>
+      <p>Drop any public video URL or upload a file directly from your device.</p>
     </div>
     <div class="step">
       <div class="step-num-label">02</div>
       <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
-      <h4>AI Finds Best Moments</h4>
-      <p>AI reads the full transcript and picks the highest hook-strength, most viral moments.</p>
+      <h4>AI Processes</h4>
+      <p>Our AI engine automatically extracts and transcribes all speech in seconds.</p>
     </div>
     <div class="step">
       <div class="step-num-label">03</div>
       <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
-      <h4>Download Your Clips</h4>
-      <p>5–12 clips ready to download. Main video deleted instantly. Clips auto-delete in 24 hours.</p>
+      <h4>Get Your Transcript</h4>
+      <p>Receive a clean, accurate transcript — ready to copy or repurpose.</p>
     </div>
   </div>
 
-  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Pricing</span><span class="frame-line"></span></div>
-  <h2 class="feat-heading">Simple plans.<br>No <em>surprises.</em></h2>
-  <div class="plans-grid">
-    <div class="plan-card">
-      <div class="plan-name">Starter</div>
-      <div class="plan-price">₹149 <span>/month</span></div>
-      <div class="plan-desc">Perfect for trying out AI clipping.</div>
-      <div class="plan-features">
-        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>30 transcripts/month</div>
-        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>3–5 clips/video</div>
-        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>10 videos/month</div>
-      </div>
-      <button class="plan-cta" onclick="window.location.href='/pricing.html'">Get Starter →</button>
-    </div>
-    <div class="plan-card popular">
-      <div class="plan-badge">Most Popular</div>
-      <div class="plan-name">Pro</div>
-      <div class="plan-price">₹299 <span>/month</span></div>
-      <div class="plan-desc">For regular creators who need more clips.</div>
-      <div class="plan-features">
-        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>60 transcripts/month</div>
-        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5–12 clips/video</div>
-        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>15 videos/month</div>
-      </div>
-      <button class="plan-cta plan-cta-primary" onclick="window.location.href='/pricing.html'">Get Pro →</button>
-    </div>
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Supported Platforms</span><span class="frame-line"></span></div>
+  <div class="platforms-row">
+    <div class="p-icon" style="background:#fff;"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg" alt="YouTube"></div>
+    <div class="p-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);"><img style="filter:brightness(0) invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram"></div>
+    <div class="p-icon" style="background:#000;"><img style="filter:invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/tiktok.svg" alt="TikTok"></div>
+    <div class="p-icon" style="background:#000;"><img style="filter:invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/x.svg" alt="X"></div>
+    <div class="p-icon" style="background:#1877F2;"><img style="filter:brightness(0) invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/facebook.svg" alt="Facebook"></div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">03</span><span class="frame-name">Who It's For</span><span class="frame-line"></span></div>
+  <div class="usecase-grid">
+    <div class="usecase-card"><div class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div><h4>Podcasters</h4><p>Turn episodes into searchable text and quote-ready snippets.</p></div>
+    <div class="usecase-card"><div class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div><h4>YouTubers</h4><p>Study competitor hooks and repurpose scripts fast.</p></div>
+    <div class="usecase-card"><div class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><h4>Course Creators</h4><p>Generate captions and notes straight from lecture videos.</p></div>
+    <div class="usecase-card"><div class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></div><h4>Marketers</h4><p>Pull soundbites from interviews for social copy.</p></div>
   </div>
 
   <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">What Users Say</span><span class="frame-line"></span></div>
   <div class="testi-grid">
     <div class="testi-card">
       <div class="testi-stars">★★★★★</div>
-      <p class="testi-quote">The clip cutting actually finds the right moments — saved me hours of manually scrubbing through long-form YouTube videos.</p>
-      <div class="testi-person"><div class="testi-avatar">S</div><div><div class="testi-name">Sana Kapoor</div><div class="testi-role">Content Creator</div></div></div>
+      <p class="testi-quote">Switched from a $20/month tool to ReelScribe and honestly get faster transcripts for less. Been using it daily for my podcast clips.</p>
+      <div class="testi-person"><div class="testi-avatar">R</div><div><div class="testi-name">Rohan Mehta</div><div class="testi-role">Podcast Editor</div></div></div>
     </div>
     <div class="testi-card">
       <div class="testi-stars">★★★★★</div>
-      <p class="testi-quote">Captions come out burned-in and ready to post, no extra editing app needed. That alone saves me a full step every video.</p>
-      <div class="testi-person"><div class="testi-avatar">A</div><div><div class="testi-name">Aditya Rao</div><div class="testi-role">Shorts Creator</div></div></div>
+      <p class="testi-quote">The clip cutting actually finds the right moments — saved me hours of manually scrubbing through long-form YouTube videos.</p>
+      <div class="testi-person"><div class="testi-avatar">S</div><div><div class="testi-name">Sana Kapoor</div><div class="testi-role">Content Creator</div></div></div>
     </div>
   </div>
 
@@ -622,32 +595,48 @@ footer{border-top:1px solid var(--border); padding:22px 0 66px;}
     <thead><tr><th>Feature</th><th class="col-us">ReelScribe</th><th>Others</th></tr></thead>
     <tbody>
       <tr><td>Starting price</td><td class="col-us">₹149/mo</td><td>₹700+/mo</td></tr>
-      <tr><td>Clips per video</td><td class="col-us">5–12</td><td>1–3</td></tr>
-      <tr><td>Burned-in captions</td><td class="col-us"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td><td><span class="no-mark">✕</span></td></tr>
-      <tr><td>Auto delete after 24h</td><td class="col-us"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td><td>Varies</td></tr>
+      <tr><td>Free trial</td><td class="col-us"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td><td><span class="no-mark">✕</span></td></tr>
+      <tr><td>Auto clip cutting</td><td class="col-us"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td><td><span class="no-mark">✕</span></td></tr>
+      <tr><td>50+ languages</td><td class="col-us"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></td><td>Varies</td></tr>
     </tbody>
   </table>
 
   <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">FAQ</span><span class="frame-line"></span></div>
   <div class="faq-list">
     <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)">How many clips do I get per video?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-      <div class="faq-a"><p>Between 5–12 clips depending on your plan and the length of the source video.</p></div>
+      <button class="faq-q" onclick="toggleFaq(this)">Is ReelScribe really free to start?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Yes — you get 5 free transcripts with no credit card required. Upgrade only if you need more.</p></div>
     </div>
     <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)">Do I need to log in to generate clips?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-      <div class="faq-a"><p>Yes — clip generation requires a free account so we can track your monthly quota and keep clips secure.</p></div>
+      <button class="faq-q" onclick="toggleFaq(this)">Which platforms are supported?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>YouTube, Instagram, TikTok, X, and Facebook links, plus direct file uploads (video or audio).</p></div>
     </div>
     <div class="faq-item">
-      <button class="faq-q" onclick="toggleFaq(this)">What happens to my source video after processing?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
-      <div class="faq-a"><p>It's deleted immediately after clips are generated. The clips themselves auto-delete after 24 hours.</p></div>
+      <button class="faq-q" onclick="toggleFaq(this)">How long is my data kept?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Generated clips auto-delete after 24 hours. Source videos are removed right after processing.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Can I cancel my subscription anytime?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Yes, plans are month-to-month with no lock-in — cancel from your dashboard anytime.</p></div>
     </div>
   </div>
 
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">From The Blog</span><span class="frame-line"></span></div>
+  <div class="blog-grid">
+    <a class="blog-card" href="/blog/repurpose-youtube-into-reels.html">
+      <div class="blog-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;color:var(--accent)"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></div>
+      <div><div class="blog-tag">Guide</div><h4>How To Repurpose Any YouTube Video Into Reels</h4><p>A 5-step workflow creators use to scale content.</p></div>
+    </a>
+    <a class="blog-card" href="/blog/top-10-viral-hooks.html">
+      <div class="blog-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;color:var(--accent)"><path d="M12 2c-2 4-6 5-6 10a6 6 0 0 0 12 0c0-2-1-3-2-4 0 2-1 3-2 2 1-3-1-5-2-8z"/></svg></div>
+      <div><div class="blog-tag">Tips</div><h4>Top 10 Viral Hooks That Actually Work</h4><p>Patterns pulled from thousands of transcripts.</p></div>
+    </a>
+  </div>
+
   <div class="cta-section">
-    <div class="cta-h">Ready to Cut Your First Clips?</div>
-    <p class="cta-p">Start at ₹149/month. No hidden fees. Cancel anytime.</p>
-    <button class="cta-btn" onclick="window.location.href='/pricing.html'">View Plans & Get Started →</button>
+    <div class="cta-h">Start Free Today</div>
+    <p class="cta-p">5 free transcripts. No credit card. No signup required to try.</p>
+    <button class="cta-btn" onclick="document.getElementById('videoUrl').focus(); window.scrollTo({top:0,behavior:'smooth'})">Try ReelScribe Free →</button>
   </div>
 <footer>
   <div class="foot-logo"><span class="mark"></span>ReelScribe</div>
@@ -669,8 +658,8 @@ footer{border-top:1px solid var(--border); padding:22px 0 66px;}
   </div>
 </div>
 <div class="sticky-cta" id="stickyCta">
-  <span>AI clips from any YouTube video</span>
-  <button onclick="document.getElementById('clipUrl') ? document.getElementById('clipUrl').focus() : null; window.scrollTo({top:0,behavior:'smooth'})">Try Free</button>
+  <span>5 free transcripts, no card needed</span>
+  <button onclick="document.getElementById('videoUrl') ? document.getElementById('videoUrl').focus() : null; window.scrollTo({top:0,behavior:'smooth'})">Try Free</button>
 </div>
 <script>
 /* ── AUTH ─────────────────────────────────────────────────────────── */
@@ -761,6 +750,85 @@ function animateCounters(){
 document.addEventListener("DOMContentLoaded", animateCounters);
 </script>
 <script>
+const MAX_UPLOAD_MB = 250;
+const ALLOWED_EXTENSIONS = ["mp4","mov","mkv","webm","avi","m4v","mp3","wav","m4a","aac","ogg","flac"];
+
+function hasAllowedExtension(filename){
+  const ext = (filename.split(".").pop() || "").toLowerCase();
+  return ALLOWED_EXTENSIONS.includes(ext);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const uploadTrigger = document.getElementById("uploadTrigger");
+  const videoFile = document.getElementById("videoFile");
+  if(!uploadTrigger || !videoFile) return;
+  uploadTrigger.addEventListener("click", () => videoFile.click());
+  videoFile.addEventListener("change", function(){
+    if(!this.files.length) return;
+    const file = this.files[0];
+    const isMedia = file.type.startsWith("video/") || file.type.startsWith("audio/") ||
+      (file.type === "" && hasAllowedExtension(file.name));
+    if(!isMedia){ alert("Please select a video or audio file."); this.value = ""; return; }
+    if(file.size > MAX_UPLOAD_MB * 1024 * 1024){
+      alert("File is too large. Please upload something under " + MAX_UPLOAD_MB + "MB.");
+      this.value = ""; return;
+    }
+    transcribeFile(file);
+  });
+});
+
+async function transcribeVideo(){
+  const url = document.getElementById("videoUrl").value.trim();
+  if(!url){ alert("Please paste a URL first!"); return; }
+  const previewBox = document.getElementById("previewBox");
+  const previewText = document.getElementById("previewText");
+  previewBox.style.display = "block";
+  previewText.innerText = "Generating transcript...";
+  document.getElementById("loginSection").style.display = "none";
+  document.getElementById("dashboardSection").style.display = "none";
+  try {
+    const res = await fetch("/transcribe-url", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ url }) });
+    const data = await res.json();
+    handleResult(data);
+  } catch(e){ previewText.innerText = "Server error. Please try again."; }
+}
+
+async function transcribeFile(file){
+  const previewBox = document.getElementById("previewBox");
+  const previewText = document.getElementById("previewText");
+  previewBox.style.display = "block";
+  previewText.innerText = "Uploading and processing...";
+  document.getElementById("loginSection").style.display = "none";
+  document.getElementById("dashboardSection").style.display = "none";
+  const fd = new FormData();
+  fd.append("video", file);
+  try {
+    const res = await fetch("/transcribe", { method: "POST", body: fd });
+    const data = await res.json();
+    handleResult(data);
+  } catch(e){ previewText.innerText = "Server error. Please try again."; }
+}
+
+function handleResult(data){
+  const previewText = document.getElementById("previewText");
+  if(data.loginRequired){
+    previewText.innerText = data.error;
+    document.getElementById("loginSection").style.display = "block";
+  } else if(data.success){
+    localStorage.setItem("latestTranscript", data.transcript);
+    if(data.isGuest){
+      const words = data.transcript.split(" ");
+      previewText.innerText = words.slice(0,60).join(" ") + (words.length>60?"...":"");
+      document.getElementById("loginSection").style.display = "block";
+    } else {
+      previewText.innerText = data.transcript.substring(0,120) + "...";
+      document.getElementById("dashboardSection").style.display = "block";
+    }
+  } else {
+    previewText.innerText = data.error || "Something went wrong";
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const sticky = document.getElementById("stickyCta");
   const heroInput = document.querySelector(".hero-input-wrap");
@@ -768,19 +836,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const io = new IntersectionObserver((entries) => entries.forEach(entry => sticky.classList.toggle("show", !entry.isIntersecting)), { threshold: 0 });
   io.observe(heroInput);
 });
-
-function generateClips(){
-  const url = document.getElementById("clipUrl").value.trim();
-  if(!url){ alert("Please paste a YouTube URL!"); return; }
-
-  if(!isLoggedIn){
-    document.getElementById('clipLoginWall').style.display = 'block';
-    document.getElementById('clipLoginWall').scrollIntoView({behavior:'smooth', block:'center'});
-    return;
-  }
-
-  window.location.href = "/clips-dashboard.html?ytUrl=" + encodeURIComponent(url) + "&autostart=1";
-}
 </script>
 </body>
 </html>
