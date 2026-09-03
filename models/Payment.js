@@ -7,6 +7,7 @@ const PaymentSchema = new mongoose.Schema({
   amount: { type: Number, required: true, min: 0 },
   originalAmount: { type: Number, default: null, min: 0 },
   discountAmount: { type: Number, default: 0, min: 0 },
+  couponCode: { type: String, default: null, uppercase: true, trim: true },
   status: { type: String, enum: ["paid", "failed", "refunded"], default: "paid", index: true },
   razorpayOrderId: { type: String, required: true, unique: true, index: true },
   razorpayPaymentId: { type: String, required: true, index: true },

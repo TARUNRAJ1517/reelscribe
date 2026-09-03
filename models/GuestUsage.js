@@ -1,19 +1,20 @@
 const mongoose = require("mongoose");
 
 const GuestUsageSchema = new mongoose.Schema({
-  ip: {
+  // One-way hash of the client IP. Raw IPs are intentionally not stored.
+  ipHash: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    index: true
   },
 
   previewCount: {
     type: Number,
-    default: 0
+    default: 0,
+    min: 0
   }
 
-}, {
-  timestamps: true
-});
+}, { timestamps: true });
 
-module.exports = mongoose.model("GuestUsage", GuestUsageSchema);
+module.exports = mongoose.models.GuestUsage || mongoose.model("GuestUsage", GuestUsageSchema);

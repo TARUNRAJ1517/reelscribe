@@ -14,6 +14,8 @@ const UserSchema = new mongoose.Schema({
     default: "free"
   },
   planExpiresAt: { type: Date, default: null },
+  // Last paid plan is preserved after expiry/downgrade for accurate win-back analytics.
+  lastPaidPlan: { type: String, enum: ["starter", "pro", "agency", null], default: null },
   billingCycle: {
     type: String,
     enum: ["monthly", "yearly", "manual", null],
