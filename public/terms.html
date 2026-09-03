@@ -9,65 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
-<style>
-body{  }
-:focus-visible{outline:1.5px solid var(--accent); outline-offset:2px;}
-
-/* NAV */
-.nav{position:sticky; top:0; z-index:99; background:rgba(10,10,11,.94); backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:14px 20px;}
-.nav-back{display:flex; align-items:center; gap:6px; color:var(--text-dim); text-decoration:none; font-size:12px; font-family:'IBM Plex Mono',monospace;}
-.nav-logo{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; display:flex; align-items:center; gap:8px;}
-.nav-logo .mark{width:5px; height:5px; background:var(--accent); border-radius:50%;}
-
-.wrap{padding:0 20px 60px;}
-
-/* SLATE HEADER — same system as About/Contact */
-.slate{margin-top:20px; border:1px solid var(--border2); background:var(--s1);}
-.slate-top{display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border); background:var(--s2);}
-.slate-top span{font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
-.slate-body{padding:22px 18px 20px;}
-.slate-row{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); font-family:'IBM Plex Mono',monospace; font-size:10.5px;}
-.slate-row:last-child{border-bottom:none;}
-.slate-row .k{color:var(--muted); letter-spacing:.5px; text-transform:uppercase;}
-.slate-row .v{color:var(--text-dim);}
-
-/* TITLE */
-.title-block{padding:30px 0 6px;}
-.eyebrow{font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); font-family:'IBM Plex Mono',monospace; margin-bottom:10px;}
-h1{font-size:26px; font-weight:700; letter-spacing:-.5px; line-height:1.15; margin-bottom:10px;}
-.lede{font-size:12px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
-
-/* CLAUSE LIST — spec-list system, reused for legal clauses */
-.section-label{display:flex; align-items:baseline; gap:8px; margin:30px 0 14px;}
-.section-label span:first-child{font-size:10px; font-weight:600; color:var(--muted); font-family:'IBM Plex Mono',monospace; letter-spacing:1.2px; text-transform:uppercase;}
-.section-label .line{flex:1; height:1px; background:var(--border);}
-
-.clause-list{display:flex; flex-direction:column;}
-.clause{display:flex; gap:16px; padding:18px 0; border-bottom:1px solid var(--border);}
-.clause:first-child{padding-top:0;}
-.clause-num{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace; flex-shrink:0; width:22px; padding-top:2px;}
-.clause-body h3{font-size:13.5px; font-weight:700; margin-bottom:6px; letter-spacing:-.1px;}
-.clause-body p{font-size:12.5px; color:var(--text-dim); line-height:1.65;}
-.clause-body a{color:var(--accent); text-decoration:none;}
-.clause-body a:hover{text-decoration:underline;}
-
-/* FOOTER */
-footer{border-top:1px solid var(--border); padding:26px 0 30px; margin-top:36px;}
-.foot-logo{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; display:flex; align-items:center; gap:9px; margin-bottom:4px;}
-.foot-logo .mark{width:5px; height:5px; background:var(--accent); border-radius:50%;}
-.foot-tag{font-size:10px; color:var(--muted); margin-bottom:14px; font-family:'IBM Plex Mono',monospace;}
-.foot-links{display:flex; flex-wrap:wrap; gap:6px 14px; margin-bottom:14px;}
-.foot-links a{color:var(--muted); font-size:11px; text-decoration:none; transition:color .2s;}
-.foot-links a:hover{color:var(--text-dim);}
-.foot-copy{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
-
-@media (min-width:700px){
-  .wrap{padding:0 40px 80px;}
-  h1{font-size:34px;}
-  .clause-body p{max-width:62ch;}
-}
-</style>
+<link rel="stylesheet" href="/assets/css/terms.css">
 </head>
 <body>
 

@@ -9,79 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
-<style>
-body{ }
-
-/* NAV */
-.nav{position:sticky; top:0; z-index:99; background:rgba(10,10,11,.94); backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:14px 20px;}
-.nav-back{display:flex; align-items:center; gap:6px; color:var(--text-dim); text-decoration:none; font-size:12px; font-family:'IBM Plex Mono',monospace;}
-.nav-logo{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; display:flex; align-items:center; gap:8px;}
-.nav-logo .mark{width:5px; height:5px; background:var(--accent); border-radius:50%;}
-
-.wrap{padding:0 20px 60px;}
-
-/* SLATE HEADER — the signature element: a film production slate */
-.slate{margin-top:20px; border:1px solid var(--border2); background:var(--s1);}
-.slate-top{display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid var(--border); background:var(--s2);}
-.slate-top span{font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
-.slate-body{padding:22px 18px 20px;}
-.slate-row{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); font-family:'IBM Plex Mono',monospace; font-size:10.5px;}
-.slate-row:last-child{border-bottom:none;}
-.slate-row .k{color:var(--muted); letter-spacing:.5px; text-transform:uppercase;}
-.slate-row .v{color:var(--text-dim);}
-.slate-row .v.accent{color:var(--accent); font-weight:600;}
-
-/* TITLE */
-.title-block{padding:30px 0 6px;}
-.eyebrow{font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--accent); font-family:'IBM Plex Mono',monospace; margin-bottom:10px;}
-h1{font-size:30px; font-weight:700; letter-spacing:-.6px; line-height:1.12; margin-bottom:16px;}
-.lede{font-size:14px; color:var(--text-dim); line-height:1.7; max-width:44ch;}
-
-/* DIRECTOR'S STATEMENT — pull quote treatment */
-.statement{margin:28px 0; padding:22px 0 22px 18px; border-left:2px solid var(--accent);}
-.statement p{font-size:16px; line-height:1.55; color:var(--text); font-weight:500; letter-spacing:-.1px;}
-.statement cite{display:block; margin-top:14px; font-style:normal; font-size:10.5px; color:var(--muted); font-family:'IBM Plex Mono',monospace; letter-spacing:.4px; text-transform:uppercase;}
-
-/* SPEC ROWS — replaces the emoji feature grid */
-.section-label{display:flex; align-items:baseline; gap:8px; margin:34px 0 16px;}
-.section-label span:first-child{font-size:10px; font-weight:600; color:var(--muted); font-family:'IBM Plex Mono',monospace; letter-spacing:1.2px; text-transform:uppercase;}
-.section-label .line{flex:1; height:1px; background:var(--border);}
-
-.spec-list{display:flex; flex-direction:column;}
-.spec{display:flex; gap:16px; padding:16px 0; border-bottom:1px solid var(--border);}
-.spec:first-child{padding-top:0;}
-.spec-num{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace; flex-shrink:0; width:20px; padding-top:2px;}
-.spec-body h3{font-size:14px; font-weight:700; margin-bottom:5px; letter-spacing:-.1px;}
-.spec-body p{font-size:12.5px; color:var(--text-dim); line-height:1.6;}
-
-/* CLOSING CTA */
-.closing{margin-top:36px; padding:24px 20px; background:var(--s1); border:1px solid var(--border2); text-align:center;}
-.closing p{font-size:12.5px; color:var(--text-dim); margin-bottom:16px; line-height:1.6;}
-.closing a{display:inline-block; padding:12px 22px; background:var(--accent); color:#fff; text-decoration:none;
-  font-size:11.5px; font-weight:600; letter-spacing:.4px; text-transform:uppercase; font-family:'Inter',sans-serif;}
-
-/* FOOTER */
-footer{border-top:1px solid var(--border); padding:26px 0 30px; margin-top:36px;}
-.foot-logo{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; display:flex; align-items:center; gap:9px; margin-bottom:4px;}
-.foot-logo .mark{width:5px; height:5px; background:var(--accent); border-radius:50%;}
-.foot-tag{font-size:10px; color:var(--muted); margin-bottom:14px; font-family:'IBM Plex Mono',monospace;}
-.foot-links{display:flex; flex-wrap:wrap; gap:6px 14px; margin-bottom:14px;}
-.foot-links a{color:var(--muted); font-size:11px; text-decoration:none; transition:color .2s;}
-.foot-links a:hover{color:var(--text-dim);}
-.foot-copy{font-size:10px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
-
-.demo-note{margin:20px; padding:14px; background:var(--s2); border:1px dashed var(--border2); font-size:11px; color:var(--muted); line-height:1.6;}
-
-@media (min-width:700px){
-  .wrap{padding:0 40px 80px;}
-  h1{font-size:44px;}
-  .lede{font-size:15.5px; max-width:52ch;}
-  .statement p{font-size:19px; max-width:56ch;}
-  .spec-list{display:grid; grid-template-columns:1fr 1fr; gap:0 32px;}
-  .spec{border-bottom:1px solid var(--border);}
-}
-</style>
+<link rel="stylesheet" href="/assets/css/about.css">
 </head>
 <body>
 
@@ -118,7 +46,7 @@ footer{border-top:1px solid var(--border); padding:26px 0 30px; margin-top:36px;
   <div class="spec-list">
     <div class="spec">
       <div class="spec-num mono">01</div>
-      <div class="spec-body"><h3>Transcription</h3><p>Any YouTube, Instagram, or TikTok link — or a direct upload — becomes a clean, searchable transcript in seconds.</p></div>
+      <div class="spec-body"><h3>Transcription</h3><p>Supported YouTube and Instagram links — or a direct video/audio upload — become a clean, searchable transcript.</p></div>
     </div>
     <div class="spec">
       <div class="spec-num mono">02</div>
@@ -141,7 +69,7 @@ footer{border-top:1px solid var(--border); padding:26px 0 30px; margin-top:36px;
   </div>
 
   <div class="closing">
-    <p>5 free transcripts. No card required.</p>
+    <p>3 free transcript previews. No card required.</p>
     <a href="/">Try ReelScribe →</a>
   </div>
 
