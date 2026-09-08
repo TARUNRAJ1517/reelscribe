@@ -64,6 +64,19 @@
 <div class="reel">
   <div class="reel-body">
 
+    <!-- PROFESSIONAL HERO -->
+    <section class="clips-hero">
+      <div class="hero-copy">
+        <div class="hero-kicker"><span class="hero-kicker-dot"></span> AI CLIP STUDIO</div>
+        <h1>Turn long videos into <span>short-form clips.</span></h1>
+        <p>Paste a YouTube link, tune your captions, and let ReelScribe find the strongest moments.</p>
+      </div>
+      <div class="hero-actions">
+        <div class="hero-live"><span class="hero-live-dot"></span> Ready to create</div>
+        <a href="/contact.html" class="hero-help">Need help?</a>
+      </div>
+    </section>
+
     <!-- STATS -->
     <div class="frame-label"><span class="frame-num">—</span><span class="frame-name" id="welcomeName">Cut Clips</span><span class="frame-line"></span></div>
     <div class="stat-strip">
@@ -93,14 +106,24 @@
     <div class="frame-label" id="srcLabel"><span class="frame-num">01</span><span class="frame-name">Source</span><span class="frame-line"></span></div>
     <div class="src-card" id="generateCard">
       <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
-      <div class="src-title">Paste a link</div>
-      <div class="src-sub">Full video or a Short — we'll find what's worth cutting.</div>
+      <div class="section-card-head">
+        <div>
+          <div class="src-title">Add your video</div>
+          <div class="src-sub">Full video or a Short — we'll find what's worth cutting.</div>
+        </div>
+        <span class="source-badge">YOUTUBE</span>
+      </div>
       <div class="src-row">
         <input type="text" placeholder="youtube.com/watch?v=..." id="clipUrl">
       </div>
       <div class="src-meter">
         <span class="src-meter-label">Clips left today</span>
         <span class="src-meter-val"><b id="meterClipsLeft">—</b></span>
+      </div>
+      <div class="source-tips">
+        <span>✓ YouTube links supported</span>
+        <span>✓ Shorts supported</span>
+        <span>✓ Preview before generating</span>
       </div>
       <div class="video-preview-card" id="videoPreviewCard">
         <img id="vpThumb" class="vp-thumb" src="" alt="">
@@ -115,6 +138,18 @@
     <div class="frame-label" id="capLabel"><span class="frame-num">02</span><span class="frame-name">Captions</span><span class="frame-line"></span></div>
     <div class="panel" id="captionPickerSection">
       <div class="panel-pad">
+
+        <div class="preset-head">
+          <div><b>Quick presets</b><span>Start with a proven caption look</span></div>
+          <span class="preset-note">1-click setup</span>
+        </div>
+        <div class="quick-presets" id="quickPresets">
+          <button type="button" class="quick-preset active" data-style="1" data-anim="1"><span>🔥</span><b>Viral</b><small>High energy</small></button>
+          <button type="button" class="quick-preset" data-style="0" data-anim="0"><span>🎙️</span><b>Podcast</b><small>Clean talk</small></button>
+          <button type="button" class="quick-preset" data-style="3" data-anim="0"><span>✦</span><b>Clean</b><small>Editorial</small></button>
+          <button type="button" class="quick-preset" data-style="2" data-anim="3"><span>⚡</span><b>Bold</b><small>Big moments</small></button>
+          <button type="button" class="quick-preset" data-style="10" data-anim="2"><span>🎤</span><b>Karaoke</b><small>Word sync</small></button>
+        </div>
 
         <div class="cp-master-row">
           <div>
@@ -245,6 +280,11 @@
       <span>Generate Clips</span>
     </button>
     <div class="generate-hint" id="genHint">2–5 min per video</div>
+    <div class="generate-meta">
+      <span><i class="meta-dot"></i> AI highlights</span>
+      <span><i class="meta-dot"></i> Auto captions</span>
+      <span><i class="meta-dot"></i> Ready for Reels / Shorts</span>
+    </div>
 
     <!-- PROCESSING -->
     <div class="frame-label" id="procLabel" style="display:none;"><span class="frame-num">—</span><span class="frame-name">Processing</span><span class="frame-line"></span></div>
@@ -269,6 +309,10 @@
     <!-- 03 OUTPUT -->
     <div class="frame-label" id="outLabel" style="display:none;"><span class="frame-num">03</span><span class="frame-name" id="outName">Output</span><span class="frame-line"></span></div>
     <div id="resultsSection" style="display:none;">
+      <div class="results-toolbar">
+        <div><b>Generated clips</b><span>Review, preview and download your best moments.</span></div>
+        <span class="results-ready">READY</span>
+      </div>
       <div class="sheet-scroll" id="sheetScroll"></div>
       <div class="sheet-footer">
         <div class="sheet-hint">← scroll for all clips</div>
