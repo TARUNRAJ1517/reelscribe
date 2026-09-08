@@ -58,6 +58,7 @@ async function unlock(){
 }
 
 async function doLogout(){
+  stopLiveRefresh();
   try { await fetch("/admin/logout", { method: "POST" }); } catch(e){}
   document.getElementById("adminScreen").style.display = "none";
   document.getElementById("lockScreen").style.display = "flex";
@@ -81,10 +82,108 @@ function switchTab(name){
   if (name === "logs" && logsState.data.length === 0) loadLogs();
 }
 
+let liveRefreshTimer = null;
+let lastSuccessfulRefresh = null;
+let panelRefreshing = false;
+
+function setLiveStatus(ok=true){
+  const el=document.getElementById("liveStatus");
+  if(!el) return;
+  el.classList.toggle("offline", !ok);
+  const dot=el.querySelector(".live-dot");
+  if(dot) dot.classList.toggle("offline", !ok);
+  const time=document.getElementById("lastUpdated");
+  if(time && lastSuccessfulRefresh) time.innerText=`· ${lastSuccessfulRefresh.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}`;
+}
+
+async function refreshVisibleData(silent=true){
+  if(panelRefreshing) return;
+  panelRefreshing=true;
+  try {
+    const jobs=[loadStats(),loadRevenue(),loadUsers()];
+    const active=document.querySelector(".page-section.active")?.id?.replace("section-","");
+    if(active==="payments") jobs.push(loadPayments());
+    if(active==="usage") jobs.push(loadUsage());
+    if(active==="marketing") jobs.push(loadMarketing());
+    if(active==="logs") jobs.push(loadLogs());
+    await Promise.allSettled(jobs);
+    await Promise.allSettled([checkSystemHealth(), loadOverviewActivity(), buildAdminAlerts()]);
+    lastSuccessfulRefresh=new Date();
+    setLiveStatus(true);
+  } catch(e){
+    setLiveStatus(false);
+    if(!silent) toast("Could not refresh the dashboard.","error");
+  } finally { panelRefreshing=false; }
+}
+
+function startLiveRefresh(){
+  clearInterval(liveRefreshTimer);
+  liveRefreshTimer=setInterval(()=>refreshVisibleData(true),60000);
+  refreshVisibleData(true);
+}
+function stopLiveRefresh(){ clearInterval(liveRefreshTimer); liveRefreshTimer=null; }
+async function manualRefresh(){
+  const btn=document.getElementById("refreshBtn");
+  if(btn){btn.disabled=true;btn.innerText="↻ Refreshing…";}
+  await refreshVisibleData(false);
+  if(btn){btn.disabled=false;btn.innerText="↻ Refresh";}
+}
+
+async function checkSystemHealth(){
+  const checks=[
+    ["Admin API","/admin/stats"],["Users","/admin/users?page=1&limit=1"],["Payments","/admin/payments?page=1&limit=1"],["Usage","/admin/usage"]
+  ];
+  const results=await Promise.all(checks.map(async ([name,url])=>{
+    const started=performance.now();
+    try { const r=await fetch(url,{cache:"no-store"}); const d=await r.json().catch(()=>({})); return {name,ok:r.ok&&d.success!==false,ms:Math.round(performance.now()-started)}; }
+    catch(e){return {name,ok:false,ms:null};}
+  }));
+  const list=document.getElementById("healthList");
+  if(list) list.innerHTML=results.map(x=>`<div class="health-row"><span>${x.name}</span><b class="${x.ok?"ok":"bad"}">${x.ok?`● Operational · ${x.ms}ms`:"● Unavailable"}</b></div>`).join("");
+  const healthy=results.filter(x=>x.ok).length===results.length;
+  const pill=document.getElementById("healthPill"); if(pill){pill.className="health-pill "+(healthy?"good":"warn");pill.innerText=healthy?"All systems operational":"Attention needed";}
+  const sum=document.getElementById("healthSummary"); if(sum) sum.innerText=healthy?"All systems operational":`${results.filter(x=>!x.ok).length} system check(s) need attention`;
+  return healthy;
+}
+
+async function loadOverviewActivity(){
+  const box=document.getElementById("overviewActivity"); if(!box) return;
+  try {
+    const [p,u]=await Promise.all([fetch("/admin/payments?page=1&limit=5",{cache:"no-store"}),fetch("/admin/users?page=1&limit=5",{cache:"no-store"})]);
+    const pd=await p.json(), ud=await u.json();
+    const items=[];
+    (pd.data||[]).forEach(x=>items.push({date:x.createdAt,icon:"₹",title:`Payment · ${x.userEmail||x.email||"User"}`,sub:`${x.plan||"Plan"} · ₹${Number(x.amount||0).toLocaleString("en-IN")}`,type:x.status||"paid"}));
+    (ud.data||[]).forEach(x=>items.push({date:x.createdAt,icon:"+",title:`New user · ${x.email||"User"}`,sub:`${x.plan||"free"} plan`,type:"user"}));
+    items.sort((a,b)=>new Date(b.date)-new Date(a.date));
+    box.innerHTML=items.slice(0,6).map(x=>`<div class="activity-row"><span class="activity-icon">${x.icon}</span><div class="activity-main"><b>${escapeHtml(x.title)}</b><span>${escapeHtml(x.sub)}</span></div><time>${new Date(x.date).toLocaleString("en-IN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}</time></div>`).join("") || `<div class="empty-mini">No recent activity.</div>`;
+  } catch(e){ box.innerHTML=`<div class="empty-mini">Activity could not be loaded.</div>`; }
+}
+
+async function buildAdminAlerts(){
+  const box=document.getElementById("adminAlerts"); const count=document.getElementById("alertCount"); if(!box) return;
+  const alerts=[];
+  try {
+    const res=await fetch("/admin/users?page=1&limit=100&quick=expiring",{cache:"no-store"}); const d=await res.json();
+    if(d.success && d.total>0) alerts.push({level:"warn",text:`${d.total} user(s) have plans expiring soon.`,action:`switchTab('users');applyFilter('expiring')`});
+  } catch(e){}
+  try {
+    const res=await fetch("/admin/payments?page=1&limit=10&status=failed",{cache:"no-store"}); const d=await res.json();
+    if(d.success && d.total>0) alerts.push({level:"bad",text:`${d.total} failed payment(s) found in the current results.`,action:`switchTab('payments')`});
+  } catch(e){}
+  if(count) count.innerText=alerts.length;
+  box.innerHTML=alerts.length?alerts.map(a=>`<button class="alert-row ${a.level}" onclick="${a.action}"><span>${a.level==="bad"?"●":"⚠"}</span><b>${escapeHtml(a.text)}</b><i>→</i></button>`).join(""):`<div class="empty-mini">✓ Nothing urgent detected.</div>`;
+}
+
 function initPanel(){
   loadStats();
   loadRevenue();
   loadUsers();
+  lastSuccessfulRefresh=new Date();
+  setLiveStatus(true);
+  startLiveRefresh();
+  checkSystemHealth();
+  loadOverviewActivity();
+  buildAdminAlerts();
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -92,7 +191,7 @@ function initPanel(){
    ══════════════════════════════════════════════════════════ */
 async function loadStats(){
   try {
-    const res = await fetch("/admin/stats");
+    const res = await fetch("/admin/stats",{cache:"no-store"});
     const data = await res.json();
     if(!data.success) return;
 
@@ -113,7 +212,7 @@ async function loadStats(){
 
 async function loadRevenue(){
   try {
-    const res = await fetch("/admin/revenue");
+    const res = await fetch("/admin/revenue",{cache:"no-store"});
     const data = await res.json();
     if(!data.success) return;
 
