@@ -185,3 +185,125 @@ tr.user-row:hover { background: rgba(255,255,255,0.02); }
   .tabs { padding: 14px 14px 0; }
   .detail-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   REELSCRIBE ADMIN — POLISHED UI OVERRIDES
+   Keeps existing backend/JS hooks unchanged.
+   ══════════════════════════════════════════════════════════ */
+html { scroll-behavior: smooth; }
+body { background: radial-gradient(circle at 50% -15%, rgba(255,59,48,.055), transparent 38%), var(--bg); }
+button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid rgba(255,59,48,.55); outline-offset: 2px; }
+
+.topbar { padding: 13px 24px; box-shadow: 0 8px 28px rgba(0,0,0,.16); }
+.topbar-logo { letter-spacing: -.25px; }
+.topbar-logo .ndot, .lock-logo .ndot { box-shadow: 0 0 0 4px rgba(255,59,48,.08), 0 0 14px rgba(255,59,48,.25); }
+.topbar-right button { padding: 8px 10px; border-radius: 6px; transition: .15s ease; }
+.topbar-right button:hover { background: var(--s2); color: var(--text); }
+
+.tabs {
+  position: sticky; top: 53px; z-index: 40; background: rgba(14,13,16,.94);
+  backdrop-filter: blur(18px); overflow-x: auto; scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display:none; }
+.tab-btn { flex: 0 0 auto; min-height: 42px; }
+.tab-btn:hover { color: var(--sub); }
+.tab-btn.active { color: #fff; }
+
+.page { padding-top: 28px; }
+.page-section > .card:first-child { animation: adminFade .22s ease; }
+@keyframes adminFade { from { opacity: .65; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+.stats-grid { gap: 14px; }
+.stat-card {
+  position: relative; overflow: hidden; padding: 18px; min-height: 92px;
+  background: linear-gradient(145deg, rgba(255,255,255,.018), transparent 55%), var(--s1);
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+.stat-card::after { content:""; position:absolute; width:70px; height:70px; right:-28px; bottom:-38px; border-radius:50%; background:rgba(255,59,48,.07); }
+.stat-card:hover { transform: translateY(-2px); border-color: var(--border2); }
+.stat-num { font-variant-numeric: tabular-nums; }
+
+.plan-breakdown { gap: 8px; }
+.plan-chip { padding: 7px 12px; background: rgba(255,255,255,.018); }
+
+.card {
+  box-shadow: 0 10px 30px rgba(0,0,0,.10);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.card:hover { border-color: #332e34; box-shadow: 0 14px 34px rgba(0,0,0,.15); }
+.card h2 { letter-spacing: -.15px; }
+
+.btn { box-shadow: 0 4px 12px rgba(0,0,0,.08); transition: transform .15s ease, opacity .15s ease, border-color .15s ease, background .15s ease; }
+.btn:hover { transform: translateY(-1px); opacity: 1; }
+.btn:active { transform: translateY(0); }
+.btn:not(.btn-ghost):not(.btn-danger) { background: linear-gradient(180deg, #ff5147, #ff3b30); }
+.btn-ghost:hover { border-color: #4a444c; background: rgba(255,255,255,.025); }
+
+input, select, textarea { border-radius: 8px; background: rgba(255,255,255,.018); }
+input:focus, select:focus, textarea:focus { border-color: rgba(255,59,48,.65); box-shadow: 0 0 0 3px rgba(255,59,48,.07); }
+
+.table-wrap { border: 1px solid var(--border); border-radius: 8px; background: rgba(0,0,0,.08); }
+table { min-width: 680px; }
+th { background: rgba(255,255,255,.018); padding-top: 11px; padding-bottom: 11px; }
+td { padding-top: 12px; padding-bottom: 12px; }
+tbody tr { transition: background .12s ease; }
+tr.user-row:hover, tbody tr:hover { background: rgba(255,255,255,.025); }
+
+.pagination { padding-top: 2px; }
+.pagination-btns .btn { min-width: 82px; }
+
+.review-row { transition: border-color .15s ease, transform .15s ease; }
+.review-row:hover { border-color: var(--border2); transform: translateY(-1px); }
+
+.modal-overlay { background: rgba(5,4,6,.74); padding: 16px; }
+.modal-box { box-shadow: 0 24px 70px rgba(0,0,0,.48); }
+
+.detail-box { max-height: calc(100vh - 32px); overflow-y: auto; }
+.detail-actions .btn { flex: 1 1 auto; }
+
+.toast-stack { top: 68px; }
+
+/* Make long marketing forms breathe better without touching their markup. */
+#section-marketing .form-grid { gap: 4px 14px; }
+#section-marketing .card { overflow: hidden; }
+
+@media (max-width: 900px) {
+  .tabs { top: 52px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 720px) {
+  .topbar { padding: 11px 14px; }
+  .topbar-logo { font-size: 14px; }
+  .topbar-right { gap: 2px; }
+  .topbar-right button { font-size: 11.5px; padding: 7px 8px; }
+  .tabs { top: 49px; padding: 8px 10px 0; gap: 2px; }
+  .tab-btn { padding: 9px 12px; font-size: 12px; }
+  .page { padding: 18px 12px 42px; }
+  .card { padding: 16px; border-radius: 9px; }
+  .stats-grid { gap: 10px; margin-bottom: 18px; }
+  .stat-card { padding: 14px; min-height: 82px; }
+  .stat-num { font-size: 21px; }
+  .stat-label { font-size: 9.5px; line-height: 1.35; }
+  .table-toolbar { gap: 8px; }
+  .table-toolbar input { flex: 1 1 100%; min-width: 100%; }
+  .table-toolbar select { flex: 1 1 calc(50% - 4px); min-width: 0; }
+  .table-toolbar .btn { flex: 1 1 calc(50% - 4px); }
+  .filter-chips { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 3px; scrollbar-width: none; }
+  .filter-chips::-webkit-scrollbar { display:none; }
+  .filter-chip { flex: 0 0 auto; }
+  .detail-grid { gap: 8px; }
+  .detail-item { padding: 9px 10px; }
+  .toast-stack { top: 58px; right: 10px; left: 10px; max-width: none; }
+}
+
+@media (max-width: 430px) {
+  .topbar-right button:first-child { display:none; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .grid-2 { gap: 10px; }
+  .detail-grid { grid-template-columns: 1fr 1fr; }
+  .detail-actions .btn { flex-basis: 100%; }
+}
+.admin-intro { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; }
+@media (max-width:720px){ .admin-intro h1{font-size:21px!important;} .admin-intro{margin-bottom:14px!important;} }
