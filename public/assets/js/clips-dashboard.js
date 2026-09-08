@@ -539,6 +539,24 @@ function cpInit(){
 }
 cpInit();
 
+
+/* ══════════════ QUICK CAPTION PRESETS ══════════════ */
+document.getElementById('quickPresets')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.quick-preset');
+  if (!btn) return;
+  const style = Number(btn.dataset.style);
+  const anim = Number(btn.dataset.anim);
+  if (!Number.isInteger(style) || !CP_STYLES[style] || !Number.isInteger(anim) || !CP_ANIMS[anim]) return;
+  cpStyleIdx = style;
+  cpAnimIdx = anim;
+  document.querySelectorAll('.quick-preset').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  cpRenderStyleGrid();
+  cpRenderAnimGrid();
+  cpRenderLive();
+  cpUpdateSummary();
+});
+
 /* ══════════════ VIDEO PREVIEW ══════════════
    Uses YouTube's public oEmbed endpoint (no API key, CORS-enabled)
    to show a thumbnail/title/channel before the user commits to
@@ -549,7 +567,7 @@ const YT_URL_REGEX = /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]
 let vpDebounceTimer = null;
 
 function clearVideoPreview(){
-  document.getElementById('videoPreviewCard').style.display = 'none';
+  const c = document.getElementById('videoPreviewCard'); c.style.display = 'none'; c.classList.remove('is-ready');
 }
 
 async function fetchVideoPreview(url){
@@ -562,6 +580,7 @@ async function fetchVideoPreview(url){
     document.getElementById('vpTitle').innerText = data.title || 'Untitled video';
     document.getElementById('vpChannel').innerText = data.author_name ? `by ${data.author_name}` : '';
     card.style.display = 'flex';
+    card.classList.add('is-ready');
   } catch (e) {
     clearVideoPreview();
   }
