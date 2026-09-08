@@ -82,14 +82,46 @@
 
 <!-- Admin Screen -->
 <div id="adminScreen">
+
+  <aside class="pro-sidebar" id="proSidebar">
+    <div class="pro-brand">
+      <span class="pro-brand-mark">▶</span>
+      <span>Reel<span>Scribe</span></span>
+      <small>ADMIN</small>
+    </div>
+    <div class="pro-search" onclick="document.getElementById('globalAdminSearch').focus()">
+      <span>⌕</span>
+      <input id="globalAdminSearch" type="text" placeholder="Search users, payments, jobs…" onkeydown="if(event.key==='Enter'){switchTab('users'); document.getElementById('userSearch').value=this.value; debouncedSearch();}">
+    </div>
+    <nav class="pro-nav">
+      <button class="pro-nav-btn active" data-tab="overview" onclick="switchTab('overview')"><span>⌂</span> Dashboard</button>
+      <button class="pro-nav-btn" data-tab="users" onclick="switchTab('users')"><span>♙</span> Users</button>
+      <button class="pro-nav-btn" data-tab="payments" onclick="switchTab('payments')"><span>▣</span> Payments</button>
+      <button class="pro-nav-btn" data-tab="usage" onclick="switchTab('usage')"><span>◒</span> Usage &amp; Analytics</button>
+      <button class="pro-nav-btn" data-tab="marketing" onclick="switchTab('marketing')"><span>✦</span> Marketing</button>
+      <button class="pro-nav-btn" data-tab="actions" onclick="switchTab('actions')"><span>⚡</span> Quick Actions</button>
+      <button class="pro-nav-btn" data-tab="logs" onclick="switchTab('logs')"><span>☷</span> Audit Log</button>
+    </nav>
+    <div class="pro-sidebar-bottom">
+      <div class="pro-health-mini"><span class="live-dot"></span><div><b>Systems</b><small id="sidebarHealth">Checking…</small></div></div>
+      <div class="pro-version">ReelScribe Admin · v2</div>
+    </div>
+  </aside>
+
   <div class="topbar">
-    <div class="topbar-logo"><span class="ndot"></span>ReelScribe Admin</div>
+    <div class="mobile-menu-btn" onclick="document.getElementById('proSidebar').classList.toggle('open')">☰</div><div class="topbar-logo"><span class="ndot"></span>ReelScribe <b>Admin</b></div>
     <div class="topbar-right">
       <span class="live-status" id="liveStatus"><span class="live-dot"></span> Live <span id="lastUpdated">—</span></span>
       <button class="refresh-btn" onclick="manualRefresh()" id="refreshBtn">↻ Refresh</button>
       <button onclick="window.location.href='/'">View Site</button>
       <button onclick="doLogout()">Log Out</button>
     </div>
+  
+</div>
+
+  <div class="pro-mobile-summary">
+    <div><span class="live-dot"></span><b id="mobileHealthSummary">All systems operational</b></div>
+    <span id="mobileLastUpdated">Updated —</span>
   </div>
 
   <div class="tabs">
@@ -110,6 +142,14 @@
         <div><div class="eyebrow">CONTROL CENTER</div><h1>ReelScribe Overview</h1><p>Monitor users, revenue, usage and platform health from one place.</p></div>
         <div class="overview-health"><span class="live-dot"></span><span id="healthSummary">Checking systems…</span></div>
       </div>
+      
+      <div class="executive-strip">
+        <div class="exec-card"><span class="exec-icon">₹</span><div><small>Revenue</small><strong id="execRevenue">—</strong></div><em>Live</em></div>
+        <div class="exec-card"><span class="exec-icon">↗</span><div><small>Active Users</small><strong id="execActiveUsers">—</strong></div><em>Live</em></div>
+        <div class="exec-card"><span class="exec-icon">▶</span><div><small>Videos Processed</small><strong id="execVideos">—</strong></div><em>Live</em></div>
+        <div class="exec-card"><span class="exec-icon">!</span><div><small>Failed Payments</small><strong id="execFailedPayments">—</strong></div><em>Monitor</em></div>
+      </div>
+
       <div class="stats-grid" id="statsGrid">
         <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Total Users</div></div>
         <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">New Today</div></div>
