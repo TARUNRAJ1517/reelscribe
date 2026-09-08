@@ -85,6 +85,8 @@
   <div class="topbar">
     <div class="topbar-logo"><span class="ndot"></span>ReelScribe Admin</div>
     <div class="topbar-right">
+      <span class="live-status" id="liveStatus"><span class="live-dot"></span> Live <span id="lastUpdated">—</span></span>
+      <button class="refresh-btn" onclick="manualRefresh()" id="refreshBtn">↻ Refresh</button>
       <button onclick="window.location.href='/'">View Site</button>
       <button onclick="doLogout()">Log Out</button>
     </div>
@@ -104,12 +106,9 @@
 
     <!-- OVERVIEW -->
     <div class="page-section active" id="section-overview">
-      <div class="admin-intro" style="margin-bottom:18px;">
-        <div>
-          <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1.4px;margin-bottom:5px;">Control Center</div>
-          <h1 style="font-size:24px;letter-spacing:-.6px;margin-bottom:4px;">ReelScribe Overview</h1>
-          <p style="font-size:12px;color:var(--muted);">Monitor users, revenue, usage and admin activity from one place.</p>
-        </div>
+      <div class="section-head">
+        <div><div class="eyebrow">CONTROL CENTER</div><h1>ReelScribe Overview</h1><p>Monitor users, revenue, usage and platform health from one place.</p></div>
+        <div class="overview-health"><span class="live-dot"></span><span id="healthSummary">Checking systems…</span></div>
       </div>
       <div class="stats-grid" id="statsGrid">
         <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Total Users</div></div>
@@ -128,6 +127,27 @@
           <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Today</div></div>
           <div class="stat-card"><div class="stat-num">—</div><div class="stat-label">Paid → Free</div></div>
         </div>
+      </div>
+
+      <div class="grid-2 overview-panels">
+        <div class="card">
+          <div class="card-head-row"><div><h2>Platform Health</h2><p class="subtitle">Live checks against your existing admin APIs.</p></div><span class="health-pill" id="healthPill">Checking</span></div>
+          <div class="health-list" id="healthList">
+            <div class="health-row"><span>Admin API</span><b>Checking…</b></div>
+            <div class="health-row"><span>Users</span><b>Checking…</b></div>
+            <div class="health-row"><span>Payments</span><b>Checking…</b></div>
+            <div class="health-row"><span>Usage</span><b>Checking…</b></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head-row"><div><h2>Admin Alerts</h2><p class="subtitle">Things worth checking right now.</p></div><span class="alert-count" id="alertCount">0</span></div>
+          <div id="adminAlerts" class="alert-list"><div class="empty-mini">No alerts yet.</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head-row"><div><h2>Recent Activity</h2><p class="subtitle">Latest payments and registrations available from the current APIs.</p></div><button class="btn btn-ghost btn-sm" onclick="switchTab('payments')">View Payments</button></div>
+        <div id="overviewActivity" class="activity-list"><div class="empty-mini">Loading activity…</div></div>
       </div>
 
       <div class="card">
