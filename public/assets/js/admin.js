@@ -200,6 +200,7 @@ async function loadStats(){
     cards[1].innerText = data.newToday;
     cards[2].innerText = data.newThisWeek;
     cards[3].innerText = (data.byPlan.starter||0) + (data.byPlan.pro||0) + (data.byPlan.agency||0);
+    const activeEl=document.getElementById("execActiveUsers"); if(activeEl) activeEl.innerText = data.activeUsers ?? data.totalUsers ?? "—";
 
     document.getElementById("planBreakdown").innerHTML = `
       <div class="plan-chip">Free: <b>${data.byPlan.free||0}</b></div>
@@ -219,6 +220,7 @@ async function loadRevenue(){
     const fmt = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
     const cards = document.querySelectorAll("#revenueGrid .stat-num");
     cards[0].innerText = fmt(data.totalRevenue);
+    const er=document.getElementById("execRevenue"); if(er) er.innerText=fmt(data.totalRevenue);
     cards[1].innerText = fmt(data.monthRevenue);
     cards[2].innerText = fmt(data.todayRevenue);
     cards[3].innerText = data.paidToFreeConversions;
@@ -1079,3 +1081,34 @@ function escapeHtml(str){
 function escapeAttr(str){
   return String(str ?? "").replace(/'/g, "&#39;");
 }
+
+
+/* Professional shell hooks */
+(function(){
+  const oldSetLiveStatus = window.setLiveStatus;
+  window.setLiveStatus = function(ok){
+    if(typeof oldSetLiveStatus === "function") oldSetLiveStatus(ok);
+    const text = ok ? "All systems operational" : "Attention needed";
+    const side = document.getElementById("sidebarHealth");
+    const mob = document.getElementById("mobileHealthSummary");
+    if(side) side.textContent = text;
+    if(mob) mob.textContent = text;
+    const lu = document.getElementById("lastUpdated");
+    const ml = document.getElementById("mobileLastUpdated");
+    if(lu && ml && window.lastSuccessfulRefresh) {
+      const t = new Date(window.lastSuccessfulRefresh).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
+      ml.textContent = "Updated " + t;
+    }
+  };
+})();
+
+(function(){
+  const originalSwitchTab = window.switchTab;
+  if(typeof originalSwitchTab === "function"){
+    window.switchTab = function(tab){
+      originalSwitchTab(tab);
+      document.querySelectorAll(".pro-nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
+      document.getElementById("proSidebar")?.classList.remove("open");
+    };
+  }
+})();
