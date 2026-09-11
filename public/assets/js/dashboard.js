@@ -69,10 +69,27 @@ async function loadUserPlan() {
         document.getElementById("upgradeLabel").style.display = "flex";
         document.getElementById("upgradeBanner").style.display = "block";
       }
+      document.getElementById("cancelSubBtn").style.display = data.hasActiveSubscription ? "flex" : "none";
     }
   } catch (e) {
     document.getElementById("upgradeLabel").style.display = "flex";
     document.getElementById("upgradeBanner").style.display = "block";
+  }
+}
+
+async function cancelSubscription() {
+  if (!confirm("Cancel your autopay subscription? You won't be charged again, and your current plan access will end when it expires.")) return;
+  try {
+    const res = await fetch("/cancel-subscription", { method: "POST" });
+    const data = await res.json();
+    if (data.success) {
+      alert(data.message || "Your subscription has been cancelled.");
+      document.getElementById("cancelSubBtn").style.display = "none";
+    } else {
+      alert(data.error || "Couldn't cancel the subscription right now. Please try again.");
+    }
+  } catch (e) {
+    alert("Something went wrong. Please try again or contact support.");
   }
 }
 
