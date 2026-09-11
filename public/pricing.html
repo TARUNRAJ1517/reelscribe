@@ -6,9 +6,9 @@
 <title>Pricing – ReelScribe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<!-- FIX: Razorpay checkout.js moved to <head> — previously loaded at the end
-     of body, so a fast click on a plan button before it finished loading
-     could throw "Razorpay is not defined". -->
+<!-- Razorpay checkout SDK — loaded in <head> so it's ready before a fast
+     click on a plan button, avoiding a "Razorpay is not defined" error. -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <link rel="stylesheet" href="/assets/css/pricing.css">
 <link rel="stylesheet" href="/premium.css">
 </head>
