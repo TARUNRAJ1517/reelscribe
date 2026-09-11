@@ -28,7 +28,7 @@ function toggleBilling() {
 async function buyPlan(plan) {
   let loggedIn = false, email = "";
   try {
-    const me = await fetch("/me").then(r => r.json());
+    const me = await fetch("/me", { credentials: "include" }).then(r => r.json());
     loggedIn = !!me.loggedIn;
     email = me.email || "";
   } catch (e) {}
@@ -41,17 +41,85 @@ async function buyPlan(plan) {
   }
 
   const billing = yearly ? "yearly" : "monthly";
-  const couponCode = offerCoupon || "";
 
   try {
+    // Monthly plans use the real Razorpay Subscription + AutoPay flow.
+    // Yearly plans continue using the existing one-time Order flow.
+    if (billing === "monthly") {
+      const res = await fetch("/create-subscription", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan })
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        alert(data.error || "Could not start AutoPay. Please try again.");
+        return;
+      }
+
+      const monthlyPrice = prices[plan].m;
+      const options = {
+        key: data.key,
+        subscription_id: data.subscriptionId,
+        name: "ReelScribe",
+        description: "₹1 today • 24-hour access • ₹" + monthlyPrice + "/month from tomorrow",
+        prefill: { email },
+        theme: { color: "#ff3b30" },
+
+        handler: async function (response) {
+          try {
+            const verify = await fetch("/verify-subscription", {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_subscription_id: response.razorpay_subscription_id || data.subscriptionId,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+
+            const result = await verify.json();
+            if (result.success) {
+              alert("₹1 successful. Your " + plan.toUpperCase() + " access is active for 24 hours. AutoPay will charge ₹" + monthlyPrice + " tomorrow.");
+              location.href = "/dashboard.html";
+            } else {
+              alert(result.error || "AutoPay verification failed. Please contact support.");
+            }
+          } catch (e) {
+            console.error(e);
+            alert("Verification error. Please contact support.");
+          }
+        },
+
+        modal: {
+          ondismiss: function() {
+            console.log("Subscription checkout closed");
+          }
+        }
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.on("payment.failed", function (response) {
+        console.error("Razorpay subscription authorization failed:", response.error);
+        alert(response.error?.description || "AutoPay authorization failed. Please try again.");
+      });
+      rzp.open();
+      return;
+    }
+
+    // Existing yearly one-time payment flow.
+    const couponCode = offerCoupon || "";
     const res = await fetch("/create-order", {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ plan, billing, couponCode })
     });
 
     const data = await res.json();
-
     if (!data.success) {
       alert(data.error || "Could not create the order. Please try again.");
       return;
@@ -60,7 +128,7 @@ async function buyPlan(plan) {
     const pricing = data.pricing || {};
     const descriptionParts = [
       plan.charAt(0).toUpperCase() + plan.slice(1) + " Plan",
-      billing === "yearly" ? "Yearly" : "Monthly"
+      "Yearly"
     ];
 
     if (data.coupon && data.coupon.code) {
@@ -75,17 +143,15 @@ async function buyPlan(plan) {
       description: descriptionParts.join(" • "),
       order_id: data.order.id,
       prefill: { email },
-
       handler: async function (response) {
         try {
           const verify = await fetch("/verify-payment", {
             method: "POST",
+            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ...response })
           });
-
           const result = await verify.json();
-
           if (result.success) {
             alert("Payment successful! Your " + plan.toUpperCase() + " plan is now active.");
             location.href = "/dashboard.html";
@@ -96,17 +162,10 @@ async function buyPlan(plan) {
           alert("Verification error. Please contact support.");
         }
       },
-
-      modal: {
-        ondismiss: function() {
-          console.log("Payment modal closed");
-        }
-      },
-
+      modal: { ondismiss: function() { console.log("Payment modal closed"); } },
       theme: { color: "#ff3b30" }
     };
 
-    // Show the applied offer before Razorpay opens.
     if (data.coupon && pricing.discountAmount > 0) {
       const saved = Number(pricing.discountAmount).toFixed(2);
       const finalAmount = Number(pricing.finalAmount).toFixed(2);
@@ -115,7 +174,6 @@ async function buyPlan(plan) {
 
     const rzp = new Razorpay(options);
     rzp.open();
-
   } catch (err) {
     console.error(err);
     alert("Something went wrong. Please try again.");
@@ -212,4 +270,70 @@ window.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(banner);
     setTimeout(() => banner.remove(), 5000);
   }
+});
+
+
+/* ── Premium ₹1 intro-offer preview ─────────────────── */
+let rsIntroStage = 0;
+
+function openIntroOffer(){
+  rsIntroStage = 0;
+  const modal = document.getElementById("rsOfferModal");
+  if (!modal) return;
+  renderIntroStage();
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden","false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeIntroOffer(){
+  const modal = document.getElementById("rsOfferModal");
+  if (!modal) return;
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden","true");
+  document.body.style.overflow = "";
+}
+
+function renderIntroStage(){
+  const step = document.getElementById("rsModalStep");
+  const icon = document.getElementById("rsModalIcon");
+  const title = document.getElementById("rsModalTitle");
+  const text = document.getElementById("rsModalText");
+  const cta = document.getElementById("rsModalCta");
+  if (!step || !icon || !title || !text || !cta) return;
+
+  const stages = [
+    {
+      step:"STEP 01 · INTRO OFFER", icon:"₹", title:"Start for ₹1",
+      text:"The checkout collects the ₹1 upfront amount and asks the customer to authorize the recurring subscription.",
+      cta:"Continue →"
+    },
+    {
+      step:"STEP 02 · AUTOPAY MANDATE", icon:"↻", title:"Authorize AutoPay",
+      text:"The customer approves the recurring mandate. The selected plan will be collected automatically from tomorrow.",
+      cta:"Continue →"
+    },
+    {
+      step:"STEP 03 · 2 DAYS PRO", icon:"2D", title:"Full access for 1 day",
+      text:"ReelScribe grants the selected plan for 24 hours. The recurring billing date is scheduled for tomorrow.",
+      cta:"See renewal →"
+    },
+    {
+      step:"STEP 04 · RECURRING", icon:"₹599", title:"Then the selected plan price/month",
+      text:"At the scheduled renewal, Razorpay automatically attempts the selected plan charge. If payment fails, the backend handles the subscription state.",
+      cta:"Done"
+    }
+  ];
+  const s = stages[rsIntroStage];
+  step.textContent=s.step; icon.textContent=s.icon; title.textContent=s.title; text.textContent=s.text; cta.textContent=s.cta;
+}
+
+function advanceIntroOffer(){
+  if (rsIntroStage >= 3) { closeIntroOffer(); return; }
+  rsIntroStage += 1;
+  renderIntroStage();
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeIntroOffer();
 });
