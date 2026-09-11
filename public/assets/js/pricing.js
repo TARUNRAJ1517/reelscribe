@@ -15,13 +15,42 @@ function toggleBilling() {
   document.getElementById('sw').classList.toggle('on', yearly);
   document.getElementById('lbl-m').classList.toggle('active', !yearly);
   document.getElementById('lbl-y').classList.toggle('active', yearly);
-  [['s','starter'],['p','pro'],['a','agency']].forEach(([k,plan]) => {
+  renderPlanCards();
+}
+
+const ctaLabels = {
+  starter: { m: 'Start for ₹1', y: 'Get starter' },
+  pro:     { m: 'Start for ₹1', y: 'Get pro' },
+  agency:  { m: 'Start for ₹1', y: 'Get agency' }
+};
+
+// Renders price, cycle text, autopay disclosure and CTA label for all three
+// plan cards based on the current `yearly` state. Monthly = autopay (₹1
+// today, real price auto-debited from tomorrow). Yearly = one-time payment.
+function renderPlanCards() {
+  [['s', 'starter'], ['p', 'pro'], ['a', 'agency']].forEach(([k, plan]) => {
     const p = prices[plan];
-    document.getElementById(k+'-price').textContent = '₹' + (yearly ? p.y : p.m);
-    document.getElementById(k+'-cycle').textContent = yearly ? '/month, billed annually' : '/month';
-    const old = document.getElementById(k+'-old');
-    old.textContent = yearly ? '₹'+p.m : '';
-    old.style.display = yearly ? 'inline' : 'none';
+    const priceEl = document.getElementById(k + '-price');
+    const cycleEl = document.getElementById(k + '-cycle');
+    const oldEl   = document.getElementById(k + '-old');
+    const noteEl  = document.getElementById(k + '-note');
+
+    if (yearly) {
+      priceEl.textContent = '₹' + p.y;
+      cycleEl.textContent = '/month, billed annually';
+      oldEl.textContent = '₹' + p.m;
+      oldEl.style.display = 'inline';
+      if (noteEl) noteEl.textContent = 'One-time payment of ₹' + (p.y * 12) + ' today. No autopay, no recurring mandate.';
+    } else {
+      priceEl.textContent = '₹1';
+      cycleEl.textContent = 'today';
+      oldEl.textContent = '';
+      oldEl.style.display = 'none';
+      if (noteEl) noteEl.textContent = 'Then ₹' + p.m + '/month auto-debited via UPI/Card from tomorrow. Cancel anytime.';
+    }
+
+    const btn = document.getElementById(k === 's' ? 'starterCta' : k === 'p' ? 'proCta' : 'agencyCta');
+    if (btn && !btn.disabled) btn.textContent = yearly ? ctaLabels[plan].y : ctaLabels[plan].m;
   });
 }
 
@@ -198,17 +227,13 @@ async function loadCurrentPlan() {
 
     // Reset all cards/buttons first.
     document.querySelectorAll('[data-plan-card]').forEach(card => card.classList.remove('is-current'));
-    const configs = {
-      starter: ['starterCta','Get starter'],
-      pro: ['proCta','Get pro'],
-      agency: ['agencyCta','Get agency']
-    };
-    Object.entries(configs).forEach(([p,[id,text]]) => {
+    const planIds = { starter: 'starterCta', pro: 'proCta', agency: 'agencyCta' };
+    Object.entries(planIds).forEach(([p, id]) => {
       const btn = document.getElementById(id);
       if (!btn) return;
       btn.disabled = false; btn.className = 'cta ' + (p === 'pro' ? 'cta-fill' : 'cta-outline');
-      btn.textContent = text;
     });
+    renderPlanCards(); // sets the ₹1/Get-X label correctly for the current billing toggle
 
     const freeCard = document.getElementById('freeCard');
     const freeStatus = document.getElementById('freeStatus');
@@ -219,9 +244,9 @@ async function loadCurrentPlan() {
       freeCard.classList.add('is-current');
       freeStatus.classList.add('active');
       freeStatus.textContent = '✓ CURRENT PLAN';
-    } else if (configs[plan]) {
+    } else if (planIds[plan]) {
       const card = document.querySelector(`[data-plan-card="${plan}"]`);
-      const btn = document.getElementById(configs[plan][0]);
+      const btn = document.getElementById(planIds[plan]);
       if (card) card.classList.add('is-current');
       if (btn) {
         btn.disabled = true;
@@ -238,6 +263,7 @@ async function loadCurrentPlan() {
 // Marketing offer links can open this page with ?plan=pro&billing=monthly&coupon=CODE.
 // Keep the normal pricing page UI, but automatically use those values when the user clicks a plan.
 window.addEventListener("DOMContentLoaded", () => {
+  renderPlanCards();
   loadCurrentPlan();
   if (offerBilling === "yearly") {
     yearly = false;
