@@ -19,14 +19,14 @@ function toggleBilling() {
 }
 
 const ctaLabels = {
-  starter: { m: 'Start for ₹1', y: 'Get starter' },
-  pro:     { m: 'Start for ₹1', y: 'Get pro' },
-  agency:  { m: 'Start for ₹1', y: 'Get agency' }
+  starter: { m: 'Claim ₹1 offer', y: 'Get starter' },
+  pro:     { m: 'Claim ₹1 offer', y: 'Get pro' },
+  agency:  { m: 'Claim ₹1 offer', y: 'Get agency' }
 };
 
-// Renders price, cycle text, autopay disclosure and CTA label for all three
-// plan cards based on the current `yearly` state. Monthly = autopay (₹1
-// today, real price auto-debited from tomorrow). Yearly = one-time payment.
+// Renders price, cycle text, autopay badge/disclosure and CTA label for all
+// three plan cards based on the current `yearly` state. Monthly = autopay
+// (₹1 today, real price auto-debited from tomorrow). Yearly = one-time payment.
 function renderPlanCards() {
   [['s', 'starter'], ['p', 'pro'], ['a', 'agency']].forEach(([k, plan]) => {
     const p = prices[plan];
@@ -34,19 +34,22 @@ function renderPlanCards() {
     const cycleEl = document.getElementById(k + '-cycle');
     const oldEl   = document.getElementById(k + '-old');
     const noteEl  = document.getElementById(k + '-note');
+    const badgeEl = document.getElementById(k + '-badge');
 
     if (yearly) {
       priceEl.textContent = '₹' + p.y;
       cycleEl.textContent = '/month, billed annually';
       oldEl.textContent = '₹' + p.m;
       oldEl.style.display = 'inline';
-      if (noteEl) noteEl.textContent = 'One-time payment of ₹' + (p.y * 12) + ' today. No autopay, no recurring mandate.';
+      if (noteEl) noteEl.textContent = 'One-time payment, no autopay.';
+      if (badgeEl) badgeEl.style.display = 'none';
     } else {
       priceEl.textContent = '₹1';
       cycleEl.textContent = 'today';
       oldEl.textContent = '';
       oldEl.style.display = 'none';
-      if (noteEl) noteEl.textContent = 'Then ₹' + p.m + '/month auto-debited via UPI/Card from tomorrow. Cancel anytime.';
+      if (noteEl) noteEl.textContent = 'Offer ends soon — new subscribers only';
+      if (badgeEl) badgeEl.style.display = 'inline-flex';
     }
 
     const btn = document.getElementById(k === 's' ? 'starterCta' : k === 'p' ? 'proCta' : 'agencyCta');
