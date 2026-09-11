@@ -137,7 +137,7 @@ async function buyPlan(plan) {
 
       modal: {
         ondismiss: function() {
-          console.log("Payment modal closed");
+          alert("Payment cancelled. You haven't been charged. You can try again anytime.");
         }
       },
 
@@ -193,8 +193,17 @@ async function buySubscription(plan, email) {
       },
 
       modal: {
-        ondismiss: function () {
-          console.log("Subscription modal closed");
+        // The subscription record was already created server-side before
+        // checkout opened. If the user backs out without paying, cancel it
+        // right away — otherwise a retry would wrongly say "you already
+        // have an active or pending subscription".
+        ondismiss: async function () {
+          try {
+            await fetch("/cancel-subscription", { method: "POST" });
+          } catch (e) {
+            console.error("Cleanup after cancelled checkout failed:", e);
+          }
+          alert("Subscription cancelled. You haven't been charged. You can try again anytime.");
         }
       },
 
