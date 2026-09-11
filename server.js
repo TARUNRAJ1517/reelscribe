@@ -1417,7 +1417,15 @@ app.post("/cancel-subscription", requireAuth, async (req, res) => {
     });
     if (!sub) return res.status(404).json({ success: false, error: "No active subscription found." });
 
-    await razorpay.subscriptions.cancel(sub.razorpaySubscriptionId, { cancel_at_cycle_end: 0 });
+    try {
+      await razorpay.subscriptions.cancel(sub.razorpaySubscriptionId, { cancel_at_cycle_end: 0 });
+    } catch (razorpayErr) {
+      // A subscription the user backed out of before ever authorizing a
+      // mandate (still "created" on Razorpay's side) can reject a cancel
+      // call — that's fine, it can never be charged anyway. What matters
+      // is that OUR record stops blocking the user from starting a new one.
+      console.error(`[/cancel-subscription] Razorpay cancel failed for ${sub.razorpaySubscriptionId}:`, razorpayErr?.error || razorpayErr);
+    }
 
     sub.status = "cancelled";
     sub.cancelledAt = new Date();
