@@ -22,6 +22,14 @@ const UserSchema = new mongoose.Schema({
     default: null
   },
 
+  // Autopay/recurring-subscription state (monthly plans only — yearly stays one-time).
+  razorpaySubscriptionId: { type: String, default: null, index: true },
+  subscriptionStatus: {
+    type: String,
+    enum: ["created", "authenticated", "active", "pending", "halted", "cancelled", "completed", "expired", null],
+    default: null,
+  },
+
   isSuspended: { type: Boolean, default: false, index: true },
   lastActiveAt: { type: Date, default: null },
 
