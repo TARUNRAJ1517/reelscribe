@@ -32,6 +32,7 @@ const AdminLog    = require("./models/AdminLog");
 const Payment     = require("./models/Payment");
 const Coupon      = require("./models/Coupon");
 const CouponRedemption = require("./models/CouponRedemption");
+const Subscription = require("./models/Subscription");
 const Razorpay    = require("razorpay");
 const crypto      = require("crypto");
 const FormData    = require("form-data");
@@ -47,6 +48,15 @@ const razorpay = new Razorpay({
 const EC2_URL       = process.env.EC2_URL;
 const INTERNAL_KEY  = process.env.INTERNAL_SECRET;
 
+// Recurring-subscription config (monthly plans only — yearly stays one-time via /create-order).
+const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
+const SUBSCRIPTION_PLAN_IDS = {
+  starter: process.env.RAZORPAY_STARTER_MONTHLY_PLAN_ID,
+  pro:     process.env.RAZORPAY_PRO_MONTHLY_PLAN_ID,
+  agency:  process.env.RAZORPAY_AGENCY_MONTHLY_PLAN_ID,
+};
+const TRIAL_CHARGE_RUPEES = 1; // day-1 intro charge; full plan price kicks in from the next cycle
+
 const PLAN_LIMITS = {
   free:    { transcriptDay: 2,  transcriptMonth: 5,   clipDay: 0,  clipMonth: 0,  maxMB: 100,  maxVideoMinutes: 0   },
   starter: { transcriptDay: 5,  transcriptMonth: 30,  clipDay: 2,  clipMonth: 10, maxMB: 500,  maxVideoMinutes: 40  },
@@ -55,12 +65,31 @@ const PLAN_LIMITS = {
 };
 
 app.set("trust proxy", 1);
+app.disable("x-powered-by");
 
-// Lightweight security headers without introducing another dependency.
+// Hardened security headers without introducing another dependency.
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+  res.setHeader("X-XSS-Protection", "0"); // deprecated in modern browsers; CSP below is the real defense
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=(self)");
+  res.setHeader(
+    "Content-Security-Policy",
+    [
+      "default-src 'self'",
+      "script-src 'self' https://checkout.razorpay.com 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https:",
+      "font-src 'self' data:",
+      "connect-src 'self' https://api.razorpay.com",
+      "frame-src https://api.razorpay.com https://checkout.razorpay.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; ")
+  );
   next();
 });
 
@@ -68,7 +97,78 @@ app.use(cors({
   origin: ["https://reelscribe.site", "https://www.reelscribe.site"],
   credentials: true,
 }));
-app.use(express.json());
+app.use(express.json({
+  limit: "1mb",
+  // Keep the raw bytes around so the Razorpay webhook route can verify the
+  // HMAC signature against the exact payload Razorpay signed.
+  verify: (req, res, buf) => { req.rawBody = buf; },
+}));
+
+// ── NoSQL injection guard ──────────────────────────────────
+// Strips any key starting with "$" or containing "." from user-controlled
+// input so it can never be interpreted as a Mongo operator/path by mistake.
+function sanitizeObject(obj) {
+  if (Array.isArray(obj)) {
+    for (const item of obj) sanitizeObject(item);
+    return obj;
+  }
+  if (obj && typeof obj === "object") {
+    for (const key of Object.keys(obj)) {
+      if (key.startsWith("$") || key.includes(".")) {
+        delete obj[key];
+        continue;
+      }
+      sanitizeObject(obj[key]);
+    }
+  }
+  return obj;
+}
+app.use((req, res, next) => {
+  if (req.body)   sanitizeObject(req.body);
+  if (req.params) sanitizeObject(req.params);
+  if (req.query)  sanitizeObject(req.query);
+  next();
+});
+
+// ── Lightweight in-memory rate limiter (no extra dependency) ──────────────
+// Suitable for a single-instance Render deployment. Keyed by IP + route.
+function rateLimit({ windowMs, max, message }) {
+  const hits = new Map();
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, rec] of hits) {
+      if (now - rec.windowStart > windowMs) hits.delete(key);
+    }
+  }, windowMs).unref();
+
+  return (req, res, next) => {
+    const key = (req.ip || "unknown") + ":" + req.baseUrl + req.path;
+    const now = Date.now();
+    let rec = hits.get(key);
+    if (!rec || now - rec.windowStart > windowMs) {
+      rec = { count: 0, windowStart: now };
+      hits.set(key, rec);
+    }
+    rec.count++;
+    if (rec.count > max) {
+      return res.status(429).json({ success: false, error: message || "Too many requests. Please slow down and try again shortly." });
+    }
+    next();
+  };
+}
+
+// Generous global ceiling — catches scripted abuse without affecting real users.
+const globalLimiter = rateLimit({ windowMs: 60 * 1000, max: 120, message: "Too many requests. Please slow down." });
+app.use(globalLimiter);
+
+// Tighter limits for expensive/abuse-prone routes.
+const transcribeLimiter   = rateLimit({ windowMs: 60 * 1000, max: 6,   message: "Too many transcription requests. Please wait a minute and try again." });
+const clipLimiter         = rateLimit({ windowMs: 60 * 1000, max: 6,   message: "Too many clip requests. Please wait a minute and try again." });
+const authLimiter         = rateLimit({ windowMs: 60 * 1000, max: 10,  message: "Too many attempts. Please wait a minute and try again." });
+const subscriptionLimiter = rateLimit({ windowMs: 60 * 1000, max: 5,   message: "Too many subscription requests. Please wait a minute and try again." });
+// Generous: Razorpay's own servers call this, so it must never be the bottleneck.
+const webhookLimiter      = rateLimit({ windowMs: 60 * 1000, max: 100, message: "Too many webhook calls." });
+
 app.use(express.static("public"));
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -187,11 +287,30 @@ passport.use(new GoogleStrategy({
   } catch (err) { return done(err, null); }
 }));
 
+const ALLOWED_VIDEO_MIME = new Set([
+  "video/mp4", "video/quicktime", "video/webm", "video/x-matroska", "video/x-msvideo", "video/3gpp",
+]);
+const ALLOWED_VIDEO_EXT = new Set([".mp4", ".mov", ".webm", ".mkv", ".avi", ".3gp"]);
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
-  filename:    (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
+  filename:    (req, file, cb) => {
+    // Never trust the client-supplied filename beyond its extension.
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${Date.now()}_${crypto.randomBytes(6).toString("hex")}${ext}`);
+  },
 });
-const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } }); // Groq direct-upload limit used by the UI.
+const upload = multer({
+  storage,
+  limits: { fileSize: 25 * 1024 * 1024, files: 1 }, // Groq direct-upload limit used by the UI.
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (!ALLOWED_VIDEO_MIME.has(file.mimetype) || !ALLOWED_VIDEO_EXT.has(ext)) {
+      return cb(new Error("UNSUPPORTED_FILE_TYPE"));
+    }
+    cb(null, true);
+  },
+});
 
 
 const adminAuthAttempts = {};
@@ -515,7 +634,8 @@ app.get("/referral", requireAuth, async (req, res) => {
       }))
     });
   } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
+    console.error("[/referral] failed:", e);
+    res.status(500).json({ success: false, error: "Couldn't load your referral details right now. Please try again." });
   }
 });
 
@@ -603,7 +723,8 @@ app.get("/internal/user-limits/:email", internalAuth, async (req, res) => {
     if (!user) return res.status(404).json({ success: false });
     res.json({ success: true, user, effectivePlan: getEffectivePlan(user) });
   } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
+    console.error("[/internal/user-limits] failed:", e);
+    res.status(500).json({ success: false, error: "Internal lookup failed." });
   }
 });
 
@@ -628,7 +749,8 @@ app.post("/internal/update-usage", internalAuth, async (req, res) => {
 
     res.json({ success: true });
   } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
+    console.error("[/internal/update-usage] failed:", e);
+    res.status(500).json({ success: false, error: "Internal update failed." });
   }
 });
 
@@ -667,7 +789,7 @@ app.get("/me", (req, res) => {
   res.json({ success: true, loggedIn: !!email, email: email || null });
 });
 
-app.post("/send-otp", async (req, res) => {
+app.post("/send-otp", authLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     if (!isValidEmail(email)) return res.status(400).json({ success: false, message: "Valid email required" });
@@ -697,11 +819,12 @@ app.post("/send-otp", async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("[/send-otp] failed:", err);
+    res.status(500).json({ success: false, message: "Couldn't send the OTP right now. Please try again in a moment." });
   }
 });
 
-app.post("/verify-otp", async (req, res) => {
+app.post("/verify-otp", authLimiter, async (req, res) => {
   try {
     const { email, otp } = req.body;
     if (!isValidEmail(email)) return res.status(400).json({ success: false, message: "Valid email required" });
@@ -732,13 +855,22 @@ app.post("/verify-otp", async (req, res) => {
     const fp = requestFingerprints(req);
     await User.updateOne({ _id: user._id }, { $set: { lastActiveAt: new Date(), lastSeenIpHash: fp.ipHash, lastSeenUaHash: fp.uaHash } });
 
-    res.json({ success: true, user });
+    res.json({
+      success: true,
+      user: {
+        name: user.name,
+        email: user.email,
+        plan: user.plan,
+        credits: user.credits,
+      },
+    });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error("[/verify-otp] failed:", err);
+    res.status(500).json({ success: false, message: "Something went wrong while verifying your OTP. Please try again." });
   }
 });
 
-app.post("/transcribe", upload.single("video"), async (req, res) => {
+app.post("/transcribe", transcribeLimiter, upload.single("video"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, error: "No file was uploaded." });
 
@@ -786,11 +918,12 @@ app.post("/transcribe", upload.single("video"), async (req, res) => {
     });
   } catch (error) {
     if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-    res.status(500).json({ success: false, error: error.message });
+    console.error("[/transcribe] failed:", error);
+    res.status(500).json({ success: false, error: "We couldn't process this video. Please try again or use a different file." });
   }
 });
 
-app.post("/transcribe-url", async (req, res) => {
+app.post("/transcribe-url", transcribeLimiter, async (req, res) => {
   const { url } = req.body;
   if (typeof url !== "string" || !url)
     return res.status(400).json({ success: false, error: "Please provide a video URL." });
@@ -844,7 +977,8 @@ app.post("/transcribe-url", async (req, res) => {
 
       return res.json(buildResponse(transcript, "youtube-captions"));
     } catch (error) {
-      return res.status(500).json({ success: false, error: "Couldn't fetch the YouTube transcript: " + error.message });
+      console.error("[/transcribe-url] YouTube fetch failed:", error);
+      return res.status(500).json({ success: false, error: "Couldn't fetch the transcript for this video. Please check the link and try again." });
     }
   }
 
@@ -868,7 +1002,8 @@ app.post("/transcribe-url", async (req, res) => {
     return res.json(buildResponse(transcription.text, "groq-whisper"));
   } catch (error) {
     if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
-    return res.status(500).json({ success: false, error: "Couldn't fetch that Instagram video: " + error.message });
+    console.error("[/transcribe-url] Instagram fetch failed:", error);
+    return res.status(500).json({ success: false, error: "Couldn't fetch this Instagram video. Please check the link and try again." });
   }
 });
 
@@ -916,7 +1051,7 @@ app.get("/clip-status/:jobId", requireAuth, (req, res) => {
   res.json({ success: true, ...safeJob });
 });
 
-app.post("/cut-clips", requireAuth, async (req, res) => {
+app.post("/cut-clips", clipLimiter, requireAuth, async (req, res) => {
   const { ytUrl, fcmToken, captionSettings } = req.body;
   const email = req.authEmail;
 
@@ -1001,8 +1136,8 @@ app.post("/cut-clips", requireAuth, async (req, res) => {
         });
       }
     } catch (err) {
-      const errMsg = err.response?.data?.error || err.message;
-      clipJobs.set(jobId, { status: "error", error: "Clip generation failed: " + errMsg });
+      console.error(`[/cut-clips] job ${jobId} failed:`, err.response?.data || err.message || err);
+      clipJobs.set(jobId, { status: "error", error: "Clip generation failed. Please try again." });
       scheduleJobCleanup(jobId);
     }
   })();
@@ -1028,7 +1163,8 @@ app.get("/clip-history", requireAuth, async (req, res) => {
 
     res.json({ success: true, data });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error("[/clip-history] failed:", error);
+    res.status(500).json({ success: false, error: "Couldn't load your clip history right now. Please try again." });
   }
 });
 
@@ -1115,22 +1251,27 @@ function normalizeCoupon(c) {
   };
 }
 
+// Errors deliberately written to be safe/helpful to show a user directly.
+// Anything NOT thrown as a ValidationError is treated as an internal error
+// and never reaches the client verbatim (see the catch blocks below).
+class ValidationError extends Error {}
+
 async function getValidCoupon(code, email, plan) {
   const clean = String(code || "").trim().toUpperCase();
   if (!clean) return { coupon: null, discount: 0 };
 
   const coupon = await Coupon.findOne({ code: clean });
-  if (!coupon) throw new Error("Invalid coupon code.");
-  if (!coupon.active) throw new Error("This coupon is no longer active.");
-  if (coupon.expiresAt && new Date(coupon.expiresAt) <= new Date()) throw new Error("This coupon has expired.");
-  if (coupon.maxUses > 0 && coupon.usedCount >= coupon.maxUses) throw new Error("This coupon has reached its usage limit.");
+  if (!coupon) throw new ValidationError("Invalid coupon code.");
+  if (!coupon.active) throw new ValidationError("This coupon is no longer active.");
+  if (coupon.expiresAt && new Date(coupon.expiresAt) <= new Date()) throw new ValidationError("This coupon has expired.");
+  if (coupon.maxUses > 0 && coupon.usedCount >= coupon.maxUses) throw new ValidationError("This coupon has reached its usage limit.");
 
   const plans = Array.isArray(coupon.appliesToPlans) ? coupon.appliesToPlans : ["all"];
-  if (!plans.includes("all") && !plans.includes(plan)) throw new Error(`This coupon is not valid for the ${plan} plan.`);
+  if (!plans.includes("all") && !plans.includes(plan)) throw new ValidationError(`This coupon is not valid for the ${plan} plan.`);
 
   if (coupon.singleUsePerUser) {
     const already = await CouponRedemption.exists({ code: clean, email: String(email).toLowerCase() });
-    if (already) throw new Error("You have already used this coupon.");
+    if (already) throw new ValidationError("You have already used this coupon.");
   }
   return { coupon, discount: Number(coupon.discountPercent || 0) };
 }
@@ -1151,7 +1292,9 @@ app.post("/validate-coupon", requireAuth, async (req, res) => {
     const finalAmount = Math.max(1, Math.round((originalAmount - discountAmount) * 100) / 100);
     res.json({ success: true, coupon: normalizeCoupon(coupon), originalAmount, discountAmount, finalAmount });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message || "Invalid coupon." });
+    if (err instanceof ValidationError) return res.status(400).json({ success: false, error: err.message });
+    console.error("[/validate-coupon] failed:", err);
+    res.status(400).json({ success: false, error: "This coupon couldn't be applied. Please check the code and try again." });
   }
 });
 
@@ -1190,7 +1333,254 @@ app.post("/create-order", requireAuth, async (req, res) => {
       coupon: normalizeCoupon(coupon)
     });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message || "Could not create the order." });
+    if (err instanceof ValidationError) return res.status(400).json({ success: false, error: err.message });
+    console.error("[/create-order] failed:", err);
+    res.status(400).json({ success: false, error: "We couldn't start the payment process. Please try again." });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  AUTOPAY (monthly plans only) — ₹1 intro charge today,
+//  full plan price auto-debited from tomorrow via Razorpay Subscriptions.
+//  Yearly plans keep using /create-order above (one-time payment).
+// ══════════════════════════════════════════════════════════════
+
+app.post("/create-subscription", subscriptionLimiter, requireAuth, async (req, res) => {
+  try {
+    const { plan } = req.body;
+    const email = req.authEmail;
+
+    if (!["starter", "pro", "agency"].includes(plan))
+      return res.status(400).json({ success: false, error: "Invalid plan." });
+
+    const razorpayPlanId = SUBSCRIPTION_PLAN_IDS[plan];
+    if (!razorpayPlanId)
+      return res.status(500).json({ success: false, error: "Autopay isn't available for this plan right now." });
+
+    // Only one live/pending subscription per user at a time.
+    const existing = await Subscription.findOne({
+      userEmail: email,
+      status: { $in: ["created", "authenticated", "active", "pending"] },
+    });
+    if (existing)
+      return res.status(409).json({ success: false, error: "You already have an active or pending subscription. Please cancel it before starting a new one." });
+
+    const fullAmount = PLAN_PRICING[plan].m;
+    // Regular billing starts tomorrow; only the ₹1 intro charge happens today.
+    const startAt = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
+
+    const subscription = await razorpay.subscriptions.create({
+      plan_id: razorpayPlanId,
+      customer_notify: 1,
+      total_count: 120, // long-running; the user can cancel anytime from the dashboard
+      start_at: startAt,
+      addons: [
+        {
+          item: {
+            name: `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan — ₹${TRIAL_CHARGE_RUPEES} intro charge`,
+            amount: TRIAL_CHARGE_RUPEES * 100,
+            currency: "INR",
+          },
+        },
+      ],
+      notes: { email, plan },
+    });
+
+    await Subscription.create({
+      userEmail: email,
+      plan,
+      razorpaySubscriptionId: subscription.id,
+      razorpayPlanId,
+      status: subscription.status || "created",
+      trialChargeAmount: TRIAL_CHARGE_RUPEES,
+      fullAmount,
+    });
+
+    res.json({
+      success: true,
+      subscriptionId: subscription.id,
+      key: process.env.RAZORPAY_KEY_ID,
+      shortUrl: subscription.short_url,
+    });
+  } catch (err) {
+    console.error("[/create-subscription] failed:", err);
+    res.status(500).json({ success: false, error: "Couldn't start the subscription right now. Please try again." });
+  }
+});
+
+app.post("/cancel-subscription", requireAuth, async (req, res) => {
+  try {
+    const email = req.authEmail;
+    const sub = await Subscription.findOne({
+      userEmail: email,
+      status: { $in: ["created", "authenticated", "active", "pending", "halted"] },
+    });
+    if (!sub) return res.status(404).json({ success: false, error: "No active subscription found." });
+
+    await razorpay.subscriptions.cancel(sub.razorpaySubscriptionId, { cancel_at_cycle_end: 0 });
+
+    sub.status = "cancelled";
+    sub.cancelledAt = new Date();
+    sub.cancelReason = "user_requested";
+    await sub.save();
+
+    await User.updateOne({ email }, { $set: { subscriptionStatus: "cancelled" } });
+
+    res.json({ success: true, message: "Your subscription has been cancelled. You won't be charged again." });
+  } catch (err) {
+    console.error("[/cancel-subscription] failed:", err);
+    res.status(500).json({ success: false, error: "Couldn't cancel the subscription right now. Please try again or contact support." });
+  }
+});
+
+// Razorpay → server. No session/login — authenticity comes entirely from the
+// HMAC signature below, verified against the exact raw bytes Razorpay sent.
+app.post("/webhooks/razorpay", webhookLimiter, async (req, res) => {
+  try {
+    const signature = req.headers["x-razorpay-signature"];
+    if (!RAZORPAY_WEBHOOK_SECRET || !signature || !req.rawBody) {
+      return res.status(400).json({ success: false });
+    }
+
+    const expectedSig = crypto.createHmac("sha256", RAZORPAY_WEBHOOK_SECRET).update(req.rawBody).digest("hex");
+    const expectedBuf = Buffer.from(expectedSig, "hex");
+    const receivedBuf = Buffer.from(String(signature), "hex");
+    if (expectedBuf.length !== receivedBuf.length || !crypto.timingSafeEqual(expectedBuf, receivedBuf)) {
+      console.error("[/webhooks/razorpay] invalid signature — rejected");
+      return res.status(400).json({ success: false });
+    }
+
+    const event   = req.body?.event;
+    const payload = req.body?.payload || {};
+
+    if (event === "subscription.activated" || event === "subscription.authenticated") {
+      const subEntity = payload.subscription?.entity;
+      if (subEntity) {
+        await Subscription.updateOne(
+          { razorpaySubscriptionId: subEntity.id },
+          {
+            $set: {
+              status: subEntity.status,
+              currentStart: subEntity.current_start ? new Date(subEntity.current_start * 1000) : null,
+              currentEnd:   subEntity.current_end   ? new Date(subEntity.current_end * 1000)   : null,
+              chargeAt:     subEntity.charge_at     ? new Date(subEntity.charge_at * 1000)      : null,
+            },
+          }
+        );
+        const sub = await Subscription.findOne({ razorpaySubscriptionId: subEntity.id });
+        if (sub) {
+          await User.updateOne(
+            { email: sub.userEmail },
+            { $set: { razorpaySubscriptionId: subEntity.id, subscriptionStatus: subEntity.status } }
+          );
+        }
+      }
+    }
+
+    if (event === "subscription.charged") {
+      const subEntity     = payload.subscription?.entity;
+      const paymentEntity = payload.payment?.entity;
+
+      if (subEntity && paymentEntity) {
+        const sub = await Subscription.findOne({ razorpaySubscriptionId: subEntity.id });
+
+        if (!sub) {
+          console.error("[/webhooks/razorpay] charged event for unknown subscription:", subEntity.id);
+        } else {
+          // Idempotency: the same Razorpay payment must never be applied twice.
+          const already = await Payment.findOne({ razorpayPaymentId: paymentEntity.id });
+          if (!already) {
+            const paidRupees   = Number(paymentEntity.amount || 0) / 100;
+            const isTrialCharge = sub.paidCount === 0 && Math.abs(paidRupees - sub.trialChargeAmount) < 0.01;
+            const isFullCharge  = Math.abs(paidRupees - sub.fullAmount) < 0.01;
+
+            if (!isTrialCharge && !isFullCharge) {
+              // Amount doesn't match what this plan should ever charge — do not trust it blindly.
+              console.error(`[/webhooks/razorpay] unexpected charge ₹${paidRupees} for subscription ${subEntity.id} (plan ${sub.plan})`);
+            } else {
+              await Payment.create({
+                userEmail: sub.userEmail,
+                plan: sub.plan,
+                billingCycle: "monthly",
+                amount: paidRupees,
+                status: "paid",
+                source: "subscription",
+                razorpayPaymentId: paymentEntity.id,
+                razorpaySubscriptionId: subEntity.id,
+              });
+
+              sub.paidCount += 1;
+              sub.status = subEntity.status;
+              sub.lastPaymentId = paymentEntity.id;
+              sub.currentStart = subEntity.current_start ? new Date(subEntity.current_start * 1000) : sub.currentStart;
+              sub.currentEnd   = subEntity.current_end   ? new Date(subEntity.current_end * 1000)   : sub.currentEnd;
+              sub.chargeAt     = subEntity.charge_at     ? new Date(subEntity.charge_at * 1000)      : sub.chargeAt;
+              await sub.save();
+
+              if (isFullCharge) {
+                const planExpiry = sub.currentEnd || new Date(Date.now() + 32 * 24 * 60 * 60 * 1000);
+                await User.updateOne(
+                  { email: sub.userEmail },
+                  {
+                    $set: {
+                      plan: sub.plan,
+                      lastPaidPlan: sub.plan,
+                      billingCycle: "monthly",
+                      planExpiresAt: planExpiry,
+                      subscriptionStatus: subEntity.status,
+                      razorpaySubscriptionId: subEntity.id,
+                      transcriptsUsedToday: 0, transcriptsUsedMonth: 0,
+                      clipsUsedToday: 0, clipsUsedMonth: 0,
+                    },
+                  }
+                );
+              } else {
+                // ₹1 intro charge — unlock the plan for 1 day only; the real
+                // charge tomorrow is what extends it properly.
+                await User.updateOne(
+                  { email: sub.userEmail },
+                  {
+                    $set: {
+                      plan: sub.plan,
+                      billingCycle: "monthly",
+                      planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                      subscriptionStatus: subEntity.status,
+                      razorpaySubscriptionId: subEntity.id,
+                    },
+                  }
+                );
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (["subscription.cancelled", "subscription.halted", "subscription.completed", "subscription.expired"].includes(event)) {
+      const subEntity = payload.subscription?.entity;
+      if (subEntity) {
+        const sub = await Subscription.findOneAndUpdate(
+          { razorpaySubscriptionId: subEntity.id },
+          { $set: { status: subEntity.status } }
+        );
+        if (sub) {
+          await User.updateOne(
+            { email: sub.userEmail },
+            { $set: { subscriptionStatus: subEntity.status, plan: "free", billingCycle: null } }
+          );
+        }
+      }
+    }
+
+    if (event === "payment.failed") {
+      const paymentEntity = payload.payment?.entity;
+      console.error("[/webhooks/razorpay] payment.failed:", paymentEntity?.id, paymentEntity?.error_description);
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("[/webhooks/razorpay] handler error:", err);
+    if (!res.headersSent) res.status(500).json({ success: false });
   }
 });
 
@@ -1360,7 +1750,8 @@ app.get("/user-plan", requireAuth, async (req, res) => {
       referralsCount: user.referralsCount || 0,
     });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    console.error("[/user-plan] failed:", error);
+    res.status(500).json({ success: false, error: "Couldn't load your plan details right now. Please try again." });
   }
 });
 
@@ -1368,7 +1759,7 @@ app.get("/history", requireAuth, async (req, res) => {
   try {
     const reels = await Reel.find({ userEmail: req.authEmail }).sort({ createdAt: -1 });
     res.json({ success: true, data: reels });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+  } catch (error) { console.error("[/history] failed:", error); res.status(500).json({ success: false, error: "Couldn't load your history right now. Please try again." }); }
 });
 
 function logAdminAction(action, targetEmail, details, req) {
@@ -1436,7 +1827,7 @@ app.get("/admin/stats", adminAuth, async (req, res) => {
     planCounts.forEach(p => { if (byPlan[p._id] !== undefined) byPlan[p._id] = p.count; });
 
     res.json({ success: true, totalUsers, newToday, newThisWeek, byPlan });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+  } catch (error) { console.error("[/admin/stats] failed:", error); res.status(500).json({ success: false, error: "Couldn't load stats right now." }); }
 });
 
 app.get("/admin/revenue", adminAuth, async (req, res) => {
@@ -1468,7 +1859,7 @@ app.get("/admin/revenue", adminAuth, async (req, res) => {
       todayRevenue: todayAgg[0]?.sum || 0,
       paidToFreeConversions,
     });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+  } catch (error) { console.error("[/admin/revenue] failed:", error); res.status(500).json({ success: false, error: "Couldn't load revenue data right now." }); }
 });
 
 app.get("/admin/logs", adminAuth, async (req, res) => {
@@ -1482,7 +1873,7 @@ app.get("/admin/logs", adminAuth, async (req, res) => {
     ]);
 
     res.json({ success: true, data: logs, page, totalPages: Math.max(1, Math.ceil(total / limit)), total });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+  } catch (error) { console.error("[/admin/logs] failed:", error); res.status(500).json({ success: false, error: "Couldn't load audit logs right now." }); }
 });
 
 app.get("/admin/users", adminAuth, async (req, res) => {
@@ -1517,7 +1908,7 @@ app.get("/admin/users", adminAuth, async (req, res) => {
     }));
 
     res.json({ success: true, data, page, totalPages: Math.max(1, Math.ceil(total / limit)), total });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+  } catch (error) { console.error("[/admin/users] failed:", error); res.status(500).json({ success: false, error: "Couldn't load users right now." }); }
 });
 
 app.post("/admin/add-credit", adminAuth, async (req, res) => {
@@ -1528,7 +1919,7 @@ app.post("/admin/add-credit", adminAuth, async (req, res) => {
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
     logAdminAction("add-credit", email, `Added ${credits} credits (new total: ${user.credits})`, req);
     res.json({ success: true, message: `${credits} credits added successfully.`, user });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+  } catch (error) { console.error("[/admin/add-credit] failed:", error); res.status(500).json({ success: false, error: "Couldn't add credit right now." }); }
 });
 
 app.post("/admin/set-plan", adminAuth, async (req, res) => {
@@ -1571,7 +1962,7 @@ app.post("/admin/set-plan", adminAuth, async (req, res) => {
     if (!user) return res.status(404).json({ success: false, error: "User not found" });
     logAdminAction("set-plan", email, `Set plan to ${plan}${planExpiry ? ` (expires ${planExpiry.toISOString().slice(0,10)})` : ""}`, req);
     res.json({ success: true, message: `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan assigned successfully.`, user });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+  } catch (error) { console.error("[/admin/set-plan] failed:", error); res.status(500).json({ success: false, error: "Couldn't update the plan right now." }); }
 });
 
 
@@ -1601,7 +1992,7 @@ app.post("/admin/credit", adminAuth, async (req, res) => {
     if (!user) return res.status(404).json({ success: false, error: ["subtract","deduct"].includes(action) ? "User not found or not enough credits." : "User not found." });
     logAdminAction("credit-" + action, email, `${action} ${amount || 0} credits (new total: ${user.credits})`, req);
     res.json({ success: true, message: action === "reset" ? "Credits reset successfully" : `Credits ${action === "add" ? "added" : action === "set" ? "set" : action === "reset" ? "reset" : "subtracted"} successfully`, user });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+  } catch (error) { console.error("[/admin/credit] failed:", error); res.status(500).json({ success: false, error: "Couldn't update credit right now." }); }
 });
 
 app.post("/admin/user-control", adminAuth, async (req, res) => {
@@ -1636,7 +2027,7 @@ app.post("/admin/user-control", adminAuth, async (req, res) => {
     if (!user) return res.status(404).json({ success: false, error: "User not found." });
     logAdminAction(action + "-user", email, `User ${action}d`, req);
     res.json({ success: true, message: action === "suspend" ? "User suspended." : "User unsuspended.", user });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+  } catch (error) { console.error("[/admin/user-control] failed:", error); res.status(500).json({ success: false, error: "Couldn't update this user right now." }); }
 });
 
 app.get("/admin/users/:email/details", adminAuth, async (req, res) => {
@@ -1650,7 +2041,7 @@ app.get("/admin/users/:email/details", adminAuth, async (req, res) => {
     ]);
     if (!user) return res.status(404).json({ success: false, error: "User not found." });
     res.json({ success: true, details: { lastActive: user.lastActiveAt, totalTranscriptions, totalClipJobs, creditsUsedTotal: user.creditsUsedTotal || 0 } });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+  } catch (error) { console.error("[/admin/users/:email/details] failed:", error); res.status(500).json({ success: false, error: "Couldn't load user details right now." }); }
 });
 
 app.get("/admin/referrals", adminAuth, async (req, res) => {
@@ -1660,7 +2051,7 @@ app.get("/admin/referrals", adminAuth, async (req, res) => {
     const filter = allowed.includes(status) ? { status } : {};
     const data = await Referral.find(filter).sort({ createdAt: -1 }).limit(100).lean();
     res.json({ success: true, data });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+  } catch (error) { console.error("[/admin/referrals] failed:", error); res.status(500).json({ success: false, error: "Couldn't load referrals right now." }); }
 });
 
 app.post("/admin/referrals/:id/review", adminAuth, async (req, res) => {
@@ -1698,7 +2089,7 @@ app.post("/admin/referrals/:id/review", adminAuth, async (req, res) => {
     await User.findOneAndUpdate({ email: credited.referrerEmail }, { $inc: { referralCuts: 1, referralsCount: 1 } });
     logAdminAction("approve-referral", credited.referredEmail, `Referral from ${credited.referrerEmail} approved`, req);
     res.json({ success: true, message: "Referral approved and one clip reward credited." });
-  } catch (error) { res.status(500).json({ success: false, error: error.message }); }
+  } catch (error) { console.error("[/admin/referrals/:id/review] failed:", error); res.status(500).json({ success: false, error: "Couldn't review this referral right now." }); }
 });
 
 app.get("/admin/payments", adminAuth, async (req, res) => {
@@ -1715,7 +2106,7 @@ app.get("/admin/payments", adminAuth, async (req, res) => {
       Payment.countDocuments(filter)
     ]);
     res.json({success:true,data,page,totalPages:Math.max(1,Math.ceil(total/limit)),total});
-  } catch(e){ res.status(500).json({success:false,error:e.message}); }
+  } catch(e){ console.error("[/admin/payments] failed:", e); res.status(500).json({success:false,error:"Couldn't load payments right now."}); }
 });
 
 app.get("/admin/usage", adminAuth, async (req,res)=>{
@@ -1735,14 +2126,14 @@ app.get("/admin/usage", adminAuth, async (req,res)=>{
       daily.push({label:d.toLocaleDateString("en-IN",{weekday:"short"}),total:r+c});
     }
     res.json({success:true,totalClipJobs,todayProcessed,transcriptsThisMonth,clipsThisMonth,mostUsedPlatform:platformAgg[0]?._id||"Unknown",sevenDayProcessed:daily.reduce((a,x)=>a+x.total,0),daily});
-  } catch(e){res.status(500).json({success:false,error:e.message});}
+  } catch(e){ console.error("[/admin/usage] failed:", e); res.status(500).json({success:false,error:"Couldn't load usage data right now."}); }
 });
 
 app.get("/admin/coupons", adminAuth, async (req,res)=>{
   try {
     const rows=await Coupon.find().sort({createdAt:-1}).lean();
     res.json({success:true,data:rows.map(normalizeCoupon)});
-  } catch(e){res.status(500).json({success:false,error:e.message});}
+  } catch(e){ console.error("[/admin/coupons] failed:", e); res.status(500).json({success:false,error:"Couldn't load coupons right now."}); }
 });
 
 app.post("/admin/coupons", adminAuth, async (req,res)=>{
@@ -1757,7 +2148,7 @@ app.post("/admin/coupons", adminAuth, async (req,res)=>{
     const coupon=await Coupon.create({code:clean,discountPercent:pct,appliesToPlans:[plan],expiresAt:new Date(expiresAt),maxUses:Math.max(0,parseInt(maxUses)||0)});
     logAdminAction("create-coupon",null,`Created ${clean}: ${pct}% off ${plan}`,req);
     res.json({success:true,coupon:normalizeCoupon(coupon)});
-  } catch(e){res.status(400).json({success:false,error:e.code===11000?"Coupon code already exists.":e.message});}
+  } catch(e){ console.error("[/admin/coupons create] failed:", e); res.status(400).json({success:false,error:e.code===11000?"Coupon code already exists.":"Couldn't create this coupon right now."}); }
 });
 
 app.post("/admin/coupons/toggle", adminAuth, async (req,res)=>{
@@ -1769,12 +2160,12 @@ app.post("/admin/coupons/toggle", adminAuth, async (req,res)=>{
     await coupon.save();
     logAdminAction("toggle-coupon",null,`${code} set to ${coupon.active?"active":"inactive"}`,req);
     res.json({success:true,coupon:normalizeCoupon(coupon)});
-  } catch(e){res.status(500).json({success:false,error:e.message});}
+  } catch(e){ console.error("[/admin/coupons/toggle] failed:", e); res.status(500).json({success:false,error:"Couldn't update this coupon right now."}); }
 });
 
 app.get("/admin/coupon-redemptions", adminAuth, async (req,res)=>{
   try { res.json({success:true,data:await CouponRedemption.find().sort({createdAt:-1}).limit(200).lean()}); }
-  catch(e){res.status(500).json({success:false,error:e.message});}
+  catch(e){ console.error("[/admin/coupon-redemptions] failed:", e); res.status(500).json({success:false,error:"Couldn't load redemptions right now."}); }
 });
 
 function buildOfferUrl(plan,billing,couponCode) {
@@ -1804,81 +2195,3 @@ const EMAIL_TEMPLATES = {
     subject: "🚀 New from ReelScribe",
     html: ({url}) => `<div style="background:#f5f3ff;padding:32px;font-family:Arial;text-align:center"><div style="max-width:600px;margin:auto;background:#fff;border-radius:18px;padding:42px 28px"><div style="font-size:26px;font-weight:800">Reel<span style="color:#8b5cf6">Scribe</span></div><h1 style="font-size:30px;margin:22px 0 10px">Something new is here 🚀</h1><p style="color:#696276;font-size:16px;line-height:1.6">Check out the latest ReelScribe improvements and keep creating.</p><a href="${url}" style="display:inline-block;margin-top:20px;padding:15px 30px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:10px;font-weight:700">CHECK IT OUT →</a></div></div>`
   }
-};
-function baseUrlSafe(){ return process.env.PUBLIC_SITE_URL || "https://reelscribe.site"; }
-
-app.post("/admin/marketing/preview", adminAuth, async (req,res)=>{
-  try {
-    const { templateId="discount", plan="pro", billing="monthly", couponCode, percent } = req.body;
-    if(!PLAN_PRICING[plan]) return res.status(400).json({success:false,error:"Invalid plan."});
-    const tpl=EMAIL_TEMPLATES[templateId] || EMAIL_TEMPLATES.discount;
-    let coupon=null;
-    if(couponCode) coupon=await Coupon.findOne({code:String(couponCode).trim().toUpperCase()});
-    const pct=Number(percent || coupon?.discountPercent || 0);
-    const planPrice=PLAN_PRICING[plan][billing==="yearly"?"y":"m"];
-    const originalPrice=billing==="yearly" ? planPrice*12 : planPrice;
-    const finalPrice=Math.max(1,Math.round((originalPrice-(originalPrice*pct/100))*100)/100);
-    const url=buildOfferUrl(plan,billing,coupon?.code);
-    const html=tpl.html({percent:pct,planLabel:plan.charAt(0).toUpperCase()+plan.slice(1),originalPrice,finalPrice,url});
-    const subject=tpl.subject.replace("{{percent}}",pct).replace("{{planLabel}}",plan.charAt(0).toUpperCase()+plan.slice(1));
-    res.json({success:true,subject,html,url,originalPrice,finalPrice,coupon:normalizeCoupon(coupon)});
-  } catch(e){res.status(500).json({success:false,error:e.message});}
-});
-
-app.post("/admin/marketing/send", adminAuth, async (req,res)=>{
-  try {
-    const { audience, targetEmail, templateId="discount", subject, html, plan="pro", billing="monthly", couponCode, percent } = req.body;
-    let users=[];
-    if(audience==="specific"){
-      if(!isValidEmail(targetEmail)) return res.status(400).json({success:false,error:"Valid target email required."});
-      const u=await User.findOne({email:targetEmail.toLowerCase()});
-      if(!u) return res.status(404).json({success:false,error:"User not found."});
-      users=[u];
-    } else {
-      const q={};
-      if(["free","starter","pro","agency"].includes(audience)) q.plan=audience;
-      if(audience==="expiring") q.planExpiresAt={$gte:new Date(),$lte:new Date(Date.now()+7*86400000)};
-      users=await User.find(q).limit(100).lean();
-    }
-    if(!users.length) return res.status(400).json({success:false,error:"No recipients found."});
-    const tpl=EMAIL_TEMPLATES[templateId] || EMAIL_TEMPLATES.discount;
-    let coupon=null;
-    if(couponCode) coupon=await Coupon.findOne({code:String(couponCode).trim().toUpperCase()});
-    const pct=Number(percent || coupon?.discountPercent || 0);
-    const planPrice=PLAN_PRICING[plan]?.[billing==="yearly"?"y":"m"] || 0;
-    const originalPrice=billing==="yearly"?planPrice*12:planPrice;
-    const finalPrice=Math.max(1,Math.round((originalPrice-(originalPrice*pct/100))*100)/100);
-    const url=buildOfferUrl(plan,billing,coupon?.code);
-    const renderedHtml=html || tpl.html({percent:pct,planLabel:plan.charAt(0).toUpperCase()+plan.slice(1),originalPrice,finalPrice,url});
-    const renderedSubject=subject || tpl.subject.replace("{{percent}}",pct).replace("{{planLabel}}",plan.charAt(0).toUpperCase()+plan.slice(1));
-    let sent=0, failed=0;
-    for(const u of users){
-      try{
-        await resend.emails.send({from:process.env.EMAIL_FROM||"ReelScribe <noreply@reelscribe.site>",to:u.email,subject:renderedSubject,html:renderedHtml});
-        sent++;
-      }catch(e){failed++;}
-    }
-    logAdminAction("marketing-email",audience==="specific"?targetEmail:null,`Template ${templateId}; sent ${sent}/${users.length}`,req);
-    res.json({success:true,attempted:users.length,sent,failed,capped:users.length>=100});
-  } catch(e){res.status(500).json({success:false,error:e.message});}
-});
-
-// Consistent upload errors (especially the 25 MB direct-upload limit).
-app.use((err, req, res, next) => {
-  if (err?.code === "LIMIT_FILE_SIZE") return res.status(413).json({ success: false, error: "File is too large. Direct uploads are limited to 25 MB." });
-  next(err);
-});
-
-app.get("/health", (req, res) => {
-  res.json({ ok: true, uptime: Math.floor(process.uptime()), time: new Date().toISOString() });
-});
-
-// Friendly pricing route used by marketing email CTA links.
-app.get("/pricing", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "pricing.html"));
-});
-
-app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Render server running on ${PORT}`));
