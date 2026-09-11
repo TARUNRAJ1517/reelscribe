@@ -38,39 +38,6 @@
   <span class="save-tag">SAVE 17%</span>
 </div>
 
-
-<section class="rs-intro-offer" aria-label="ReelScribe introductory subscription offer">
-  <div class="rs-offer-glow"></div>
-  <div class="rs-offer-top">
-    <div class="rs-live"><span></span> LIMITED INTRO OFFER</div>
-    <div class="rs-secure">AutoPay-ready flow</div>
-  </div>
-  <div class="rs-offer-grid">
-    <div>
-      <div class="rs-offer-kicker">Agency Pro Experience</div>
-      <h2><span>₹1</span> today. <em>1 day</em> of full access.</h2>
-      <p>Choose any monthly plan below. Pay ₹1 today, get 24-hour access, then the selected plan price is automatically charged from tomorrow.</p>
-      <div class="rs-offer-tags">
-        <span>24-hour access</span>
-        <span>Selected plan renews monthly</span>
-        <span>Cancel anytime</span>
-      </div>
-    </div>
-    <div class="rs-offer-action">
-      <div class="rs-price-mini"><small>Today</small><b>₹1</b><span>intro payment</span></div>
-      <button class="rs-intro-btn" type="button" onclick="document.querySelector('.plans')?.scrollIntoView({behavior:'smooth',block:'center'})">Choose a plan <span>→</span></button>
-      <small class="rs-disclaimer">Monthly checkout uses Razorpay AutoPay. Yearly plans remain one-time payments.</small>
-    </div>
-  </div>
-  <div class="rs-flow">
-    <div><b>01</b><span>Pay / authorize</span></div>
-    <i></i>
-    <div><b>02</b><span>24-hour access</span></div>
-    <i></i>
-    <div><b>03</b><span>Plan auto-renewal</span></div>
-  </div>
-</section>
-
 <div class="current-plan-banner" id="currentPlanBanner" style="display:none">
   <div class="cp-left"><span class="cp-dot"></span><div><div class="cp-label">Your current plan</div><div class="cp-plan" id="currentPlanName">Loading…</div></div></div>
   <div class="cp-expiry" id="currentPlanExpiry"></div>
@@ -195,26 +162,6 @@
   </div>
   <p class="foot-copy">© 2026 REELSCRIBE</p>
 </footer>
-
-
-<div class="rs-offer-modal" id="rsOfferModal" aria-hidden="true">
-  <div class="rs-modal-backdrop" onclick="closeIntroOffer()"></div>
-  <div class="rs-modal-card" role="dialog" aria-modal="true" aria-labelledby="rsModalTitle">
-    <button class="rs-modal-close" type="button" aria-label="Close" onclick="closeIntroOffer()">×</button>
-    <div class="rs-modal-orbit"></div>
-    <div class="rs-modal-step" id="rsModalStep">STEP 01 · INTRO OFFER</div>
-    <div class="rs-modal-icon" id="rsModalIcon">₹</div>
-    <h2 id="rsModalTitle">Start Agency for ₹1</h2>
-    <p id="rsModalText">Monthly plans use a ₹1 upfront authorization, 24-hour access, and automatic recurring billing from the next day.</p>
-    <div class="rs-modal-summary">
-      <div><span>Today</span><b>₹1</b></div>
-      <div><span>Access</span><b>1 day</b></div>
-      <div><span>After intro</span><b>Plan/mo</b></div>
-    </div>
-    <button class="rs-modal-cta" type="button" id="rsModalCta" onclick="advanceIntroOffer()">Continue →</button>
-    <small class="rs-modal-note">Select a monthly plan below to start the real Razorpay AutoPay checkout.</small>
-  </div>
-</div>
 
 <script src="/assets/js/pricing.js" defer></script>
 <script src="/assets/js/premium.js" defer></script>
