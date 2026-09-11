@@ -1408,6 +1408,110 @@ app.post("/create-subscription", subscriptionLimiter, requireAuth, async (req, r
   }
 });
 
+// Verify the Razorpay Subscription authentication transaction (the ₹1 upfront charge).
+// IMPORTANT: for a future-start subscription Razorpay may not send a webhook for this
+// authentication step, so the Checkout handler must verify it here and provision the
+// user's 24-hour intro access immediately.
+app.post("/verify-subscription", requireAuth, async (req, res) => {
+  try {
+    const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature } = req.body || {};
+    const email = req.authEmail;
+
+    if (
+      typeof razorpay_payment_id !== "string" ||
+      typeof razorpay_subscription_id !== "string" ||
+      typeof razorpay_signature !== "string"
+    ) {
+      return res.status(400).json({ success: false, error: "Subscription verification data is incomplete." });
+    }
+
+    const sub = await Subscription.findOne({
+      razorpaySubscriptionId: razorpay_subscription_id,
+      userEmail: email,
+    });
+    if (!sub) {
+      return res.status(404).json({ success: false, error: "Subscription not found for this account." });
+    }
+
+    // Razorpay's documented Subscription signature is HMAC-SHA256 of
+    // payment_id + "|" + subscription_id using the API secret.
+    const generated = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpay_payment_id}|${razorpay_subscription_id}`)
+      .digest("hex");
+
+    const expectedBuf = Buffer.from(generated, "hex");
+    const receivedBuf = Buffer.from(razorpay_signature, "hex");
+    if (
+      expectedBuf.length !== receivedBuf.length ||
+      !crypto.timingSafeEqual(expectedBuf, receivedBuf)
+    ) {
+      return res.status(400).json({ success: false, error: "Subscription verification failed." });
+    }
+
+    // Confirm the ₹1 authentication/upfront payment from Razorpay's backend.
+    const payment = await razorpay.payments.fetch(razorpay_payment_id);
+    const paidRupees = Number(payment.amount || 0) / 100;
+    if (paidRupees !== TRIAL_CHARGE_RUPEES || payment.currency !== "INR") {
+      return res.status(400).json({ success: false, error: "Unexpected subscription authorization amount." });
+    }
+
+    // Idempotent: the Checkout callback can be retried safely.
+    const existingPayment = await Payment.findOne({ razorpayPaymentId: razorpay_payment_id });
+    if (!existingPayment) {
+      await Payment.create({
+        userEmail: email,
+        plan: sub.plan,
+        billingCycle: "monthly",
+        amount: TRIAL_CHARGE_RUPEES,
+        status: "paid",
+        source: "subscription",
+        razorpayPaymentId: razorpay_payment_id,
+        razorpaySubscriptionId: razorpay_subscription_id,
+      });
+    }
+
+    const subscription = await razorpay.subscriptions.fetch(razorpay_subscription_id);
+    sub.status = subscription.status || "authenticated";
+    sub.lastPaymentId = razorpay_payment_id;
+    sub.currentStart = subscription.current_start ? new Date(subscription.current_start * 1000) : null;
+    sub.currentEnd = subscription.current_end ? new Date(subscription.current_end * 1000) : null;
+    sub.chargeAt = subscription.charge_at ? new Date(subscription.charge_at * 1000) : null;
+    await sub.save();
+
+    // The ₹1 authorization gives exactly 24 hours of access. The recurring plan
+    // itself starts tomorrow and Razorpay handles that first ₹149/₹299/₹599 debit.
+    const introExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await User.updateOne(
+      { email },
+      {
+        $set: {
+          plan: sub.plan,
+          lastPaidPlan: sub.plan,
+          billingCycle: "monthly",
+          planExpiresAt: introExpiresAt,
+          subscriptionStatus: sub.status,
+          razorpaySubscriptionId: sub.razorpaySubscriptionId,
+          transcriptsUsedToday: 0,
+          transcriptsUsedMonth: 0,
+          clipsUsedToday: 0,
+          clipsUsedMonth: 0,
+        },
+      }
+    );
+
+    res.json({
+      success: true,
+      plan: sub.plan,
+      planExpiresAt: introExpiresAt,
+      message: "₹1 authorization successful. Your 24-hour access is active and AutoPay is scheduled for tomorrow.",
+    });
+  } catch (err) {
+    console.error("[/verify-subscription] failed:", err);
+    res.status(500).json({ success: false, error: "Could not verify the subscription. Please contact support." });
+  }
+});
+
 app.post("/cancel-subscription", requireAuth, async (req, res) => {
   try {
     const email = req.authEmail;
@@ -1490,11 +1594,12 @@ app.post("/webhooks/razorpay", webhookLimiter, async (req, res) => {
           // Idempotency: the same Razorpay payment must never be applied twice.
           const already = await Payment.findOne({ razorpayPaymentId: paymentEntity.id });
           if (!already) {
-            const paidRupees   = Number(paymentEntity.amount || 0) / 100;
-            const isTrialCharge = sub.paidCount === 0 && Math.abs(paidRupees - sub.trialChargeAmount) < 0.01;
-            const isFullCharge  = Math.abs(paidRupees - sub.fullAmount) < 0.01;
+            const paidRupees  = Number(paymentEntity.amount || 0) / 100;
+            // subscription.charged is for the recurring billing cycle. The ₹1
+            // future-start authentication is verified by /verify-subscription.
+            const isFullCharge = Math.abs(paidRupees - sub.fullAmount) < 0.01;
 
-            if (!isTrialCharge && !isFullCharge) {
+            if (!isFullCharge) {
               // Amount doesn't match what this plan should ever charge — do not trust it blindly.
               console.error(`[/webhooks/razorpay] unexpected charge ₹${paidRupees} for subscription ${subEntity.id} (plan ${sub.plan})`);
             } else {
@@ -1531,21 +1636,6 @@ app.post("/webhooks/razorpay", webhookLimiter, async (req, res) => {
                       razorpaySubscriptionId: subEntity.id,
                       transcriptsUsedToday: 0, transcriptsUsedMonth: 0,
                       clipsUsedToday: 0, clipsUsedMonth: 0,
-                    },
-                  }
-                );
-              } else {
-                // ₹1 intro charge — unlock the plan for 1 day only; the real
-                // charge tomorrow is what extends it properly.
-                await User.updateOne(
-                  { email: sub.userEmail },
-                  {
-                    $set: {
-                      plan: sub.plan,
-                      billingCycle: "monthly",
-                      planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-                      subscriptionStatus: subEntity.status,
-                      razorpaySubscriptionId: subEntity.id,
                     },
                   }
                 );
@@ -2195,3 +2285,91 @@ const EMAIL_TEMPLATES = {
     subject: "🚀 New from ReelScribe",
     html: ({url}) => `<div style="background:#f5f3ff;padding:32px;font-family:Arial;text-align:center"><div style="max-width:600px;margin:auto;background:#fff;border-radius:18px;padding:42px 28px"><div style="font-size:26px;font-weight:800">Reel<span style="color:#8b5cf6">Scribe</span></div><h1 style="font-size:30px;margin:22px 0 10px">Something new is here 🚀</h1><p style="color:#696276;font-size:16px;line-height:1.6">Check out the latest ReelScribe improvements and keep creating.</p><a href="${url}" style="display:inline-block;margin-top:20px;padding:15px 30px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:10px;font-weight:700">CHECK IT OUT →</a></div></div>`
   }
+};
+function baseUrlSafe(){ return process.env.PUBLIC_SITE_URL || "https://reelscribe.site"; }
+
+app.post("/admin/marketing/preview", adminAuth, async (req,res)=>{
+  try {
+    const { templateId="discount", plan="pro", billing="monthly", couponCode, percent } = req.body;
+    if(!PLAN_PRICING[plan]) return res.status(400).json({success:false,error:"Invalid plan."});
+    const tpl=EMAIL_TEMPLATES[templateId] || EMAIL_TEMPLATES.discount;
+    let coupon=null;
+    if(couponCode) coupon=await Coupon.findOne({code:String(couponCode).trim().toUpperCase()});
+    const pct=Number(percent || coupon?.discountPercent || 0);
+    const planPrice=PLAN_PRICING[plan][billing==="yearly"?"y":"m"];
+    const originalPrice=billing==="yearly" ? planPrice*12 : planPrice;
+    const finalPrice=Math.max(1,Math.round((originalPrice-(originalPrice*pct/100))*100)/100);
+    const url=buildOfferUrl(plan,billing,coupon?.code);
+    const html=tpl.html({percent:pct,planLabel:plan.charAt(0).toUpperCase()+plan.slice(1),originalPrice,finalPrice,url});
+    const subject=tpl.subject.replace("{{percent}}",pct).replace("{{planLabel}}",plan.charAt(0).toUpperCase()+plan.slice(1));
+    res.json({success:true,subject,html,url,originalPrice,finalPrice,coupon:normalizeCoupon(coupon)});
+  } catch(e){ console.error("[/admin/marketing/preview] failed:", e); res.status(500).json({success:false,error:"Couldn't generate the preview right now."}); }
+});
+
+app.post("/admin/marketing/send", adminAuth, async (req,res)=>{
+  try {
+    const { audience, targetEmail, templateId="discount", subject, html, plan="pro", billing="monthly", couponCode, percent } = req.body;
+    let users=[];
+    if(audience==="specific"){
+      if(!isValidEmail(targetEmail)) return res.status(400).json({success:false,error:"Valid target email required."});
+      const u=await User.findOne({email:targetEmail.toLowerCase()});
+      if(!u) return res.status(404).json({success:false,error:"User not found."});
+      users=[u];
+    } else {
+      const q={};
+      if(["free","starter","pro","agency"].includes(audience)) q.plan=audience;
+      if(audience==="expiring") q.planExpiresAt={$gte:new Date(),$lte:new Date(Date.now()+7*86400000)};
+      users=await User.find(q).limit(100).lean();
+    }
+    if(!users.length) return res.status(400).json({success:false,error:"No recipients found."});
+    const tpl=EMAIL_TEMPLATES[templateId] || EMAIL_TEMPLATES.discount;
+    let coupon=null;
+    if(couponCode) coupon=await Coupon.findOne({code:String(couponCode).trim().toUpperCase()});
+    const pct=Number(percent || coupon?.discountPercent || 0);
+    const planPrice=PLAN_PRICING[plan]?.[billing==="yearly"?"y":"m"] || 0;
+    const originalPrice=billing==="yearly"?planPrice*12:planPrice;
+    const finalPrice=Math.max(1,Math.round((originalPrice-(originalPrice*pct/100))*100)/100);
+    const url=buildOfferUrl(plan,billing,coupon?.code);
+    const renderedHtml=html || tpl.html({percent:pct,planLabel:plan.charAt(0).toUpperCase()+plan.slice(1),originalPrice,finalPrice,url});
+    const renderedSubject=subject || tpl.subject.replace("{{percent}}",pct).replace("{{planLabel}}",plan.charAt(0).toUpperCase()+plan.slice(1));
+    let sent=0, failed=0;
+    for(const u of users){
+      try{
+        await resend.emails.send({from:process.env.EMAIL_FROM||"ReelScribe <noreply@reelscribe.site>",to:u.email,subject:renderedSubject,html:renderedHtml});
+        sent++;
+      }catch(e){failed++;}
+    }
+    logAdminAction("marketing-email",audience==="specific"?targetEmail:null,`Template ${templateId}; sent ${sent}/${users.length}`,req);
+    res.json({success:true,attempted:users.length,sent,failed,capped:users.length>=100});
+  } catch(e){ console.error("[/admin/marketing/send] failed:", e); res.status(500).json({success:false,error:"Couldn't send the campaign right now."}); }
+});
+
+// Consistent upload errors (especially the 25 MB direct-upload limit and file-type rejection).
+app.use((err, req, res, next) => {
+  if (err?.code === "LIMIT_FILE_SIZE") return res.status(413).json({ success: false, error: "File is too large. Direct uploads are limited to 25 MB." });
+  if (err?.message === "UNSUPPORTED_FILE_TYPE") return res.status(415).json({ success: false, error: "Unsupported file type. Please upload a video file (mp4, mov, webm, mkv, avi, 3gp)." });
+  next(err);
+});
+
+app.get("/health", (req, res) => {
+  res.json({ ok: true, uptime: Math.floor(process.uptime()), time: new Date().toISOString() });
+});
+
+// Friendly pricing route used by marketing email CTA links.
+app.get("/pricing", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "pricing.html"));
+});
+
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+
+// ── Final catch-all error handler ──────────────────────────────────────────
+// Nothing internal (DB errors, stack traces, third-party API messages) ever
+// reaches the client from here on. Full detail is logged server-side only.
+app.use((err, req, res, next) => {
+  console.error(`[unhandled] ${req.method} ${req.originalUrl} ::`, err);
+  if (res.headersSent) return next(err);
+  res.status(err?.status || 500).json({ success: false, error: "Something went wrong on our end. Please try again in a moment." });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Render server running on ${PORT}`));
