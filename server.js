@@ -1740,6 +1740,9 @@ app.get("/user-plan", requireAuth, async (req, res) => {
       rawPlan: user.plan || "free",
       planExpired: (user.plan && user.plan !== "free") && plan === "free",
       planExpiresAt: user.planExpiresAt,
+      billingCycle: user.billingCycle || null,
+      subscriptionStatus: user.subscriptionStatus || null,
+      hasActiveSubscription: ["created", "authenticated", "active", "pending"].includes(user.subscriptionStatus),
       usage: {
         transcriptDay,   transcriptDayLimit:   limits.transcriptDay,
         transcriptMonth, transcriptMonthLimit: limits.transcriptMonth,
@@ -2195,3 +2198,91 @@ const EMAIL_TEMPLATES = {
     subject: "🚀 New from ReelScribe",
     html: ({url}) => `<div style="background:#f5f3ff;padding:32px;font-family:Arial;text-align:center"><div style="max-width:600px;margin:auto;background:#fff;border-radius:18px;padding:42px 28px"><div style="font-size:26px;font-weight:800">Reel<span style="color:#8b5cf6">Scribe</span></div><h1 style="font-size:30px;margin:22px 0 10px">Something new is here 🚀</h1><p style="color:#696276;font-size:16px;line-height:1.6">Check out the latest ReelScribe improvements and keep creating.</p><a href="${url}" style="display:inline-block;margin-top:20px;padding:15px 30px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:10px;font-weight:700">CHECK IT OUT →</a></div></div>`
   }
+};
+function baseUrlSafe(){ return process.env.PUBLIC_SITE_URL || "https://reelscribe.site"; }
+
+app.post("/admin/marketing/preview", adminAuth, async (req,res)=>{
+  try {
+    const { templateId="discount", plan="pro", billing="monthly", couponCode, percent } = req.body;
+    if(!PLAN_PRICING[plan]) return res.status(400).json({success:false,error:"Invalid plan."});
+    const tpl=EMAIL_TEMPLATES[templateId] || EMAIL_TEMPLATES.discount;
+    let coupon=null;
+    if(couponCode) coupon=await Coupon.findOne({code:String(couponCode).trim().toUpperCase()});
+    const pct=Number(percent || coupon?.discountPercent || 0);
+    const planPrice=PLAN_PRICING[plan][billing==="yearly"?"y":"m"];
+    const originalPrice=billing==="yearly" ? planPrice*12 : planPrice;
+    const finalPrice=Math.max(1,Math.round((originalPrice-(originalPrice*pct/100))*100)/100);
+    const url=buildOfferUrl(plan,billing,coupon?.code);
+    const html=tpl.html({percent:pct,planLabel:plan.charAt(0).toUpperCase()+plan.slice(1),originalPrice,finalPrice,url});
+    const subject=tpl.subject.replace("{{percent}}",pct).replace("{{planLabel}}",plan.charAt(0).toUpperCase()+plan.slice(1));
+    res.json({success:true,subject,html,url,originalPrice,finalPrice,coupon:normalizeCoupon(coupon)});
+  } catch(e){ console.error("[/admin/marketing/preview] failed:", e); res.status(500).json({success:false,error:"Couldn't generate the preview right now."}); }
+});
+
+app.post("/admin/marketing/send", adminAuth, async (req,res)=>{
+  try {
+    const { audience, targetEmail, templateId="discount", subject, html, plan="pro", billing="monthly", couponCode, percent } = req.body;
+    let users=[];
+    if(audience==="specific"){
+      if(!isValidEmail(targetEmail)) return res.status(400).json({success:false,error:"Valid target email required."});
+      const u=await User.findOne({email:targetEmail.toLowerCase()});
+      if(!u) return res.status(404).json({success:false,error:"User not found."});
+      users=[u];
+    } else {
+      const q={};
+      if(["free","starter","pro","agency"].includes(audience)) q.plan=audience;
+      if(audience==="expiring") q.planExpiresAt={$gte:new Date(),$lte:new Date(Date.now()+7*86400000)};
+      users=await User.find(q).limit(100).lean();
+    }
+    if(!users.length) return res.status(400).json({success:false,error:"No recipients found."});
+    const tpl=EMAIL_TEMPLATES[templateId] || EMAIL_TEMPLATES.discount;
+    let coupon=null;
+    if(couponCode) coupon=await Coupon.findOne({code:String(couponCode).trim().toUpperCase()});
+    const pct=Number(percent || coupon?.discountPercent || 0);
+    const planPrice=PLAN_PRICING[plan]?.[billing==="yearly"?"y":"m"] || 0;
+    const originalPrice=billing==="yearly"?planPrice*12:planPrice;
+    const finalPrice=Math.max(1,Math.round((originalPrice-(originalPrice*pct/100))*100)/100);
+    const url=buildOfferUrl(plan,billing,coupon?.code);
+    const renderedHtml=html || tpl.html({percent:pct,planLabel:plan.charAt(0).toUpperCase()+plan.slice(1),originalPrice,finalPrice,url});
+    const renderedSubject=subject || tpl.subject.replace("{{percent}}",pct).replace("{{planLabel}}",plan.charAt(0).toUpperCase()+plan.slice(1));
+    let sent=0, failed=0;
+    for(const u of users){
+      try{
+        await resend.emails.send({from:process.env.EMAIL_FROM||"ReelScribe <noreply@reelscribe.site>",to:u.email,subject:renderedSubject,html:renderedHtml});
+        sent++;
+      }catch(e){failed++;}
+    }
+    logAdminAction("marketing-email",audience==="specific"?targetEmail:null,`Template ${templateId}; sent ${sent}/${users.length}`,req);
+    res.json({success:true,attempted:users.length,sent,failed,capped:users.length>=100});
+  } catch(e){ console.error("[/admin/marketing/send] failed:", e); res.status(500).json({success:false,error:"Couldn't send the campaign right now."}); }
+});
+
+// Consistent upload errors (especially the 25 MB direct-upload limit and file-type rejection).
+app.use((err, req, res, next) => {
+  if (err?.code === "LIMIT_FILE_SIZE") return res.status(413).json({ success: false, error: "File is too large. Direct uploads are limited to 25 MB." });
+  if (err?.message === "UNSUPPORTED_FILE_TYPE") return res.status(415).json({ success: false, error: "Unsupported file type. Please upload a video file (mp4, mov, webm, mkv, avi, 3gp)." });
+  next(err);
+});
+
+app.get("/health", (req, res) => {
+  res.json({ ok: true, uptime: Math.floor(process.uptime()), time: new Date().toISOString() });
+});
+
+// Friendly pricing route used by marketing email CTA links.
+app.get("/pricing", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "pricing.html"));
+});
+
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+
+// ── Final catch-all error handler ──────────────────────────────────────────
+// Nothing internal (DB errors, stack traces, third-party API messages) ever
+// reaches the client from here on. Full detail is logged server-side only.
+app.use((err, req, res, next) => {
+  console.error(`[unhandled] ${req.method} ${req.originalUrl} ::`, err);
+  if (res.headersSent) return next(err);
+  res.status(err?.status || 500).json({ success: false, error: "Something went wrong on our end. Please try again in a moment." });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Render server running on ${PORT}`));
