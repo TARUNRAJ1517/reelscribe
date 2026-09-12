@@ -35,4 +35,7 @@
 </main><div id="toast" class="toast"></div>
 <script src="/assets/js/referral.js" defer></script>
 <script src="/assets/js/premium.js" defer></script>
+<script>
+(()=>{const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;if(reduce){document.documentElement.classList.add('reduce-motion');return;}const sels='.stat-cell,.step,.plan-card,.testi-card,.feat-card,.qa-card,.usecase-card,.blog-card,.panel,.tc-head,.tc-body,.log-card,.channel,.spec,.clause,.reward,.card,.form-box,.cp-panel,.cp-toggle-card,.cp-preview,.slate';document.querySelectorAll(sels).forEach((el,i)=>{el.classList.add('reveal');el.style.transitionDelay=Math.min(i*35,280)+'ms'});const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.08});document.querySelectorAll('.reveal').forEach(e=>io.observe(e));document.querySelectorAll('.plan-card,.demo-video-box,.cp-preview').forEach(el=>{el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;el.style.transform=`perspective(900px) rotateX(${-y*2}deg) rotateY(${x*3}deg) translateY(-4px)`});el.addEventListener('pointerleave',()=>el.style.transform='')});})();
+</script>
 </body></html>
