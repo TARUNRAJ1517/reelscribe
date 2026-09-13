@@ -45,3 +45,6 @@ const ClipJobSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("ClipJob", ClipJobSchema);
+
+// Fast per-user clip history queries.
+ClipJobSchema.index({ userEmail: 1, createdAt: -1 });

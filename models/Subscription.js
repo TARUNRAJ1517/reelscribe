@@ -15,7 +15,7 @@ const SubscriptionSchema = new mongoose.Schema({
     index: true,
   },
 
-  trialChargeAmount: { type: Number, default: 0, min: 0 },   // the ₹1 (in rupees) intro charge
+  trialChargeAmount: { type: Number, default: 0, min: 0 },   // the ₹1 (in rupees) authorisation/upfront charge
   fullAmount:         { type: Number, required: true, min: 0 }, // real recurring amount, e.g. 299
   currentStart: { type: Date, default: null },
   currentEnd:   { type: Date, default: null },
@@ -29,3 +29,6 @@ const SubscriptionSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.models.Subscription || mongoose.model("Subscription", SubscriptionSchema);
+
+SubscriptionSchema.index({ userEmail: 1, createdAt: -1 });
+SubscriptionSchema.index({ razorpaySubscriptionId: 1, status: 1 });

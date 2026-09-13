@@ -29,9 +29,8 @@ const UserSchema = new mongoose.Schema({
     enum: ["created", "authenticated", "active", "pending", "halted", "cancelled", "completed", "expired", null],
     default: null,
   },
-  // Set true whenever autopay cancellation/failure downgrades the user to
-  // free — the frontend shows a one-time "AutoPay Cancelled" popup on the
-  // next page they load, then clears this flag.
+  // Persistent state shown across user pages after AutoPay cancellation.
+  // Cleared only when the user successfully starts a new paid subscription.
   autopayCancelledNotice: { type: Boolean, default: false },
 
   isSuspended: { type: Boolean, default: false, index: true },

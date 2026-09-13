@@ -20,3 +20,6 @@ const PaymentSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.models.Payment || mongoose.model("Payment", PaymentSchema);
+
+PaymentSchema.index({ userEmail: 1, createdAt: -1 });
+PaymentSchema.index({ razorpaySubscriptionId: 1, createdAt: -1 });
