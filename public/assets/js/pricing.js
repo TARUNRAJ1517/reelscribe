@@ -19,14 +19,15 @@ function toggleBilling() {
 }
 
 const ctaLabels = {
-  starter: { m: 'Claim ₹1 offer', y: 'Get starter' },
-  pro:     { m: 'Claim ₹1 offer', y: 'Get pro' },
-  agency:  { m: 'Claim ₹1 offer', y: 'Get agency' }
+  starter: { m: 'Start with ₹1 offer', y: 'Get starter' },
+  pro:     { m: 'Start with ₹1 offer', y: 'Get pro' },
+  agency:  { m: 'Start with ₹1 offer', y: 'Get agency' }
 };
 
-// Renders price, cycle text, autopay badge/disclosure and CTA label for all
-// three plan cards based on the current `yearly` state. Monthly = autopay
-// (₹1 today, real price auto-debited from tomorrow). Yearly = one-time payment.
+// Renders the public pricing presentation. Monthly subscriptions use a ₹1
+// introductory offer while the regular monthly price remains clearly visible.
+// Avoid time-relative wording on the marketing page; billing terms are explained
+// in checkout/account screens where they are operationally relevant.
 function renderPlanCards() {
   [['s', 'starter'], ['p', 'pro'], ['a', 'agency']].forEach(([k, plan]) => {
     const p = prices[plan];
@@ -45,11 +46,11 @@ function renderPlanCards() {
       if (badgeEl) badgeEl.style.display = 'none';
     } else {
       priceEl.textContent = '₹1';
-      cycleEl.textContent = 'today';
-      oldEl.textContent = '';
-      oldEl.style.display = 'none';
-      if (noteEl) noteEl.textContent = `₹1 today • ₹${p.m} from tomorrow • then monthly`;
-      if (badgeEl) badgeEl.style.display = 'inline-flex';
+      cycleEl.textContent = 'intro offer';
+      oldEl.textContent = '₹' + p.m + '/month';
+      oldEl.style.display = 'inline';
+      if (noteEl) noteEl.textContent = `Introductory offer • Regular plan price ₹${p.m}/month`;
+      if (badgeEl) { badgeEl.style.display = 'inline-flex'; badgeEl.lastChild.textContent = 'Introductory offer'; }
     }
 
     const btn = document.getElementById(k === 's' ? 'starterCta' : k === 'p' ? 'proCta' : 'agencyCta');
@@ -75,7 +76,7 @@ async function buyPlan(plan) {
   const billing = yearly ? "yearly" : "monthly";
   const couponCode = offerCoupon || "";
 
-  // Monthly = autopay subscription (₹1 authorisation today, selected plan amount from tomorrow).
+  // Monthly = AutoPay subscription with the ₹1 introductory offer.
   // Yearly = one-time payment, same as before.
   if (billing === "monthly") {
     return buySubscription(plan, email);
@@ -160,8 +161,8 @@ async function buyPlan(plan) {
   }
 }
 
-// Autopay flow (monthly plans): ₹1 authorisation/upfront charge today,
-// then the selected plan price auto-debits from tomorrow and monthly thereafter.
+// AutoPay flow (monthly plans): ₹1 introductory activation charge,
+// followed by the selected regular monthly subscription price.
 async function buySubscription(plan, email) {
   let checkoutSucceeded = false;
   try {
@@ -185,7 +186,7 @@ async function buySubscription(plan, email) {
       key: data.key,
       subscription_id: data.subscriptionId,
       name: "ReelScribe",
-      description: `${planLabel} Plan • ₹1 today • ₹${fullPrice}/month from tomorrow`,
+      description: `${planLabel} Plan • ₹1 introductory offer • ₹${fullPrice}/month regular price`,
       prefill: { email },
 
       handler: async function (response) {
@@ -203,7 +204,7 @@ async function buySubscription(plan, email) {
           const result = await verify.json();
 
           if (result.success) {
-            alert(`Payment successful. Your ${planLabel} plan is active now. ₹${fullPrice} will be charged from tomorrow, then monthly.`);
+            alert(`Payment successful. Your ${planLabel} plan is active now. Your regular subscription price is ₹${fullPrice}/month.`);
             location.href = "/dashboard.html";
           } else {
             alert(result.error || "Payment verification is still processing. Please open your dashboard in a few seconds.");
