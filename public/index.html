@@ -222,29 +222,45 @@
 
   <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Pricing</span><span class="frame-line"></span></div>
   <h2 class="feat-heading">Simple plans.<br>No <em>surprises.</em></h2>
-  <div class="plans-grid">
-    <div class="plan-card">
-      <div class="plan-name">Starter</div>
-      <div class="plan-price"><s>₹149/month</s> <strong>₹1 today</strong></div><div class="plan-activation-note">₹1 today → ₹149 from tomorrow → ₹149/month</div>
-      <div class="plan-desc">Perfect for trying out AI clipping.</div>
+  <div class="plans-grid home-pricing-grid">
+    <div class="plan-card home-plan-card">
+      <div class="home-plan-kicker">Starter</div>
+      <div class="home-offer-badge">INTRODUCTORY OFFER</div>
+      <div class="home-price"><s>₹149/month</s> <strong>₹1</strong><span>offer</span></div>
+      <p class="home-price-note">Start with our introductory offer. Regular plan price: ₹149/month.</p>
       <div class="plan-features">
-        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>30 transcripts/month</div>
-        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>3–5 clips/video</div>
-        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>10 videos/month</div>
+        <div class="plan-feat">✓ 30 transcripts/month</div>
+        <div class="plan-feat">✓ 3–5 clips/video</div>
+        <div class="plan-feat">✓ 10 videos/month</div>
       </div>
-      <button class="plan-cta" onclick="window.location.href='/pricing.html'">Get Starter →</button>
+      <button class="plan-cta" onclick="window.location.href='/pricing.html?plan=starter'">Explore Starter →</button>
     </div>
-    <div class="plan-card popular">
+
+    <div class="plan-card popular home-plan-card">
       <div class="plan-badge">Most Popular</div>
-      <div class="plan-name">Pro</div>
-      <div class="plan-price"><s>₹299/month</s> <strong>₹1 today</strong></div><div class="plan-activation-note">₹1 today → ₹299 from tomorrow → ₹299/month</div>
-      <div class="plan-desc">For regular creators who need more clips.</div>
+      <div class="home-plan-kicker">Pro</div>
+      <div class="home-offer-badge">INTRODUCTORY OFFER</div>
+      <div class="home-price"><s>₹299/month</s> <strong>₹1</strong><span>offer</span></div>
+      <p class="home-price-note">Built for regular creators. Regular plan price: ₹299/month.</p>
       <div class="plan-features">
-        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>60 transcripts/month</div>
-        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5–12 clips/video</div>
-        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>15 videos/month</div>
+        <div class="plan-feat">✓ 60 transcripts/month</div>
+        <div class="plan-feat">✓ 5–12 clips/video</div>
+        <div class="plan-feat">✓ 15 videos/month</div>
       </div>
-      <button class="plan-cta plan-cta-primary" onclick="window.location.href='/pricing.html'">Get Pro →</button>
+      <button class="plan-cta plan-cta-primary" onclick="window.location.href='/pricing.html?plan=pro'">Explore Pro →</button>
+    </div>
+
+    <div class="plan-card home-plan-card">
+      <div class="home-plan-kicker">Agency</div>
+      <div class="home-offer-badge">INTRODUCTORY OFFER</div>
+      <div class="home-price"><s>₹599/month</s> <strong>₹1</strong><span>offer</span></div>
+      <p class="home-price-note">For teams and agencies. Regular plan price: ₹599/month.</p>
+      <div class="plan-features">
+        <div class="plan-feat">✓ 150 transcripts/month</div>
+        <div class="plan-feat">✓ 5–12 clips/video</div>
+        <div class="plan-feat">✓ 60 videos/month</div>
+      </div>
+      <button class="plan-cta" onclick="window.location.href='/pricing.html?plan=agency'">Explore Agency →</button>
     </div>
   </div>
 
@@ -283,7 +299,7 @@
 
   <div class="cta-section">
     <div class="cta-h">Ready to Cut Your First Clips?</div>
-    <p class="cta-p">Start your paid plan for ₹1 today. Your selected monthly price begins from tomorrow.</p>
+    <p class="cta-p">Choose the plan that fits your workflow and start with our introductory offer.</p>
     <button class="cta-btn" onclick="window.location.href='/pricing.html'">View Plans & Get Started →</button>
   </div>
 <footer>
