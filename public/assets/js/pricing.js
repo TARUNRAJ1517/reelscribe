@@ -48,7 +48,7 @@ function renderPlanCards() {
       cycleEl.textContent = 'today';
       oldEl.textContent = '';
       oldEl.style.display = 'none';
-      if (noteEl) noteEl.textContent = 'Offer ends soon — new subscribers only';
+      if (noteEl) noteEl.textContent = `₹1 today • ₹${p.m} from tomorrow • then monthly`;
       if (badgeEl) badgeEl.style.display = 'inline-flex';
     }
 
@@ -179,6 +179,7 @@ async function buySubscription(plan, email) {
     }
 
     const fullPrice = prices[plan]?.m || 0;
+    const subscriptionId = data.subscriptionId;
     const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
     const options = {
       key: data.key,
@@ -219,7 +220,7 @@ async function buySubscription(plan, email) {
         ondismiss: async function () {
           if (checkoutSucceeded) return;
           try {
-            await fetch("/cancel-subscription", { method: "POST" });
+            await fetch("/cancel-subscription", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subscriptionId }) });
           } catch (e) {
             console.error("Cleanup after cancelled checkout failed:", e);
           }

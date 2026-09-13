@@ -809,6 +809,22 @@ async function openUserDetail(email){
       document.getElementById("detailLastActive").innerText = d.lastActive ? new Date(d.lastActive).toLocaleString("en-IN") : "No activity";
       document.getElementById("detailTranscriptions").innerText = d.totalTranscriptions;
       document.getElementById("detailClipJobs").innerText = d.totalClipJobs;
+      const latestSub = (d.subscriptions || [])[0];
+      const badge = document.getElementById("billingStatusBadge");
+      if (badge) { badge.textContent = latestSub ? String(latestSub.status || "unknown") : "No AutoPay"; badge.className = "billing-status-badge " + String(latestSub?.status || "none").toLowerCase(); }
+      const sid = document.getElementById("detailSubscriptionId"); if (sid) sid.textContent = latestSub?.id || d.user?.razorpaySubscriptionId || "—";
+      const np = document.getElementById("detailNextCharge"); if (np) np.textContent = latestSub?.chargeAt ? new Date(latestSub.chargeAt).toLocaleString("en-IN") : "—";
+      const lp = document.getElementById("detailLastPayment"); if (lp) lp.textContent = latestSub?.lastPaymentId || "—";
+      const pc = document.getElementById("detailPaidCount"); if (pc) pc.textContent = latestSub?.paidCount ?? 0;
+      const timeline = document.getElementById("billingTimeline");
+      if (timeline) {
+        const items = (d.timeline || []).slice(0, 30);
+        timeline.innerHTML = items.length ? items.map(ev => {
+          const tone = ev.type === "payment_failed" || ev.type === "autopay_cancelled" ? "danger" : ev.type === "payment_received" ? "success" : "info";
+          const amount = ev.amount != null ? ` · ₹${Number(ev.amount).toLocaleString("en-IN")}` : "";
+          return `<div class="timeline-item ${tone}"><span class="timeline-dot"></span><div class="timeline-copy"><b>${escapeHtml(ev.label || ev.type)}</b><span>${escapeHtml(ev.plan || "")} ${escapeHtml(ev.status || "")}${amount}</span><small>${ev.at ? new Date(ev.at).toLocaleString("en-IN") : "—"}${ev.subscriptionId ? ` · sub ${escapeHtml(ev.subscriptionId)}` : ""}${ev.paymentId ? ` · pay ${escapeHtml(ev.paymentId)}` : ""}</small></div></div>`;
+        }).join("") : `<div class="timeline-empty">No billing activity recorded for this user.</div>`;
+      }
     } else {
       document.getElementById("detailLastActive").innerText = "Unavailable";
       document.getElementById("detailTranscriptions").innerText = "Unavailable";

@@ -72,6 +72,8 @@
     if (!document.getElementById('rs-autopay-persistent')) {
       const bar = document.createElement('div');
       bar.id = 'rs-autopay-persistent';
+      bar.setAttribute('role','status');
+      bar.setAttribute('aria-live','polite');
       bar.className = 'rs-autopay-persistent';
       bar.innerHTML = '<span class="rs-dot" aria-hidden="true"></span><span><strong>AutoPay cancelled.</strong> Your account has been switched to the Free plan. You will not be charged again.</span><a href="/pricing.html">Reactivate plan →</a>';
       document.body.appendChild(bar);
@@ -82,6 +84,9 @@
     backdrop.className = 'rs-autopay-modal-backdrop';
     backdrop.innerHTML = '<div class="rs-autopay-modal" role="dialog" aria-modal="true" aria-labelledby="rs-autopay-title"><h3 id="rs-autopay-title">AutoPay cancelled</h3><p>Your AutoPay subscription was cancelled, so your paid plan has been switched to the Free plan immediately. You will not be charged again unless you start a new subscription.</p><div class="rs-modal-actions"><button type="button" id="rs-autopay-close">Got it</button><a href="/pricing.html">View plans</a></div></div>';
     document.body.appendChild(backdrop);
+    const alreadyShown = sessionStorage.getItem('rs_autopay_popup_shown') === '1';
+    if (alreadyShown) { backdrop.remove(); return; }
+    sessionStorage.setItem('rs_autopay_popup_shown', '1');
     backdrop.style.display = 'grid';
     document.getElementById('rs-autopay-close').onclick = () => backdrop.remove();
     backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
