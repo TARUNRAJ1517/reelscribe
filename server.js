@@ -1396,6 +1396,8 @@ app.post("/create-subscription", subscriptionLimiter, requireAuth, async (req, r
       fullAmount,
     });
 
+    logAdminAction("subscription-started", email, `${plan} monthly autopay initiated — subscription ${subscription.id}`, req);
+
     res.json({
       success: true,
       subscriptionId: subscription.id,
@@ -1432,12 +1434,38 @@ app.post("/cancel-subscription", requireAuth, async (req, res) => {
     sub.cancelReason = "user_requested";
     await sub.save();
 
-    await User.updateOne({ email }, { $set: { subscriptionStatus: "cancelled" } });
+    // Immediate downgrade — no grace period, even if a full charge already
+    // landed this cycle. Keeps the ₹1-intro-then-cancel loophole closed.
+    await User.updateOne(
+      { email },
+      {
+        $set: {
+          subscriptionStatus: "cancelled",
+          plan: "free",
+          billingCycle: null,
+          planExpiresAt: null,
+          autopayCancelledNotice: true,
+        },
+      }
+    );
 
-    res.json({ success: true, message: "Your subscription has been cancelled. You won't be charged again." });
+    logAdminAction("subscription-cancelled", email, `${sub.plan} monthly autopay — subscription ${sub.razorpaySubscriptionId} — user requested, downgraded to free`, req);
+
+    res.json({ success: true, message: "Your subscription has been cancelled and your account switched to the Free plan." });
   } catch (err) {
     console.error("[/cancel-subscription] failed:", err);
     res.status(500).json({ success: false, error: "Couldn't cancel the subscription right now. Please try again or contact support." });
+  }
+});
+
+// Clears the one-time "AutoPay Cancelled" popup flag once the user has seen it.
+app.post("/acknowledge-autopay-notice", requireAuth, async (req, res) => {
+  try {
+    await User.updateOne({ email: req.authEmail }, { $set: { autopayCancelledNotice: false } });
+    res.json({ success: true });
+  } catch (err) {
+    console.error("[/acknowledge-autopay-notice] failed:", err);
+    res.status(500).json({ success: false });
   }
 });
 
@@ -1461,6 +1489,93 @@ app.post("/webhooks/razorpay", webhookLimiter, async (req, res) => {
     const event   = req.body?.event;
     const payload = req.body?.payload || {};
 
+// Shared handler for any subscription payment — used by BOTH
+// subscription.authenticated (fires for the day-1 ₹1 intro charge, since
+// Razorpay does NOT emit subscription.charged for the authentication
+// payment when start_at is a future date) and subscription.charged (fires
+// for every real recurring charge from day 2 onward). Idempotent per
+// Razorpay payment id either way.
+async function processSubscriptionPayment(subEntity, paymentEntity, req) {
+  const sub = await Subscription.findOne({ razorpaySubscriptionId: subEntity.id });
+  if (!sub) {
+    console.error("[/webhooks/razorpay] payment event for unknown subscription:", subEntity.id);
+    return;
+  }
+
+  const already = await Payment.findOne({ razorpayPaymentId: paymentEntity.id });
+  if (already) return;
+
+  const paidRupees    = Number(paymentEntity.amount || 0) / 100;
+  const isTrialCharge  = sub.paidCount === 0 && Math.abs(paidRupees - sub.trialChargeAmount) < 0.01;
+  const isFullCharge   = Math.abs(paidRupees - sub.fullAmount) < 0.01;
+
+  if (!isTrialCharge && !isFullCharge) {
+    // Amount doesn't match what this plan should ever charge — do not trust it blindly.
+    console.error(`[/webhooks/razorpay] unexpected charge ₹${paidRupees} for subscription ${subEntity.id} (plan ${sub.plan})`);
+    return;
+  }
+
+  await Payment.create({
+    userEmail: sub.userEmail,
+    plan: sub.plan,
+    billingCycle: "monthly",
+    amount: paidRupees,
+    status: "paid",
+    source: "subscription",
+    razorpayPaymentId: paymentEntity.id,
+    razorpaySubscriptionId: subEntity.id,
+  });
+
+  sub.paidCount += 1;
+  sub.status = subEntity.status;
+  sub.lastPaymentId = paymentEntity.id;
+  sub.currentStart = subEntity.current_start ? new Date(subEntity.current_start * 1000) : sub.currentStart;
+  sub.currentEnd   = subEntity.current_end   ? new Date(subEntity.current_end * 1000)   : sub.currentEnd;
+  sub.chargeAt     = subEntity.charge_at     ? new Date(subEntity.charge_at * 1000)      : sub.chargeAt;
+  await sub.save();
+
+  logAdminAction(
+    "subscription-charged",
+    sub.userEmail,
+    `₹${paidRupees} (${isFullCharge ? "full" : "trial"} charge) — ${sub.plan} monthly — subscription ${subEntity.id}`,
+    req
+  );
+
+  if (isFullCharge) {
+    const planExpiry = sub.currentEnd || new Date(Date.now() + 32 * 24 * 60 * 60 * 1000);
+    await User.updateOne(
+      { email: sub.userEmail },
+      {
+        $set: {
+          plan: sub.plan,
+          lastPaidPlan: sub.plan,
+          billingCycle: "monthly",
+          planExpiresAt: planExpiry,
+          subscriptionStatus: subEntity.status,
+          razorpaySubscriptionId: subEntity.id,
+          transcriptsUsedToday: 0, transcriptsUsedMonth: 0,
+          clipsUsedToday: 0, clipsUsedMonth: 0,
+        },
+      }
+    );
+  } else {
+    // ₹1 intro charge — unlock the plan for 1 day only; the real
+    // charge tomorrow is what extends it properly.
+    await User.updateOne(
+      { email: sub.userEmail },
+      {
+        $set: {
+          plan: sub.plan,
+          billingCycle: "monthly",
+          planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          subscriptionStatus: subEntity.status,
+          razorpaySubscriptionId: subEntity.id,
+        },
+      }
+    );
+  }
+}
+
     if (event === "subscription.activated" || event === "subscription.authenticated") {
       const subEntity = payload.subscription?.entity;
       if (subEntity) {
@@ -1481,6 +1596,15 @@ app.post("/webhooks/razorpay", webhookLimiter, async (req, res) => {
             { email: sub.userEmail },
             { $set: { razorpaySubscriptionId: subEntity.id, subscriptionStatus: subEntity.status } }
           );
+          logAdminAction(`subscription-${event.split(".")[1]}`, sub.userEmail, `${sub.plan} monthly autopay — subscription ${subEntity.id}`, req);
+        }
+
+        // For a future start_at, the day-1 ₹1 intro charge fires as part of
+        // THIS event (not subscription.charged) — Razorpay only emits
+        // subscription.charged starting from the real recurring cycle.
+        const paymentEntity = payload.payment?.entity;
+        if (paymentEntity) {
+          await processSubscriptionPayment(subEntity, paymentEntity, req);
         }
       }
     }
@@ -1488,79 +1612,8 @@ app.post("/webhooks/razorpay", webhookLimiter, async (req, res) => {
     if (event === "subscription.charged") {
       const subEntity     = payload.subscription?.entity;
       const paymentEntity = payload.payment?.entity;
-
       if (subEntity && paymentEntity) {
-        const sub = await Subscription.findOne({ razorpaySubscriptionId: subEntity.id });
-
-        if (!sub) {
-          console.error("[/webhooks/razorpay] charged event for unknown subscription:", subEntity.id);
-        } else {
-          // Idempotency: the same Razorpay payment must never be applied twice.
-          const already = await Payment.findOne({ razorpayPaymentId: paymentEntity.id });
-          if (!already) {
-            const paidRupees   = Number(paymentEntity.amount || 0) / 100;
-            const isTrialCharge = sub.paidCount === 0 && Math.abs(paidRupees - sub.trialChargeAmount) < 0.01;
-            const isFullCharge  = Math.abs(paidRupees - sub.fullAmount) < 0.01;
-
-            if (!isTrialCharge && !isFullCharge) {
-              // Amount doesn't match what this plan should ever charge — do not trust it blindly.
-              console.error(`[/webhooks/razorpay] unexpected charge ₹${paidRupees} for subscription ${subEntity.id} (plan ${sub.plan})`);
-            } else {
-              await Payment.create({
-                userEmail: sub.userEmail,
-                plan: sub.plan,
-                billingCycle: "monthly",
-                amount: paidRupees,
-                status: "paid",
-                source: "subscription",
-                razorpayPaymentId: paymentEntity.id,
-                razorpaySubscriptionId: subEntity.id,
-              });
-
-              sub.paidCount += 1;
-              sub.status = subEntity.status;
-              sub.lastPaymentId = paymentEntity.id;
-              sub.currentStart = subEntity.current_start ? new Date(subEntity.current_start * 1000) : sub.currentStart;
-              sub.currentEnd   = subEntity.current_end   ? new Date(subEntity.current_end * 1000)   : sub.currentEnd;
-              sub.chargeAt     = subEntity.charge_at     ? new Date(subEntity.charge_at * 1000)      : sub.chargeAt;
-              await sub.save();
-
-              if (isFullCharge) {
-                const planExpiry = sub.currentEnd || new Date(Date.now() + 32 * 24 * 60 * 60 * 1000);
-                await User.updateOne(
-                  { email: sub.userEmail },
-                  {
-                    $set: {
-                      plan: sub.plan,
-                      lastPaidPlan: sub.plan,
-                      billingCycle: "monthly",
-                      planExpiresAt: planExpiry,
-                      subscriptionStatus: subEntity.status,
-                      razorpaySubscriptionId: subEntity.id,
-                      transcriptsUsedToday: 0, transcriptsUsedMonth: 0,
-                      clipsUsedToday: 0, clipsUsedMonth: 0,
-                    },
-                  }
-                );
-              } else {
-                // ₹1 intro charge — unlock the plan for 1 day only; the real
-                // charge tomorrow is what extends it properly.
-                await User.updateOne(
-                  { email: sub.userEmail },
-                  {
-                    $set: {
-                      plan: sub.plan,
-                      billingCycle: "monthly",
-                      planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-                      subscriptionStatus: subEntity.status,
-                      razorpaySubscriptionId: subEntity.id,
-                    },
-                  }
-                );
-              }
-            }
-          }
-        }
+        await processSubscriptionPayment(subEntity, paymentEntity, req);
       }
     }
 
@@ -1572,10 +1625,22 @@ app.post("/webhooks/razorpay", webhookLimiter, async (req, res) => {
           { $set: { status: subEntity.status } }
         );
         if (sub) {
+          // Immediate downgrade — no grace period. Prevents someone from
+          // grabbing the ₹1 intro plan and cancelling right after to keep
+          // access until whatever planExpiresAt would have been.
           await User.updateOne(
             { email: sub.userEmail },
-            { $set: { subscriptionStatus: subEntity.status, plan: "free", billingCycle: null } }
+            {
+              $set: {
+                subscriptionStatus: subEntity.status,
+                plan: "free",
+                billingCycle: null,
+                planExpiresAt: null,
+                autopayCancelledNotice: true,
+              },
+            }
           );
+          logAdminAction(`subscription-${event.split(".")[1]}`, sub.userEmail, `${sub.plan} monthly autopay — subscription ${subEntity.id} — downgraded to free`, req);
         }
       }
     }
@@ -1751,6 +1816,7 @@ app.get("/user-plan", requireAuth, async (req, res) => {
       billingCycle: user.billingCycle || null,
       subscriptionStatus: user.subscriptionStatus || null,
       hasActiveSubscription: ["created", "authenticated", "active", "pending"].includes(user.subscriptionStatus),
+      autopayCancelledNotice: !!user.autopayCancelledNotice,
       usage: {
         transcriptDay,   transcriptDayLimit:   limits.transcriptDay,
         transcriptMonth, transcriptMonthLimit: limits.transcriptMonth,
@@ -2205,6 +2271,11 @@ const EMAIL_TEMPLATES = {
   announcement: {
     subject: "🚀 New from ReelScribe",
     html: ({url}) => `<div style="background:#f5f3ff;padding:32px;font-family:Arial;text-align:center"><div style="max-width:600px;margin:auto;background:#fff;border-radius:18px;padding:42px 28px"><div style="font-size:26px;font-weight:800">Reel<span style="color:#8b5cf6">Scribe</span></div><h1 style="font-size:30px;margin:22px 0 10px">Something new is here 🚀</h1><p style="color:#696276;font-size:16px;line-height:1.6">Check out the latest ReelScribe improvements and keep creating.</p><a href="${url}" style="display:inline-block;margin-top:20px;padding:15px 30px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:10px;font-weight:700">CHECK IT OUT →</a></div></div>`
+  },
+  autopayLaunch: {
+    subject: "🔥 New: Try ReelScribe {{planLabel}} for just ₹1",
+    html: ({planLabel,originalPrice,url}) => `
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f5f3ff;font-family:Arial,Helvetica,sans-serif;color:#171329"><tr><td align="center" style="padding:32px 12px"><table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:600px;background:#fff;border-radius:18px;overflow:hidden"><tr><td style="padding:28px 32px;background:#15111f"><div style="font-size:26px;font-weight:800;color:#fff">Reel<span style="color:#8b5cf6">Scribe</span></div><div style="margin-top:6px;font-size:13px;color:#b9b2c9">Transcribe. Create. Cut Clips.</div></td></tr><tr><td style="padding:38px 32px 28px;text-align:center"><div style="display:inline-block;padding:7px 12px;border-radius:999px;background:#eee7ff;color:#6d35d4;font-size:12px;font-weight:700">NEW · AUTOPAY</div><h1 style="margin:18px 0 10px;font-size:34px;line-height:1.15">Try ${planLabel} for just ₹1</h1><p style="margin:0 auto;max-width:440px;font-size:16px;line-height:1.6;color:#696276">Unlock more transcripts, priority processing and clip cutting — starting today, for a rupee.</p><div style="margin:26px 0 8px"><span style="font-size:16px;color:#8c8598;text-decoration:line-through">₹${originalPrice}</span><span style="margin-left:10px;font-size:38px;font-weight:800;color:#6d35d4">₹1</span></div><div style="font-size:13px;color:#777080">then ₹${originalPrice}/month auto-debited from tomorrow · cancel anytime</div><a href="${url}" style="display:inline-block;margin-top:24px;padding:15px 30px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:10px;font-size:16px;font-weight:700">START FOR ₹1 →</a></td></tr><tr><td style="padding:20px 32px;background:#faf9ff;text-align:center;border-top:1px solid #eeeaf6"><p style="margin:0;color:#716a7e;font-size:13px;line-height:1.5">Offer valid for a limited time. New subscribers only.</p></td></tr><tr><td style="padding:25px 32px;background:#15111f;text-align:center"><div style="font-size:17px;font-weight:800;color:#fff">Reel<span style="color:#8b5cf6">Scribe</span></div><p style="margin:8px 0;font-size:12px;color:#aaa2b8">Transcribe any video or audio and create clips with AI.</p><a href="${baseUrlSafe()}" style="color:#b18cff;text-decoration:none;font-size:12px">Visit ReelScribe</a></td></tr></table></td></tr></table>`
   }
 };
 function baseUrlSafe(){ return process.env.PUBLIC_SITE_URL || "https://reelscribe.site"; }
