@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Transcript History — ReelScribe</title>
+<link rel="canonical" href="https://reelscribe.site/history.html">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/history.css">
+<link rel="stylesheet" href="/premium.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo"><span class="ndot"></span>ReelScribe</div>
+  <button class="nav-back" onclick="window.location.href='/dashboard.html'">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3L5 8l5 5"/></svg>
+    Dashboard
+  </button>
+</nav>
+
+<div class="hero">
+  <div class="eyebrow"><span class="mono">History</span></div>
+  <h1 class="page-h1">Your Transcripts</h1>
+  <p class="page-sub">Every transcript you've generated, saved to your account.</p>
+</div>
+
+<div class="main">
+  <div id="loginWall" class="login-wall" style="display:none">
+    <p>Log in to view your saved transcript history.</p>
+    <a class="btn" href="/login.html?next=/history.html">Log In</a>
+  </div>
+
+  <div id="historyList"></div>
+</div>
+
+<footer>
+  <p class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</p>
+</footer>
+
+<script src="/assets/js/history.js" defer></script>
+<script src="/assets/js/premium.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ReelScribe — AI Viral Clip Generator</title>
+<meta name="description" content="Turn long YouTube videos into 5–12 ready-to-post viral clips with ReelScribe AI. Start free.">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/favicon.png">
+<link rel="canonical" href="https://reelscribe.site/">
+
+<!-- Open Graph / Social Sharing -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ReelScribe">
+<meta property="og:title" content="ReelScribe — AI Viral Clip Generator">
+<meta property="og:description" content="Turn long YouTube videos into 5–12 ready-to-post viral clips with ReelScribe AI. Start free.">
+<meta property="og:url" content="https://reelscribe.site/">
+<meta property="og:image" content="https://reelscribe.site/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ReelScribe — AI Viral Clip Generator">
+<meta name="twitter:description" content="Turn long YouTube videos into 5–12 ready-to-post viral clips with ReelScribe AI. Start free.">
+<meta name="twitter:image" content="https://reelscribe.site/assets/og-cover.png">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ReelScribe",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Web",
+  "description": "AI-powered viral clip generator that turns long YouTube videos into ready-to-post short clips.",
+  "offers": {
+    "@type": "Offer",
+    "price": "149",
+    "priceCurrency": "INR"
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/assets/css/index.css">
+<link rel="stylesheet" href="/premium.css">
+</head>
+<body>
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo"><span class="mark"></span>ReelScribe</div>
+  <div class="nav-toggle">
+    <a class="nav-btn" id="btnT" href="/transcript.html">Transcript</a>
+    <a class="nav-btn active" id="btnC" href="/">Cut Clips</a>
+  </div>
+<a class="rs-referral-link" href="/referral.html">🎁 <span class="rs-full">Invite &amp; </span>Earn</a>
+  <button class="nav-menu" onclick="openMenu()" aria-label="Open menu">≡</button>
+</nav>
+
+<!-- MENU -->
+<div class="menu-overlay" id="menuOverlay">
+  <div class="menu-box" id="menuBox">
+    <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+    <div class="menu-top">
+      <div class="nav-logo"><span class="mark"></span>ReelScribe</div>
+      <button class="menu-close" onclick="closeMenu()" aria-label="Close menu">✕</button>
+    </div>
+    <a href="/">Home</a>
+    <a href="/pricing.html">Pricing</a>
+    <a href="/contact.html">Support</a>
+    <a href="/dashboard.html" id="menuDashTranscript" style="display:none;">Transcription Dashboard</a>
+    <a href="/clips-dashboard.html" id="menuDashClips" style="display:none;">Clips Dashboard</a>
+    <button class="menu-cta" id="menuLoginBtn" onclick="window.location.href='/login.html'">Login →</button>
+    <button class="menu-cta" id="menuLogoutBtn" style="display:none; background:var(--s2); border:1px solid var(--border2); color:var(--text-dim);" onclick="logout()">Logout →</button>
+  </div>
+</div>
+
+<div class="reel">
+  <div class="reel-body">
+<div class="hero">
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">AI Powered · Login Required</span><span class="frame-line"></span></div>
+    <h1 class="hero-h1">Turn long videos into <em>viral clips.</em></h1>
+    <p class="hero-sub">Paste any YouTube link. AI scans the transcript, finds the <strong>best viral moments</strong>, and cuts 5–12 ready-to-post reels — automatically.</p>
+
+    <div class="hero-input-wrap">
+      <svg style="width:15px;height:15px;color:var(--muted);margin:auto 0 auto 14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <input class="hero-input" type="url" id="clipUrl" placeholder="youtube.com/watch?v=...">
+      <button class="hero-input-btn" onclick="generateClips()">Generate</button>
+    </div>
+
+    <div class="trust-pills">
+      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>YouTube supported</span>
+      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5–12 clips per video</span>
+      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Auto deleted after 24h</span>
+      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Download then 5min delete</span>
+    </div>
+
+    <div class="demo-video-box">
+      <video autoplay loop muted playsinline preload="metadata">
+        <source src="/assets/videos/demo.mp4" type="video/mp4">
+      </video>
+    </div>
+
+    <div class="clips-mockup" aria-hidden="true">
+      <div class="clip-thumb"><span class="clip-dur">0:34</span><span class="clip-cap">WAIT FOR<br>IT</span></div>
+      <div class="clip-thumb"><span class="clip-dur">0:51</span><span class="clip-cap">NOBODY<br>TELLS YOU</span></div>
+      <div class="clip-thumb"><span class="clip-dur">0:22</span><span class="clip-cap">THIS ONE<br>TRICK</span></div>
+    </div>
+
+    <!-- Login wall for guests -->
+    <div id="clipLoginWall">
+      <h3>Login Required</h3>
+      <p>Clip generation is for logged-in users only. Login to generate your viral clips.</p>
+      <button class="clip-login-btn" onclick="window.location.href='/login.html?next=' + encodeURIComponent('/')">Login →</button>
+    </div>
+  </div>
+
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span class="ticker-item">AI CLIPPING</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">5–12 CLIPS PER VIDEO</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">YOUTUBE · REELS · SHORTS</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">AI BEST MOMENTS</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">AUTO DELETE · SECURE</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">AI CLIPPING</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">5–12 CLIPS PER VIDEO</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">AUTO DELETE · SECURE</span><span class="ticker-item"><span>✦</span></span>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Impact</span><span class="frame-line"></span></div>
+  <div class="stat-strip">
+    <div class="stat-cell"><div class="stat-num">5–12</div><div class="stat-label">Clips Per Video</div></div>
+    <div class="stat-cell"><div class="stat-num">50+</div><div class="stat-label">Languages</div></div>
+    <div class="stat-cell"><div class="stat-num">3</div><div class="stat-label">Guest Previews</div></div>
+    <div class="stat-cell"><div class="stat-num">24h</div><div class="stat-label">Clip Cleanup</div></div>
+    <div class="stat-cell full"><div class="stat-num">₹149/mo</div><div class="stat-label">Starter plan starting price</div></div>
+  </div>
+
+  <!-- Caption Styles -->
+  <div class="frame-label"><span class="frame-num">01</span><span class="frame-name">Included</span><span class="frame-line"></span></div>
+  <h2 class="caption-heading">Caption styles.<br>Built <em>right in.</em></h2>
+  <p class="caption-sub">Burned-in captions for every clip — pick a style and it's done. No editing app needed.</p>
+
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <div class="caption-card"><div class="caption-preview style-red"><span>BOLD POP</span></div><div class="caption-label-bar"><span class="caption-name">Bold Pop</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-red"><span>NEON GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Neon Glow</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div><div class="caption-label-bar"><span class="caption-name">Karaoke</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-outline"><span>OUTLINE</span></div><div class="caption-label-bar"><span class="caption-name">Outline</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-mono"><span>WORD POP</span></div><div class="caption-label-bar"><span class="caption-name">Word Pop</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-classic"><span>CLASSIC</span></div><div class="caption-label-bar"><span class="caption-name">Classic Bold</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-classic"><span>MEME</span></div><div class="caption-label-bar"><span class="caption-name">Meme Impact</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-bounce"><span>BOUNCE</span></div><div class="caption-label-bar"><span class="caption-name">Bounce</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-red"><span>BOLD POP</span></div><div class="caption-label-bar"><span class="caption-name">Bold Pop</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-red"><span>NEON GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Neon Glow</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-karaoke"><span><span class="filled">KARA</span>OKE</span></div><div class="caption-label-bar"><span class="caption-name">Karaoke</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-outline"><span>OUTLINE</span></div><div class="caption-label-bar"><span class="caption-name">Outline</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-mono"><span>WORD POP</span></div><div class="caption-label-bar"><span class="caption-name">Word Pop</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-classic"><span>CLASSIC</span></div><div class="caption-label-bar"><span class="caption-name">Classic Bold</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-classic"><span>MEME</span></div><div class="caption-label-bar"><span class="caption-name">Meme Impact</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-bounce"><span>BOUNCE</span></div><div class="caption-label-bar"><span class="caption-name">Bounce</span></div></div>
+    </div>
+  </div>
+
+  <div class="marquee-wrap">
+    <div class="marquee-track reverse">
+      <div class="caption-card"><div class="caption-preview style-minimal"><span>Minimal Clean</span></div><div class="caption-label-bar"><span class="caption-name">Minimal Clean</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-mono"><span>GRADIENT</span></div><div class="caption-label-bar"><span class="caption-name">Gradient Fill</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-minimal"><span>Cinematic</span></div><div class="caption-label-bar"><span class="caption-name">Cinematic</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-red"><span>RED GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Red Glow</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-boxed"><span>BOXED</span></div><div class="caption-label-bar"><span class="caption-name">Boxed</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-highlight"><span>HIGHLIGHT</span></div><div class="caption-label-bar"><span class="caption-name">Highlight</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-classic"><span>DUOTONE</span></div><div class="caption-label-bar"><span class="caption-name">Duotone</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-shake"><span>SHAKE IT</span></div><div class="caption-label-bar"><span class="caption-name">Shake</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-minimal"><span>Minimal Clean</span></div><div class="caption-label-bar"><span class="caption-name">Minimal Clean</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-mono"><span>GRADIENT</span></div><div class="caption-label-bar"><span class="caption-name">Gradient Fill</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-minimal"><span>Cinematic</span></div><div class="caption-label-bar"><span class="caption-name">Cinematic</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-red"><span>RED GLOW</span></div><div class="caption-label-bar"><span class="caption-name">Red Glow</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-boxed"><span>BOXED</span></div><div class="caption-label-bar"><span class="caption-name">Boxed</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-highlight"><span>HIGHLIGHT</span></div><div class="caption-label-bar"><span class="caption-name">Highlight</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-classic"><span>DUOTONE</span></div><div class="caption-label-bar"><span class="caption-name">Duotone</span></div></div>
+      <div class="caption-card"><div class="caption-preview style-shake"><span>SHAKE IT</span></div><div class="caption-label-bar"><span class="caption-name">Shake</span></div></div>
+    </div>
+  </div>
+
+  <div class="caption-cta">
+    <div class="caption-cta-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+    </div>
+    <div class="caption-cta-text">
+      <h4>Custom caption styles</h4>
+      <p>Pick a style, and it'll be burned into your clips automatically.</p>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">02</span><span class="frame-name">Process</span><span class="frame-line"></span></div>
+  <h2 class="how-heading">How Clip Generation Works</h2>
+  <p class="how-sub">Link to download — three steps.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num-label">01</div>
+      <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+      <h4>Paste YouTube Link</h4>
+      <p>Any public video — podcast, interview, tutorial, vlog.</p>
+    </div>
+    <div class="step">
+      <div class="step-num-label">02</div>
+      <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+      <h4>AI Finds Best Moments</h4>
+      <p>AI reads the full transcript and picks the highest hook-strength, most viral moments.</p>
+    </div>
+    <div class="step">
+      <div class="step-num-label">03</div>
+      <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+      <h4>Download Your Clips</h4>
+      <p>5–12 clips ready to download. Main video deleted instantly. Clips auto-delete in 24 hours.</p>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Pricing</span><span class="frame-line"></span></div>
+  <h2 class="feat-heading">Simple plans.<br>No <em>surprises.</em></h2>
+  <div class="plans-grid">
+    <div class="plan-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">₹149 <span>/month</span></div>
+      <div class="plan-desc">Perfect for trying out AI clipping.</div>
+      <div class="plan-features">
+        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>30 transcripts/month</div>
+        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>3–5 clips/video</div>
+        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>10 videos/month</div>
+      </div>
+      <button class="plan-cta" onclick="window.location.href='/pricing.html'">Get Starter →</button>
+    </div>
+    <div class="plan-card popular">
+      <div class="plan-badge">Most Popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">₹299 <span>/month</span></div>
+      <div class="plan-desc">For regular creators who need more clips.</div>
+      <div class="plan-features">
+        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>60 transcripts/month</div>
+        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>5–12 clips/video</div>
+        <div class="plan-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>15 videos/month</div>
+      </div>
+      <button class="plan-cta plan-cta-primary" onclick="window.location.href='/pricing.html'">Get Pro →</button>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Built For Creators</span><span class="frame-line"></span></div>
+  <div class="testi-grid">
+    <div class="testi-card"><div class="testi-stars">01</div><p class="testi-quote">Transcribe long-form content and search the words that matter.</p><div class="testi-person"><div class="testi-avatar">T</div><div><div class="testi-name">Transcript workflow</div><div class="testi-role">Find ideas faster</div></div></div></div>
+    <div class="testi-card"><div class="testi-stars">02</div><p class="testi-quote">Turn strong moments into vertical clips with styled captions.</p><div class="testi-person"><div class="testi-avatar">C</div><div><div class="testi-name">Clip workflow</div><div class="testi-role">Ready for review</div></div></div></div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Why ReelScribe</span><span class="frame-line"></span></div>
+  <table class="compare-table">
+    <thead><tr><th>Feature</th><th class="col-us">ReelScribe</th><th>Others</th></tr></thead>
+    <tbody>
+      <tr><td>Starting price</td><td class="col-us">₹149/mo</td><td>Starter plan</td></tr>
+      <tr><td>Clips per video</td><td class="col-us">5–12</td><td>Depends on plan/source</td></tr>
+      <tr><td>Burned-in captions</td><td class="col-us">Included</td><td>Styled in clip flow</td></tr>
+      <tr><td>Clip cleanup</td><td class="col-us">24h max</td><td>Downloaded clips: 5 min</td></tr>
+    </tbody>
+  </table>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">FAQ</span><span class="frame-line"></span></div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">How many clips do I get per video?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Between 5–12 clips depending on your plan and the length of the source video.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Do I need to log in to generate clips?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Yes — clip generation requires a free account so we can track your monthly quota and keep clips secure.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">What happens to my source video after processing?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>It's deleted immediately after clips are generated. The clips themselves auto-delete after 24 hours.</p></div>
+    </div>
+  </div>
+
+  <div class="cta-section">
+    <div class="cta-h">Ready to Cut Your First Clips?</div>
+    <p class="cta-p">Start at ₹149/month. No hidden fees.</p>
+    <button class="cta-btn" onclick="window.location.href='/pricing.html'">View Plans & Get Started →</button>
+  </div>
+<footer>
+  <div class="foot-logo"><span class="mark"></span>ReelScribe</div>
+  <div class="foot-tag">transcribe · repurpose · scale</div>
+  <div class="foot-links">
+    <a href="/about.html">About</a>
+    <a href="/pricing.html">Pricing</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+  <div class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</div>
+</footer>
+
+  </div>
+</div>
+
+
+  </div>
+</div>
+<div class="sticky-cta" id="stickyCta">
+  <span>AI clips from any YouTube video</span>
+  <button onclick="document.getElementById('clipUrl') ? document.getElementById('clipUrl').focus() : null; window.scrollTo({top:0,behavior:'smooth'})">Try Free</button>
+</div>
+<script src="/assets/js/index.js" defer></script>
+<script src="/assets/js/premium.js" defer></script>
+</body>
+</html>

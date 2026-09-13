@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ReelScribe — Transcribe Any Video Instantly</title>
+<meta name="description" content="ReelScribe transcribes supported YouTube and Instagram videos plus direct video and audio uploads. Free to start.">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="apple-touch-icon" href="/assets/favicon.png">
+<link rel="canonical" href="https://reelscribe.site/transcript.html">
+
+<!-- Open Graph / Social Sharing -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ReelScribe">
+<meta property="og:title" content="ReelScribe — Transcribe Any Video Instantly">
+<meta property="og:description" content="ReelScribe transcribes supported YouTube and Instagram videos plus direct video and audio uploads. Free to start.">
+<meta property="og:url" content="https://reelscribe.site/transcript.html">
+<meta property="og:image" content="https://reelscribe.site/assets/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ReelScribe — Transcribe Any Video Instantly">
+<meta name="twitter:description" content="ReelScribe transcribes supported YouTube and Instagram videos plus direct video and audio uploads. Free to start.">
+<meta name="twitter:image" content="https://reelscribe.site/assets/og-cover.png">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "ReelScribe",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Web",
+  "description": "AI-powered video transcription and viral clip generator for supported YouTube and Instagram videos plus direct uploads.",
+  "offers": {
+    "@type": "Offer",
+    "price": "149",
+    "priceCurrency": "INR"
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/assets/css/transcript.css">
+<link rel="stylesheet" href="/premium.css">
+</head>
+<body>
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo"><span class="mark"></span>ReelScribe</div>
+  <div class="nav-toggle">
+    <a class="nav-btn active" id="btnT" href="/transcript.html">Transcript</a>
+    <a class="nav-btn" id="btnC" href="/">Cut Clips</a>
+  </div>
+<a class="rs-referral-link" href="/referral.html">🎁 <span class="rs-full">Invite &amp; </span>Earn</a>
+  <button class="nav-menu" onclick="openMenu()" aria-label="Open menu">≡</button>
+</nav>
+
+<!-- MENU -->
+<div class="menu-overlay" id="menuOverlay">
+  <div class="menu-box" id="menuBox">
+    <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+    <div class="menu-top">
+      <div class="nav-logo"><span class="mark"></span>ReelScribe</div>
+      <button class="menu-close" onclick="closeMenu()" aria-label="Close menu">✕</button>
+    </div>
+    <a href="/">Home</a>
+    <a href="/pricing.html">Pricing</a>
+    <a href="/contact.html">Support</a>
+    <a href="/dashboard.html" id="menuDashTranscript" style="display:none;">Transcription Dashboard</a>
+    <a href="/clips-dashboard.html" id="menuDashClips" style="display:none;">Clips Dashboard</a>
+    <button class="menu-cta" id="menuLoginBtn" onclick="window.location.href='/login.html'">Login →</button>
+    <button class="menu-cta" id="menuLogoutBtn" style="display:none; background:var(--s2); border:1px solid var(--border2); color:var(--text-dim);" onclick="logout()">Logout →</button>
+  </div>
+</div>
+
+<div class="reel">
+  <div class="reel-body">
+<div class="hero">
+    <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">AI Powered · Free To Start</span><span class="frame-line"></span></div>
+    <h1 class="hero-h1">Turn any video into a <em>viral script.</em></h1>
+    <p class="hero-sub">ReelScribe <strong>instantly extracts transcripts</strong> from any video. Study hooks, discover scripts, and create better content — in seconds.</p>
+
+    <div class="hero-input-wrap">
+      <svg style="width:15px;height:15px;color:var(--muted);margin:auto 0 auto 14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <input class="hero-input" type="url" id="videoUrl" placeholder="youtube.com / instagram.com ...">
+      <button class="hero-input-btn" onclick="transcribeVideo()">Get Transcript</button>
+    </div>
+
+    <div class="hero-or">or</div>
+    <button class="hero-upload" id="uploadTrigger">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Upload Your Video File
+    </button>
+    <input type="file" id="videoFile" accept="video/*,audio/*" hidden>
+
+    <div class="trust-pills">
+      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>No editing needed</span>
+      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>50+ Languages</span>
+      <span class="trust-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Free to start</span>
+    </div>
+
+    <div class="mockup-box" aria-hidden="true">
+      <div class="mockup-bar"><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-dot"></span><span class="mockup-url">reelscribe.site/transcript</span></div>
+      <div class="mockup-body">
+        <div class="mockup-line"><span class="mockup-time">00:04</span><span class="mockup-text">So <b>nobody tells you this</b> when you start posting online —</span></div>
+        <div class="mockup-line"><span class="mockup-time">00:09</span><span class="mockup-text">the first three seconds decide if someone <b>keeps watching.</b></span></div>
+        <div class="mockup-line"><span class="mockup-time">00:14</span><span class="mockup-text">That's the hook. Everything after that is just <b>delivery.</b></span></div>
+      </div>
+    </div>
+
+    <div id="previewBox">
+      <span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+      <h4>Transcript Preview</h4>
+      <div id="previewText"></div>
+      <div id="loginSection">
+        <div style="height:1px;background:var(--border);margin:14px 0;"></div>
+        <p class="lock-text">Login to unlock the full transcript</p>
+        <button id="googleBtn" onclick="googleLogin()">
+          <svg class="g-logo" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Continue with Google
+        </button>
+      </div>
+      <div id="dashboardSection">
+        <div style="height:1px;background:var(--border);margin:14px 0;"></div>
+        <p class="lock-text">Logged in — view the full transcript on your Dashboard.</p>
+        <button class="dash-btn" onclick="window.location.href='/dashboard.html'">Go to Dashboard →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span class="ticker-item">AI TRANSCRIPT</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">50+ LANGUAGES</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">YOUTUBE · INSTAGRAM</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">FREE TO START</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">NO EDITING NEEDED</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">AI TRANSCRIPT</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">50+ LANGUAGES</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">YOUTUBE · INSTAGRAM</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">FREE TO START</span><span class="ticker-item"><span>✦</span></span>
+      <span class="ticker-item">NO EDITING NEEDED</span><span class="ticker-item"><span>✦</span></span>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Numbers</span><span class="frame-line"></span></div>
+  <div class="stat-strip">
+    <div class="stat-cell"><div class="stat-num">12K+</div><div class="stat-label">Transcripts Generated</div></div>
+    <div class="stat-cell"><div class="stat-num">50+</div><div class="stat-label">Languages</div></div>
+    <div class="stat-cell"><div class="stat-num">3</div><div class="stat-label">Guest Previews</div></div>
+    <div class="stat-cell"><div class="stat-num">10x</div><div class="stat-label">Faster Than Manual</div></div>
+    <div class="stat-cell full"><div class="stat-num">₹149/mo</div><div class="stat-label">Starter plan starting price</div></div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">01</span><span class="frame-name">Everything You Need</span><span class="frame-line"></span></div>
+  <h2 class="feat-heading">Two engines.<br>One <em>platform.</em></h2>
+  <p class="feat-sub">Transcribe any video instantly. Cut viral clips automatically. All in one place.</p>
+  <div class="feat-cards">
+    <div class="feat-card">
+      <div class="feat-num mono">01 — TRANSCRIPT</div>
+      <h3>Extract Any Script</h3>
+      <p>Paste a link or upload a file. ReelScribe transcribes speech with high accuracy — study viral hooks, discover what works, repurpose content.</p>
+      <div class="feat-stats">
+        <div><div class="feat-stat-num">50+</div><div class="feat-stat-label">Languages</div></div>
+        <div><div class="feat-stat-num">~5s</div><div class="feat-stat-label">Avg Speed</div></div>
+      </div>
+    </div>
+    <div class="feat-card live">
+      <div class="feat-num mono">02 — CLIPPING · LIVE</div>
+      <h3>Cut Clips Automatically</h3>
+      <p>Paste a YouTube link. AI finds the best moments and cuts 5–12 ready-to-post vertical clips. No timeline editing required.</p>
+      <div class="feat-stats">
+        <div><div class="feat-stat-num">5–12</div><div class="feat-stat-label">Clips Per Video</div></div>
+        <div><div class="feat-stat-num">Auto</div><div class="feat-stat-label">Delete After 24h</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">02</span><span class="frame-name">Process</span><span class="frame-line"></span></div>
+  <h2 class="how-heading">How ReelScribe Works</h2>
+  <p class="how-sub">Paste to published — three steps.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num-label">01</div>
+      <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+      <h4>Paste or Upload</h4>
+      <p>Drop any public video URL or upload a file directly from your device.</p>
+    </div>
+    <div class="step">
+      <div class="step-num-label">02</div>
+      <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+      <h4>AI Processes</h4>
+      <p>Our AI engine automatically extracts and transcribes all speech in seconds.</p>
+    </div>
+    <div class="step">
+      <div class="step-num-label">03</div>
+      <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+      <h4>Get Your Transcript</h4>
+      <p>Receive a clean, accurate transcript — ready to copy or repurpose.</p>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Supported Platforms</span><span class="frame-line"></span></div>
+  <div class="platforms-row">
+    <div class="p-icon" style="background:#fff;"><img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg" alt="YouTube"></div>
+    <div class="p-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);"><img style="filter:brightness(0) invert(1)" src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/instagram.svg" alt="Instagram"></div>
+    <div class="p-icon" style="background:#141217;color:#aaa;font-size:10px;font-weight:700;">UPLOAD</div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">03</span><span class="frame-name">Who It's For</span><span class="frame-line"></span></div>
+  <div class="usecase-grid">
+    <div class="usecase-card"><div class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div><h4>Podcasters</h4><p>Turn episodes into searchable text and quote-ready snippets.</p></div>
+    <div class="usecase-card"><div class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div><h4>YouTubers</h4><p>Study competitor hooks and repurpose scripts fast.</p></div>
+    <div class="usecase-card"><div class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><h4>Course Creators</h4><p>Generate captions and notes straight from lecture videos.</p></div>
+    <div class="usecase-card"><div class="usecase-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></div><h4>Marketers</h4><p>Pull soundbites from interviews for social copy.</p></div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">What Users Say</span><span class="frame-line"></span></div>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-quote">Switched from a $20/month tool to ReelScribe and honestly get faster transcripts for less. Been using it daily for my podcast clips.</p>
+      <div class="testi-person"><div class="testi-avatar">R</div><div><div class="testi-name">Rohan Mehta</div><div class="testi-role">Podcast Editor</div></div></div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <p class="testi-quote">The clip cutting actually finds the right moments — saved me hours of manually scrubbing through long-form YouTube videos.</p>
+      <div class="testi-person"><div class="testi-avatar">S</div><div><div class="testi-name">Sana Kapoor</div><div class="testi-role">Content Creator</div></div></div>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">Why ReelScribe</span><span class="frame-line"></span></div>
+  <table class="compare-table">
+    <thead><tr><th>Feature</th><th class="col-us">ReelScribe</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr><td>Starting price</td><td class="col-us">₹149/mo</td><td>Starter plan</td></tr>
+      <tr><td>Guest preview</td><td class="col-us">3</td><td>No signup required</td></tr>
+      <tr><td>Auto clip cutting</td><td class="col-us">Included</td><td>YouTube clip workflow</td></tr>
+      <tr><td>50+ languages</td><td class="col-us">Supported</td><td>Language availability varies</td></tr>
+    </tbody>
+  </table>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">FAQ</span><span class="frame-line"></span></div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Is ReelScribe really free to start?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>You can try up to 3 transcript previews without an account. A free account unlocks your full transcript allowance.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Which platforms are supported?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>YouTube and Instagram links, plus direct file uploads (video or audio).</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">How long is my data kept?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Generated clips auto-delete after 24 hours. Source videos are removed right after processing.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Can I cancel my subscription anytime?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <div class="faq-a"><p>Plans are purchased for the selected billing period. Contact support if you need help with a plan or billing issue.</p></div>
+    </div>
+  </div>
+
+  <div class="frame-label"><span class="frame-num">—</span><span class="frame-name">From The Blog</span><span class="frame-line"></span></div>
+  <div class="blog-grid">
+    <a class="blog-card" href="/blog/repurpose-youtube-into-reels.html">
+      <div class="blog-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;color:var(--accent)"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></div>
+      <div><div class="blog-tag">Guide</div><h4>How To Repurpose Any YouTube Video Into Reels</h4><p>A 5-step workflow creators use to scale content.</p></div>
+    </a>
+    <a class="blog-card" href="/blog/top-10-viral-hooks.html">
+      <div class="blog-thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;color:var(--accent)"><path d="M12 2c-2 4-6 5-6 10a6 6 0 0 0 12 0c0-2-1-3-2-4 0 2-1 3-2 2 1-3-1-5-2-8z"/></svg></div>
+      <div><div class="blog-tag">Tips</div><h4>Top 10 Viral Hooks That Actually Work</h4><p>Patterns pulled from thousands of transcripts.</p></div>
+    </a>
+  </div>
+
+  <div class="cta-section">
+    <div class="cta-h">Start Free Today</div>
+    <p class="cta-p">3 free transcript previews. No credit card or signup required to try.</p>
+    <button class="cta-btn" onclick="document.getElementById('videoUrl').focus(); window.scrollTo({top:0,behavior:'smooth'})">Try ReelScribe Free →</button>
+  </div>
+<footer>
+  <div class="foot-logo"><span class="mark"></span>ReelScribe</div>
+  <div class="foot-tag">transcribe · repurpose · scale</div>
+  <div class="foot-links">
+    <a href="/about.html">About</a>
+    <a href="/pricing.html">Pricing</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+  <div class="foot-copy">© 2026 REELSCRIBE. ALL RIGHTS RESERVED.</div>
+</footer>
+
+  </div>
+</div>
+
+
+  </div>
+</div>
+<div class="sticky-cta" id="stickyCta">
+  <span>3 free transcript previews, no card needed</span>
+  <button onclick="document.getElementById('videoUrl') ? document.getElementById('videoUrl').focus() : null; window.scrollTo({top:0,behavior:'smooth'})">Try Free</button>
+</div>
+<script src="/assets/js/transcript.js" defer></script>
+<script src="/assets/js/premium.js" defer></script>
+</body>
+</html>
