@@ -55,7 +55,7 @@ const SUBSCRIPTION_PLAN_IDS = {
   pro:     process.env.RAZORPAY_PRO_MONTHLY_PLAN_ID,
   agency:  process.env.RAZORPAY_AGENCY_MONTHLY_PLAN_ID,
 };
-const TRIAL_CHARGE_RUPEES = 1; // day-1 intro charge; full plan price kicks in from the next cycle
+const TRIAL_CHARGE_RUPEES = 1; // ₹1 authorisation/upfront charge; the selected plan amount starts from the next billing cycle
 
 const PLAN_LIMITS = {
   free:    { transcriptDay: 2,  transcriptMonth: 5,   clipDay: 0,  clipMonth: 0,  maxMB: 100,  maxVideoMinutes: 0   },
@@ -1340,9 +1340,11 @@ app.post("/create-order", requireAuth, async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════
-//  AUTOPAY (monthly plans only) — ₹1 intro charge today,
-//  full plan price auto-debited from tomorrow via Razorpay Subscriptions.
-//  Yearly plans keep using /create-order above (one-time payment).
+//  AUTOPAY (monthly plans only) — ₹1 authorisation/upfront charge
+//  today, selected plan amount starts from the next billing cycle.
+//  The local account gets immediate access after the ₹1 checkout
+//  response is cryptographically verified. Razorpay webhooks remain
+//  the asynchronous source of truth / backup.
 // ══════════════════════════════════════════════════════════════
 
 app.post("/create-subscription", subscriptionLimiter, requireAuth, async (req, res) => {
@@ -1366,7 +1368,9 @@ app.post("/create-subscription", subscriptionLimiter, requireAuth, async (req, r
       return res.status(409).json({ success: false, error: "You already have an active or pending subscription. Please cancel it before starting a new one." });
 
     const fullAmount = PLAN_PRICING[plan].m;
-    // Regular billing starts tomorrow; only the ₹1 intro charge happens today.
+    // Keep Razorpay's recurring billing start one day after the ₹1
+    // authorisation/upfront transaction. Our own account access is
+    // activated immediately after verified checkout success below.
     const startAt = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
 
     const subscription = await razorpay.subscriptions.create({
@@ -1377,7 +1381,7 @@ app.post("/create-subscription", subscriptionLimiter, requireAuth, async (req, r
       addons: [
         {
           item: {
-            name: `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan — ₹${TRIAL_CHARGE_RUPEES} intro charge`,
+            name: `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan — ₹${TRIAL_CHARGE_RUPEES} authorisation charge`,
             amount: TRIAL_CHARGE_RUPEES * 100,
             currency: "INR",
           },
@@ -1410,6 +1414,106 @@ app.post("/create-subscription", subscriptionLimiter, requireAuth, async (req, r
   }
 });
 
+// Razorpay Checkout returns these three values after a successful
+// Subscription authentication transaction. Verify them server-side and
+// activate the user's local plan immediately instead of waiting for the
+// asynchronous webhook. Webhooks still remain enabled as the backup path.
+app.post("/verify-subscription", requireAuth, async (req, res) => {
+  try {
+    const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature } = req.body || {};
+    if (![razorpay_payment_id, razorpay_subscription_id, razorpay_signature].every(v => typeof v === "string" && v.trim())) {
+      return res.status(400).json({ success: false, error: "Invalid subscription verification response." });
+    }
+
+    const sub = await Subscription.findOne({
+      userEmail: req.authEmail,
+      razorpaySubscriptionId: razorpay_subscription_id,
+      status: { $in: ["created", "authenticated", "active", "pending"] },
+    });
+    if (!sub) return res.status(404).json({ success: false, error: "Subscription not found or no longer active." });
+
+    const expectedSig = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpay_payment_id}|${razorpay_subscription_id}`)
+      .digest("hex");
+    const expectedBuf = Buffer.from(expectedSig, "hex");
+    const receivedBuf = Buffer.from(razorpay_signature, "hex");
+    if (expectedBuf.length !== receivedBuf.length || !crypto.timingSafeEqual(expectedBuf, receivedBuf)) {
+      return res.status(400).json({ success: false, error: "Subscription verification failed." });
+    }
+
+    const [paymentEntity, subEntity] = await Promise.all([
+      razorpay.payments.fetch(razorpay_payment_id),
+      razorpay.subscriptions.fetch(razorpay_subscription_id),
+    ]);
+
+    const paidRupees = Number(paymentEntity?.amount || 0) / 100;
+    const paymentStatus = String(paymentEntity?.status || "").toLowerCase();
+    if (Math.abs(paidRupees - sub.trialChargeAmount) > 0.01) {
+      return res.status(400).json({ success: false, error: "Unexpected authorisation amount." });
+    }
+    if (!["captured", "authorized"].includes(paymentStatus)) {
+      return res.status(400).json({ success: false, error: "The ₹1 payment has not completed yet." });
+    }
+
+    // Idempotent payment record. The webhook may arrive before or after this request.
+    let payment = await Payment.findOne({ razorpayPaymentId: razorpay_payment_id });
+    if (!payment) {
+      payment = await Payment.create({
+        userEmail: sub.userEmail,
+        plan: sub.plan,
+        billingCycle: "monthly",
+        amount: paidRupees,
+        status: "paid",
+        source: "subscription",
+        razorpayPaymentId: razorpay_payment_id,
+        razorpaySubscriptionId: razorpay_subscription_id,
+      });
+    }
+
+    sub.status = subEntity?.status || "authenticated";
+    sub.lastPaymentId = razorpay_payment_id;
+    sub.currentStart = subEntity?.current_start ? new Date(subEntity.current_start * 1000) : sub.currentStart;
+    sub.currentEnd = subEntity?.current_end ? new Date(subEntity.current_end * 1000) : new Date(Date.now() + 24 * 60 * 60 * 1000);
+    sub.chargeAt = subEntity?.charge_at ? new Date(subEntity.charge_at * 1000) : sub.chargeAt;
+    if (sub.paidCount === 0) sub.paidCount = 1;
+    await sub.save();
+
+    const planExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await User.updateOne(
+      { email: sub.userEmail },
+      {
+        $set: {
+          plan: sub.plan,
+          lastPaidPlan: sub.plan,
+          billingCycle: "monthly",
+          planExpiresAt: planExpiry,
+          subscriptionStatus: subEntity?.status || "authenticated",
+          razorpaySubscriptionId: sub.razorpaySubscriptionId,
+          autopayCancelledNotice: false,
+          transcriptsUsedToday: 0,
+          transcriptsUsedMonth: 0,
+          clipsUsedToday: 0,
+          clipsUsedMonth: 0,
+        },
+      }
+    );
+
+    logAdminAction("subscription-verified", sub.userEmail, `₹${paidRupees} authorisation verified — ${sub.plan} monthly — subscription ${sub.razorpaySubscriptionId}`, req);
+
+    return res.json({
+      success: true,
+      plan: sub.plan,
+      planExpiresAt: planExpiry,
+      subscriptionStatus: subEntity?.status || "authenticated",
+      message: `${sub.plan.charAt(0).toUpperCase() + sub.plan.slice(1)} plan is active now.`,
+    });
+  } catch (err) {
+    console.error("[/verify-subscription] failed:", err);
+    return res.status(500).json({ success: false, error: "We couldn't verify the subscription yet. Please refresh in a few seconds." });
+  }
+});
+
 app.post("/cancel-subscription", requireAuth, async (req, res) => {
   try {
     const email = req.authEmail;
@@ -1422,11 +1526,14 @@ app.post("/cancel-subscription", requireAuth, async (req, res) => {
     try {
       await razorpay.subscriptions.cancel(sub.razorpaySubscriptionId, { cancel_at_cycle_end: 0 });
     } catch (razorpayErr) {
-      // A subscription the user backed out of before ever authorizing a
-      // mandate (still "created" on Razorpay's side) can reject a cancel
-      // call — that's fine, it can never be charged anyway. What matters
-      // is that OUR record stops blocking the user from starting a new one.
       console.error(`[/cancel-subscription] Razorpay cancel failed for ${sub.razorpaySubscriptionId}:`, razorpayErr?.error || razorpayErr);
+      // Never downgrade locally while Razorpay may still be able to charge.
+      // For a just-created checkout that was never authenticated, the local
+      // record can safely be released; for an authenticated/active mandate,
+      // the user must retry so billing cannot continue while access is free.
+      if (sub.status !== "created") {
+        return res.status(502).json({ success: false, error: "Razorpay could not cancel the AutoPay mandate. Your plan is unchanged. Please try again." });
+      }
     }
 
     sub.status = "cancelled";
@@ -1458,15 +1565,10 @@ app.post("/cancel-subscription", requireAuth, async (req, res) => {
   }
 });
 
-// Clears the one-time "AutoPay Cancelled" popup flag once the user has seen it.
+// Kept for backwards compatibility with older clients. The cancellation
+// notice is intentionally persistent now, so this endpoint does not clear it.
 app.post("/acknowledge-autopay-notice", requireAuth, async (req, res) => {
-  try {
-    await User.updateOne({ email: req.authEmail }, { $set: { autopayCancelledNotice: false } });
-    res.json({ success: true });
-  } catch (err) {
-    console.error("[/acknowledge-autopay-notice] failed:", err);
-    res.status(500).json({ success: false });
-  }
+  res.json({ success: true, persistent: true });
 });
 
 // Razorpay → server. No session/login — authenticity comes entirely from the
@@ -1490,7 +1592,7 @@ app.post("/webhooks/razorpay", webhookLimiter, async (req, res) => {
     const payload = req.body?.payload || {};
 
 // Shared handler for any subscription payment — used by BOTH
-// subscription.authenticated (fires for the day-1 ₹1 intro charge, since
+// subscription.authenticated (fires for the day-1 ₹1 authorisation charge, since
 // Razorpay does NOT emit subscription.charged for the authentication
 // payment when start_at is a future date) and subscription.charged (fires
 // for every real recurring charge from day 2 onward). Idempotent per
@@ -1553,14 +1655,15 @@ async function processSubscriptionPayment(subEntity, paymentEntity, req) {
           planExpiresAt: planExpiry,
           subscriptionStatus: subEntity.status,
           razorpaySubscriptionId: subEntity.id,
+          autopayCancelledNotice: false,
           transcriptsUsedToday: 0, transcriptsUsedMonth: 0,
           clipsUsedToday: 0, clipsUsedMonth: 0,
         },
       }
     );
   } else {
-    // ₹1 intro charge — unlock the plan for 1 day only; the real
-    // charge tomorrow is what extends it properly.
+    // ₹1 authorisation charge — unlock the plan for 1 day only; the real
+    // charge tomorrow extends it into the normal monthly billing period.
     await User.updateOne(
       { email: sub.userEmail },
       {
@@ -1599,7 +1702,7 @@ async function processSubscriptionPayment(subEntity, paymentEntity, req) {
           logAdminAction(`subscription-${event.split(".")[1]}`, sub.userEmail, `${sub.plan} monthly autopay — subscription ${subEntity.id}`, req);
         }
 
-        // For a future start_at, the day-1 ₹1 intro charge fires as part of
+        // For a future start_at, the day-1 ₹1 authorisation charge fires as part of
         // THIS event (not subscription.charged) — Razorpay only emits
         // subscription.charged starting from the real recurring cycle.
         const paymentEntity = payload.payment?.entity;
