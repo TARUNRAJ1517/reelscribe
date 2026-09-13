@@ -349,3 +349,18 @@ footer{border-top:1px solid var(--border); padding:22px 0 66px;}
 @media (max-width:520px){.rs-referral-link{padding:7px 8px!important;font-size:11px!important;gap:3px}
   .rs-referral-link .rs-full{display:none}}
 .nav-btn{display:flex;align-items:center;justify-content:center;text-decoration:none;}
+
+/* ── Home pricing: clean professional offer cards ── */
+.home-pricing-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+.home-plan-card{min-width:0;padding:24px!important;border-radius:18px!important;overflow:hidden}
+.home-plan-kicker{font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:#53657f;margin-bottom:10px}
+.home-offer-badge{display:inline-flex;align-items:center;padding:6px 9px;border-radius:999px;background:#eef4ff;color:#2457c7;font-size:9px;font-weight:800;letter-spacing:1.3px;margin-bottom:14px}
+.home-price{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace}
+.home-price s{font-size:13px;color:#8b98aa;font-weight:500}
+.home-price strong{font-size:38px;line-height:1;color:#102040;letter-spacing:-1.5px}
+.home-price span{font-size:11px;color:#52637c;font-family:'Archivo',sans-serif;font-weight:600}
+.home-price-note{min-height:38px;margin:10px 0 16px;color:#65758c;font-size:12px;line-height:1.55}
+.home-plan-card .plan-features{margin-bottom:20px}
+.home-plan-card .plan-feat{font-size:13px;color:#52637c;padding:5px 0}
+.home-plan-card.popular{border-color:#8eabef!important;box-shadow:0 18px 50px rgba(37,99,235,.13)!important}
+@media(max-width:820px){.home-pricing-grid{grid-template-columns:1fr}.home-plan-card{padding:22px!important}.home-price strong{font-size:34px}}
