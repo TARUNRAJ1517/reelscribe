@@ -302,7 +302,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({
   storage,
-  limits: { fileSize: 25 * 1024 * 1024, files: 1 }, // Groq direct-upload limit used by the UI.
+  limits: { fileSize: 25 * 1024 * 1024, files: 1 }, // Keep aligned with the transcription provider upload ceiling.
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     if (!ALLOWED_VIDEO_MIME.has(file.mimetype) || !ALLOWED_VIDEO_EXT.has(ext)) {
@@ -1282,6 +1282,8 @@ const PLAN_PRICING = {
   agency:  { m: 599, y: 499 }
 };
 
+function getMonthlyPlanPrice(plan) { return PLAN_PRICING[plan]?.m || null; }
+
 app.post("/validate-coupon", requireAuth, async (req, res) => {
   try {
     const { code, plan, billing } = req.body;
@@ -1351,6 +1353,11 @@ app.post("/create-subscription", subscriptionLimiter, requireAuth, async (req, r
   try {
     const { plan } = req.body;
     const email = req.authEmail;
+
+    const currentUser = await User.findOne({ email }).select("plan subscriptionStatus razorpaySubscriptionId planExpiresAt").lean();
+    if (["starter", "pro", "agency"].includes(currentUser?.plan) && currentUser?.razorpaySubscriptionId) {
+      return res.status(409).json({ success: false, error: "Your paid plan is already active. Cancel AutoPay before starting another subscription." });
+    }
 
     if (!["starter", "pro", "agency"].includes(plan))
       return res.status(400).json({ success: false, error: "Invalid plan." });
@@ -1479,7 +1486,8 @@ app.post("/verify-subscription", requireAuth, async (req, res) => {
     if (sub.paidCount === 0) sub.paidCount = 1;
     await sub.save();
 
-    const planExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const expectedChargeAt = sub.chargeAt || (subEntity?.charge_at ? new Date(subEntity.charge_at * 1000) : null);
+    const planExpiry = expectedChargeAt || new Date(Date.now() + 24 * 60 * 60 * 1000);
     await User.updateOne(
       { email: sub.userEmail },
       {
@@ -1517,10 +1525,11 @@ app.post("/verify-subscription", requireAuth, async (req, res) => {
 app.post("/cancel-subscription", requireAuth, async (req, res) => {
   try {
     const email = req.authEmail;
+    const requestedSubId = typeof req.body?.subscriptionId === "string" ? req.body.subscriptionId.trim() : null;
     const sub = await Subscription.findOne({
       userEmail: email,
-      status: { $in: ["created", "authenticated", "active", "pending", "halted"] },
-    });
+      ...(requestedSubId ? { razorpaySubscriptionId: requestedSubId, status: { $in: ["created", "authenticated", "active", "pending", "halted"] } } : { status: { $in: ["created", "authenticated", "active", "pending", "halted"] } }),
+    }).sort({ createdAt: -1 });
     if (!sub) return res.status(404).json({ success: false, error: "No active subscription found." });
 
     try {
@@ -1543,22 +1552,26 @@ app.post("/cancel-subscription", requireAuth, async (req, res) => {
 
     // Immediate downgrade — no grace period, even if a full charge already
     // landed this cycle. Keeps the ₹1-intro-then-cancel loophole closed.
-    await User.updateOne(
-      { email },
-      {
-        $set: {
-          subscriptionStatus: "cancelled",
-          plan: "free",
-          billingCycle: null,
-          planExpiresAt: null,
-          autopayCancelledNotice: true,
-        },
-      }
-    );
+    const currentUser = await User.findOne({ email }).select("plan razorpaySubscriptionId").lean();
+    const isCurrentAccountSubscription = !requestedSubId || currentUser?.razorpaySubscriptionId === sub.razorpaySubscriptionId;
+    if (isCurrentAccountSubscription) {
+      await User.updateOne(
+        { email },
+        {
+          $set: {
+            subscriptionStatus: "cancelled",
+            plan: "free",
+            billingCycle: null,
+            planExpiresAt: null,
+            autopayCancelledNotice: true,
+          },
+        }
+      );
+    }
 
-    logAdminAction("subscription-cancelled", email, `${sub.plan} monthly autopay — subscription ${sub.razorpaySubscriptionId} — user requested, downgraded to free`, req);
+    logAdminAction("subscription-cancelled", email, `${sub.plan} monthly autopay — subscription ${sub.razorpaySubscriptionId}${isCurrentAccountSubscription ? " — downgraded to free" : " — checkout cleanup"}`, req);
 
-    res.json({ success: true, message: "Your subscription has been cancelled and your account switched to the Free plan." });
+    res.json({ success: true, message: isCurrentAccountSubscription ? "Your subscription has been cancelled and your account switched to the Free plan." : "Pending subscription checkout cancelled." });
   } catch (err) {
     console.error("[/cancel-subscription] failed:", err);
     res.status(500).json({ success: false, error: "Couldn't cancel the subscription right now. Please try again or contact support." });
@@ -1750,6 +1763,26 @@ async function processSubscriptionPayment(subEntity, paymentEntity, req) {
 
     if (event === "payment.failed") {
       const paymentEntity = payload.payment?.entity;
+      const subEntity = payload.subscription?.entity;
+      if (paymentEntity) {
+        const existing = await Payment.findOne({ razorpayPaymentId: paymentEntity.id });
+        if (!existing && subEntity) {
+          const sub = await Subscription.findOne({ razorpaySubscriptionId: subEntity.id });
+          if (sub) {
+            await Payment.create({
+              userEmail: sub.userEmail,
+              plan: sub.plan,
+              billingCycle: "monthly",
+              amount: Number(paymentEntity.amount || 0) / 100,
+              status: "failed",
+              source: "subscription",
+              razorpayPaymentId: paymentEntity.id,
+              razorpaySubscriptionId: subEntity.id,
+            });
+            logAdminAction("subscription-payment-failed", sub.userEmail, `Payment ${paymentEntity.id} failed for ${sub.plan} monthly — ${paymentEntity.error_description || "reason unavailable"}`, req);
+          }
+        }
+      }
       console.error("[/webhooks/razorpay] payment.failed:", paymentEntity?.id, paymentEntity?.error_description);
     }
 
@@ -2214,13 +2247,30 @@ app.get("/admin/users/:email/details", adminAuth, async (req, res) => {
   try {
     const email = decodeURIComponent(req.params.email || "").trim().toLowerCase();
     if (!isValidEmail(email)) return res.status(400).json({ success: false, error: "Invalid email." });
-    const [user, totalTranscriptions, totalClipJobs] = await Promise.all([
-      User.findOne({ email }).lean(),
+    const [user, totalTranscriptions, totalClipJobs, subscriptions, payments] = await Promise.all([
+      User.findOne({ email }).select("email name plan credits createdAt planExpiresAt lastPaidPlan subscriptionStatus razorpaySubscriptionId billingCycle autopayCancelledNotice lastActiveAt isSuspended").lean(),
       Reel.countDocuments({ userEmail: email }),
-      ClipJob.countDocuments({ userEmail: email })
+      ClipJob.countDocuments({ userEmail: email }),
+      Subscription.find({ userEmail: email }).sort({ createdAt: -1 }).limit(20).lean(),
+      Payment.find({ userEmail: email }).sort({ createdAt: -1 }).limit(50).lean()
     ]);
     if (!user) return res.status(404).json({ success: false, error: "User not found." });
-    res.json({ success: true, details: { lastActive: user.lastActiveAt, totalTranscriptions, totalClipJobs, creditsUsedTotal: user.creditsUsedTotal || 0 } });
+    const timeline = [];
+    for (const sub of subscriptions) {
+      timeline.push({ type: "autopay_started", at: sub.createdAt, plan: sub.plan, status: sub.status, subscriptionId: sub.razorpaySubscriptionId, amount: sub.trialChargeAmount, label: "AutoPay started" });
+      if (sub.currentStart) timeline.push({ type: "subscription_active", at: sub.currentStart, plan: sub.plan, status: sub.status, subscriptionId: sub.razorpaySubscriptionId, label: "Subscription cycle started" });
+      if (sub.cancelledAt) timeline.push({ type: "autopay_cancelled", at: sub.cancelledAt, plan: sub.plan, status: sub.status, subscriptionId: sub.razorpaySubscriptionId, label: "AutoPay cancelled", reason: sub.cancelReason });
+    }
+    for (const pay of payments) {
+      timeline.push({ type: pay.status === "failed" ? "payment_failed" : "payment_received", at: pay.createdAt, plan: pay.plan, status: pay.status, amount: pay.amount, paymentId: pay.razorpayPaymentId, subscriptionId: pay.razorpaySubscriptionId, label: pay.status === "failed" ? "Payment failed" : "Payment received" });
+    }
+    timeline.sort((a,b)=>new Date(b.at)-new Date(a.at));
+    res.json({ success: true, details: {
+      user, lastActive: user.lastActiveAt, totalTranscriptions, totalClipJobs, creditsUsedTotal: user.creditsUsedTotal || 0,
+      subscriptions: subscriptions.map(s => ({ id:s.razorpaySubscriptionId, plan:s.plan, status:s.status, startedAt:s.createdAt, activatedAt:s.currentStart, cancelledAt:s.cancelledAt, cancelReason:s.cancelReason, chargeAt:s.chargeAt, fullAmount:s.fullAmount, activationAmount:s.trialChargeAmount, paidCount:s.paidCount, lastPaymentId:s.lastPaymentId, currentEnd:s.currentEnd })),
+      payments: payments.map(p => ({ id:p.razorpayPaymentId, subscriptionId:p.razorpaySubscriptionId, amount:p.amount, status:p.status, plan:p.plan, createdAt:p.createdAt })),
+      timeline
+    } });
   } catch (error) { console.error("[/admin/users/:email/details] failed:", error); res.status(500).json({ success: false, error: "Couldn't load user details right now." }); }
 });
 
