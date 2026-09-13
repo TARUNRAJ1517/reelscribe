@@ -75,7 +75,7 @@ async function buyPlan(plan) {
   const billing = yearly ? "yearly" : "monthly";
   const couponCode = offerCoupon || "";
 
-  // Monthly = autopay subscription (₹1 today, full price auto-debited from tomorrow).
+  // Monthly = autopay subscription (₹1 authorisation today, selected plan amount from tomorrow).
   // Yearly = one-time payment, same as before.
   if (billing === "monthly") {
     return buySubscription(plan, email);
@@ -160,10 +160,10 @@ async function buyPlan(plan) {
   }
 }
 
-// Autopay flow (monthly plans): ₹1 charged today to set up the mandate,
-// full plan price auto-debits from tomorrow's billing cycle onward.
-// Coupons aren't applied here — the intro price is already ₹1 for everyone.
+// Autopay flow (monthly plans): ₹1 authorisation/upfront charge today,
+// then the selected plan price auto-debits from tomorrow and monthly thereafter.
 async function buySubscription(plan, email) {
+  let checkoutSucceeded = false;
   try {
     const res = await fetch("/create-subscription", {
       method: "POST",
@@ -178,26 +178,46 @@ async function buySubscription(plan, email) {
       return;
     }
 
+    const fullPrice = prices[plan]?.m || 0;
+    const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
     const options = {
       key: data.key,
       subscription_id: data.subscriptionId,
       name: "ReelScribe",
-      description: plan.charAt(0).toUpperCase() + plan.slice(1) + " Plan • Monthly Autopay • ₹1 today",
+      description: `${planLabel} Plan • ₹1 today • ₹${fullPrice}/month from tomorrow`,
       prefill: { email },
 
-      handler: function () {
-        // Actual plan activation happens via the Razorpay webhook, which is
-        // the trusted source of truth — this just guides the user forward.
-        alert("Payment received! Your plan will activate in a few seconds.");
-        location.href = "/dashboard.html";
+      handler: async function (response) {
+        checkoutSucceeded = true;
+        try {
+          const verify = await fetch("/verify-subscription", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_subscription_id: response.razorpay_subscription_id,
+              razorpay_signature: response.razorpay_signature
+            })
+          });
+          const result = await verify.json();
+
+          if (result.success) {
+            alert(`Payment successful. Your ${planLabel} plan is active now. ₹${fullPrice} will be charged from tomorrow, then monthly.`);
+            location.href = "/dashboard.html";
+          } else {
+            alert(result.error || "Payment verification is still processing. Please open your dashboard in a few seconds.");
+            location.href = "/dashboard.html";
+          }
+        } catch (e) {
+          console.error("Subscription verification failed:", e);
+          alert("Payment received. Your plan is being activated. Please open your dashboard in a few seconds.");
+          location.href = "/dashboard.html";
+        }
       },
 
       modal: {
-        // The subscription record was already created server-side before
-        // checkout opened. If the user backs out without paying, cancel it
-        // right away — otherwise a retry would wrongly say "you already
-        // have an active or pending subscription".
         ondismiss: async function () {
+          if (checkoutSucceeded) return;
           try {
             await fetch("/cancel-subscription", { method: "POST" });
           } catch (e) {
