@@ -1100,7 +1100,7 @@ app.post("/cut-clips", clipLimiter, requireAuth, async (req, res) => {
       );
 
       if (!ec2Response.data?.success) {
-        clipJobs.set(jobId, { status: "error", error: ec2Response.data?.error || "Clip generation failed. Please try again." });
+        clipJobs.set(jobId, { status: "error", email, error: ec2Response.data?.error || "Clip generation failed. Please try again." });
         return scheduleJobCleanup(jobId);
       }
 
@@ -1115,13 +1115,13 @@ app.post("/cut-clips", clipLimiter, requireAuth, async (req, res) => {
           // A concurrent request used the last reward; don't silently grant a free cut.
           await axios.post(`${EC2_URL}/delete-clips`, { keys: clips.map(c => c.s3Key).filter(Boolean) },
             { headers: { "x-internal-key": INTERNAL_KEY }, timeout: 30000 }).catch(() => {});
-          clipJobs.set(jobId, { status: "error", error: "Your referral cut was already used. Please try again." });
+          clipJobs.set(jobId, { status: "error", email, error: "Your referral cut was already used. Please try again." });
           return scheduleJobCleanup(jobId);
         }
       } else if (!useReferral) {
         await updateClipUsage(user);
       }
-      clipJobs.set(jobId, { status: "done", clips });
+      clipJobs.set(jobId, { status: "done", email, clips });
       scheduleJobCleanup(jobId);
 
       if (clips.length > 0) {
@@ -1137,7 +1137,7 @@ app.post("/cut-clips", clipLimiter, requireAuth, async (req, res) => {
       }
     } catch (err) {
       console.error(`[/cut-clips] job ${jobId} failed:`, err.response?.data || err.message || err);
-      clipJobs.set(jobId, { status: "error", error: "Clip generation failed. Please try again." });
+      clipJobs.set(jobId, { status: "error", email, error: "Clip generation failed. Please try again." });
       scheduleJobCleanup(jobId);
     }
   })();
