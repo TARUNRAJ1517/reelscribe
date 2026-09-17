@@ -4,6 +4,10 @@ function switchTab(tab) {
   document.getElementById('signupView').style.display = isLogin ? 'none' : 'block';
   document.getElementById('tabLogin').classList.toggle('active', isLogin);
   document.getElementById('tabSignup').classList.toggle('active', !isLogin);
+  // Desktop only: slides the red overlay panel across (no-op on mobile,
+  // where the rule above already handles switching views).
+  const shell = document.getElementById('authShell');
+  if (shell) shell.classList.toggle('right-panel-active', !isLogin);
 }
 
 const nextParam = new URLSearchParams(window.location.search).get('next');
