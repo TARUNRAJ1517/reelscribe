@@ -34,6 +34,8 @@ body {
   display: flex; background: var(--s1); border: 1px solid var(--border2);
   border-radius: 8px; padding: 3px; margin-bottom: 24px;
 }
+.tabs.tabs-mobile { display: flex; }
+.overlay-container { display: none; } /* desktop-only slide panel, see media query below */
 .tab-btn {
   flex: 1; padding: 9px; border-radius: 5px; border: none;
   background: transparent; color: var(--muted);
@@ -136,12 +138,106 @@ footer a:hover { color: var(--sub); }
 
 /* ══════════════════════════════════════════════
    RESPONSIVE — DESKTOP / TABLET (matches home page)
+   Below 700px: unchanged tab-switch flow (mobile-first).
+   700px+: the two forms live side by side inside a single
+   card and a red overlay slides across to swap which one
+   shows, echoing the "generate → reveal" motion used on
+   the ReelScribe homepage input.
 ═══════════════════════════════════════════════ */
 @media (min-width: 700px) {
   body { max-width: 980px; }
   .nav { padding: 14px 40px; }
-  .main { max-width: 440px; margin: 0 auto; padding-top: 40px; }
   footer { padding: 20px 40px 24px; }
+
+  .main { max-width: 100%; padding: 48px 40px 56px; }
+
+  /* the mobile pill-tabs are replaced by the overlay's own
+     Log In / Sign Up prompts on desktop */
+  .tabs.tabs-mobile { display: none; }
+
+  .auth-shell {
+    position: relative;
+    width: 860px; max-width: 100%; margin: 0 auto;
+    min-height: 560px;
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.45);
+    overflow: hidden;
+  }
+
+  .auth-shell .form-panel {
+    position: absolute; top: 0; left: 0;
+    width: 50%; height: 100%;
+    display: flex !important; flex-direction: column; justify-content: center;
+    padding: 0 56px; overflow-y: auto;
+    transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out;
+  }
+  .auth-shell .form-panel .login-heading,
+  .auth-shell .form-panel .bottom-text { text-align: left; }
+  .auth-shell .form-panel .login-sub { text-align: left; }
+
+  #loginView.form-panel { z-index: 2; }
+  #signupView.form-panel { opacity: 0; z-index: 1; }
+
+  .auth-shell.right-panel-active #loginView.form-panel { transform: translateX(100%); }
+  .auth-shell.right-panel-active #signupView.form-panel {
+    transform: translateX(100%);
+    opacity: 1; z-index: 5;
+    animation: revealPanel 0.6s;
+  }
+
+  @keyframes revealPanel {
+    0%, 49.99% { opacity: 0; z-index: 1; }
+    50%, 100% { opacity: 1; z-index: 5; }
+  }
+
+  .overlay-container {
+    display: block;
+    position: absolute; top: 0; left: 50%;
+    width: 50%; height: 100%;
+    overflow: hidden; z-index: 100;
+    transition: transform 0.6s ease-in-out;
+  }
+  .auth-shell.right-panel-active .overlay-container { transform: translateX(-100%); }
+
+  .overlay {
+    position: relative; left: -100%;
+    width: 200%; height: 100%;
+    background: linear-gradient(135deg, #ff5b41 0%, var(--red) 45%, #a81f16 100%);
+    color: #fff5f3;
+    transform: translateX(0);
+    transition: transform 0.6s ease-in-out;
+  }
+  .auth-shell.right-panel-active .overlay { transform: translateX(50%); }
+
+  .overlay-panel {
+    position: absolute; top: 0; width: 50%; height: 100%;
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+    padding: 0 48px; text-align: left;
+    transform: translateX(0);
+    transition: transform 0.6s ease-in-out;
+  }
+  .overlay-panel .login-h1 { color: #fff; }
+  .overlay-panel .login-h1 em { color: #1a0a08; }
+  .overlay-panel p { font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.6; margin: 8px 0 22px; }
+
+  .overlay-left { left: 0; transform: translateX(-20%); }
+  .auth-shell.right-panel-active .overlay-left { transform: translateX(0); }
+
+  .overlay-right { right: 0; transform: translateX(0); }
+  .auth-shell.right-panel-active .overlay-right { transform: translateX(20%); }
+
+  .ghost-btn {
+    padding: 12px 28px; border-radius: 6px;
+    background: transparent; border: 1px solid rgba(255,255,255,0.7);
+    color: #fff; font-size: 12.5px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;
+    cursor: pointer; font-family: 'Archivo', sans-serif; transition: background .2s, transform 80ms ease-in;
+  }
+  .ghost-btn:hover { background: rgba(255,255,255,0.12); }
+  .ghost-btn:active { transform: scale(0.96); }
+
+  .legal-note { margin-top: 26px; }
 }
 
 @media (min-width: 1000px) {
