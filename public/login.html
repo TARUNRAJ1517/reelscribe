@@ -22,13 +22,15 @@
 </nav>
 
 <div class="main">
-  <div class="tabs">
+  <div class="tabs tabs-mobile">
     <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">Log In</button>
     <button class="tab-btn" id="tabSignup" onclick="switchTab('signup')">Sign Up</button>
   </div>
 
+  <div class="auth-shell" id="authShell">
+
   <!-- LOGIN -->
-  <div id="loginView">
+  <div class="form-panel" id="loginView">
     <div class="login-heading">
       <div class="login-h1">Welcome <em>back.</em></div>
       <p class="login-sub">Log in to access your transcripts and clips.</p>
@@ -70,7 +72,7 @@
   </div>
 
   <!-- SIGNUP -->
-  <div id="signupView" style="display:none">
+  <div class="form-panel" id="signupView" style="display:none">
     <div class="login-heading">
       <div class="login-h1">Create an <em>account.</em></div>
       <p class="login-sub">Free to start — no credit card required.</p>
@@ -110,6 +112,24 @@
 
     <div class="bottom-text">Already have an account? <span onclick="switchTab('login')">Log in</span></div>
   </div>
+
+  <!-- DESKTOP OVERLAY (hidden under 700px) -->
+  <div class="overlay-container">
+    <div class="overlay">
+      <div class="overlay-panel overlay-left">
+        <div class="login-h1">Welcome <em>back.</em></div>
+        <p>Log in to access your transcripts and clips.</p>
+        <button class="ghost-btn" onclick="switchTab('login')">Log In</button>
+      </div>
+      <div class="overlay-panel overlay-right">
+        <div class="login-h1">New <em>here?</em></div>
+        <p>Free to start — no credit card required.</p>
+        <button class="ghost-btn" onclick="switchTab('signup')">Sign Up</button>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /.auth-shell -->
 
   <div class="legal-note">
     By continuing, you agree to ReelScribe's <a href="/terms.html">Terms of Service</a> and <a href="/privacy.html">Privacy Policy</a>.
