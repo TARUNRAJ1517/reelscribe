@@ -19,15 +19,13 @@ function toggleBilling() {
 }
 
 const ctaLabels = {
-  starter: { m: 'Start with ₹1 offer', y: 'Get starter' },
-  pro:     { m: 'Start with ₹1 offer', y: 'Get pro' },
-  agency:  { m: 'Start with ₹1 offer', y: 'Get agency' }
+  starter: { m: 'Get starter', y: 'Get starter' },
+  pro:     { m: 'Get pro', y: 'Get pro' },
+  agency:  { m: 'Get agency', y: 'Get agency' }
 };
 
-// Renders the public pricing presentation. Monthly subscriptions use a ₹1
-// introductory offer while the regular monthly price remains clearly visible.
-// Avoid time-relative wording on the marketing page; billing terms are explained
-// in checkout/account screens where they are operationally relevant.
+// Renders the public pricing presentation. Both monthly and yearly plans
+// use a normal one-time Razorpay order with no automatic renewal.
 function renderPlanCards() {
   [['s', 'starter'], ['p', 'pro'], ['a', 'agency']].forEach(([k, plan]) => {
     const p = prices[plan];
@@ -42,16 +40,14 @@ function renderPlanCards() {
       cycleEl.textContent = '/month, billed annually';
       oldEl.textContent = '₹' + p.m;
       oldEl.style.display = 'inline';
-      if (noteEl) noteEl.textContent = 'One-time payment, no autopay.';
-      if (badgeEl) badgeEl.style.display = 'none';
     } else {
-      priceEl.textContent = '₹1';
-      cycleEl.textContent = 'intro offer';
-      oldEl.textContent = '₹' + p.m + '/month';
-      oldEl.style.display = 'inline';
-      if (noteEl) noteEl.textContent = `Introductory offer • Regular plan price ₹${p.m}/month`;
-      if (badgeEl) { badgeEl.style.display = 'inline-flex'; badgeEl.lastChild.textContent = 'Introductory offer'; }
+      priceEl.textContent = '₹' + p.m;
+      cycleEl.textContent = '/month';
+      oldEl.textContent = '';
+      oldEl.style.display = 'none';
     }
+    if (noteEl) noteEl.textContent = 'One-time payment • No automatic renewal';
+    if (badgeEl) badgeEl.style.display = 'none';
 
     const btn = document.getElementById(k === 's' ? 'starterCta' : k === 'p' ? 'proCta' : 'agencyCta');
     if (btn && !btn.disabled) btn.textContent = yearly ? ctaLabels[plan].y : ctaLabels[plan].m;
@@ -76,12 +72,6 @@ async function buyPlan(plan) {
   const billing = yearly ? "yearly" : "monthly";
   const couponCode = offerCoupon || "";
 
-  // Monthly = AutoPay subscription with the ₹1 introductory offer.
-  // Yearly = one-time payment, same as before.
-  if (billing === "monthly") {
-    return buySubscription(plan, email);
-  }
-
   try {
     const res = await fetch("/create-order", {
       method: "POST",
@@ -90,7 +80,6 @@ async function buyPlan(plan) {
     });
 
     const data = await res.json();
-
     if (!data.success) {
       alert(data.error || "Could not create the order. Please try again.");
       return;
@@ -101,10 +90,7 @@ async function buyPlan(plan) {
       plan.charAt(0).toUpperCase() + plan.slice(1) + " Plan",
       billing === "yearly" ? "Yearly" : "Monthly"
     ];
-
-    if (data.coupon && data.coupon.code) {
-      descriptionParts.push("Coupon " + data.coupon.code + " applied");
-    }
+    if (data.coupon && data.coupon.code) descriptionParts.push("Coupon " + data.coupon.code + " applied");
 
     const options = {
       key: data.key,
@@ -114,7 +100,6 @@ async function buyPlan(plan) {
       description: descriptionParts.join(" • "),
       order_id: data.order.id,
       prefill: { email },
-
       handler: async function (response) {
         try {
           const verify = await fetch("/verify-payment", {
@@ -122,9 +107,7 @@ async function buyPlan(plan) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ...response })
           });
-
           const result = await verify.json();
-
           if (result.success) {
             alert("Payment successful! Your " + plan.toUpperCase() + " plan is now active.");
             location.href = "/dashboard.html";
@@ -135,106 +118,20 @@ async function buyPlan(plan) {
           alert("Verification error. Please contact support.");
         }
       },
-
       modal: {
         ondismiss: function() {
           alert("Payment cancelled. You haven't been charged. You can try again anytime.");
         }
       },
-
       theme: { color: "#ff3b30" }
     };
 
-    // Show the applied offer before Razorpay opens.
     if (data.coupon && pricing.discountAmount > 0) {
-      const saved = Number(pricing.discountAmount).toFixed(2);
-      const finalAmount = Number(pricing.finalAmount).toFixed(2);
-      console.log("Coupon " + data.coupon.code + " applied. Saved ₹" + saved + ". Pay ₹" + finalAmount);
+      console.log("Coupon " + data.coupon.code + " applied. Saved ₹" + Number(pricing.discountAmount).toFixed(2) + ". Pay ₹" + Number(pricing.finalAmount).toFixed(2));
     }
 
     const rzp = new Razorpay(options);
     rzp.open();
-
-  } catch (err) {
-    console.error(err);
-    alert("Something went wrong. Please try again.");
-  }
-}
-
-// AutoPay flow (monthly plans): ₹1 introductory activation charge,
-// followed by the selected regular monthly subscription price.
-async function buySubscription(plan, email) {
-  let checkoutSucceeded = false;
-  try {
-    const res = await fetch("/create-subscription", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan })
-    });
-
-    const data = await res.json();
-
-    if (!data.success) {
-      alert(data.error || "Could not start the subscription. Please try again.");
-      return;
-    }
-
-    const fullPrice = prices[plan]?.m || 0;
-    const subscriptionId = data.subscriptionId;
-    const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
-    const options = {
-      key: data.key,
-      subscription_id: data.subscriptionId,
-      name: "ReelScribe",
-      description: `${planLabel} Plan • ₹1 introductory offer • ₹${fullPrice}/month regular price`,
-      prefill: { email },
-
-      handler: async function (response) {
-        checkoutSucceeded = true;
-        try {
-          const verify = await fetch("/verify-subscription", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_subscription_id: response.razorpay_subscription_id,
-              razorpay_signature: response.razorpay_signature
-            })
-          });
-          const result = await verify.json();
-
-          if (result.success) {
-            alert(`Payment successful. Your ${planLabel} plan is active now. Your regular subscription price is ₹${fullPrice}/month.`);
-            location.href = "/dashboard.html";
-          } else {
-            alert(result.error || "Payment verification is still processing. Please open your dashboard in a few seconds.");
-            location.href = "/dashboard.html";
-          }
-        } catch (e) {
-          console.error("Subscription verification failed:", e);
-          alert("Payment received. Your plan is being activated. Please open your dashboard in a few seconds.");
-          location.href = "/dashboard.html";
-        }
-      },
-
-      modal: {
-        ondismiss: async function () {
-          if (checkoutSucceeded) return;
-          try {
-            await fetch("/cancel-subscription", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subscriptionId }) });
-          } catch (e) {
-            console.error("Cleanup after cancelled checkout failed:", e);
-          }
-          alert("Subscription cancelled. You haven't been charged. You can try again anytime.");
-        }
-      },
-
-      theme: { color: "#ff3b30" }
-    };
-
-    const rzp = new Razorpay(options);
-    rzp.open();
-
   } catch (err) {
     console.error(err);
     alert("Something went wrong. Please try again.");
