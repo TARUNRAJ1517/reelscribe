@@ -218,5 +218,5 @@ input:focus,textarea:focus,select:focus,.field-input:focus,.otp-input:focus,.src
 footer{border-top:1px solid var(--rs-border)!important;color:#8190a8!important}
 .menu-overlay{background:rgba(15,23,42,.34)!important;backdrop-filter:blur(8px)!important}.menu-box{background:#fff!important;border:1px solid var(--rs-border)!important;box-shadow:0 30px 90px rgba(15,23,42,.22)!important}.menu-box a{color:#334155!important}
 .legal-page,.legal-wrap,.contact-page,.about-page{color:#52627a!important}.legal-page h1,.legal-page h2,.contact-page h1,.about-page h1{color:#0b1733!important}
-.rs-autopay-persistent{top:78px!important;left:50%!important;right:auto!important;transform:translateX(-50%);width:min(920px,calc(100vw - 28px));background:#fff8f8!important;border:1px solid #fecaca!important;box-shadow:0 14px 35px rgba(127,29,29,.12)!important}
-@media(max-width:700px){.rs-autopay-persistent{top:68px!important;width:calc(100vw - 16px)!important}.hero-h1,.hero h1,.page-h1{font-size:clamp(36px,10vw,54px)!important}}
+@media(max-width:700px){
+.hero-h1,.hero h1,.page-h1{font-size:clamp(36px,10vw,54px)!important}}

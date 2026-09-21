@@ -57,12 +57,11 @@
     </div>
 
     <div class="billing-audit-panel">
-      <div class="billing-audit-head"><div><h4>AutoPay &amp; Billing Timeline</h4><p>Subscription lifecycle, activation charge, recurring billing and cancellation events.</p></div><span class="billing-status-badge" id="billingStatusBadge">—</span></div>
+      <div class="billing-audit-head"><div><h4>Billing Timeline</h4><p>One-time payments, plan purchases and payment activity.</p></div><span class="billing-status-badge" id="billingStatusBadge">—</span></div>
       <div class="billing-id-grid">
-        <div><span>Subscription ID</span><code id="detailSubscriptionId">—</code></div>
-        <div><span>Next charge</span><b id="detailNextCharge">—</b></div>
-        <div><span>Last payment</span><code id="detailLastPayment">—</code></div>
-        <div><span>Paid cycles</span><b id="detailPaidCount">0</b></div>
+        <div><span>Latest payment</span><code id="detailLastPayment">—</code></div>
+        <div><span>Billing cycle</span><b id="detailBillingCycle">—</b></div>
+        <div><span>Plan expiry</span><b id="detailNextCharge">—</b></div>
       </div>
       <div class="billing-timeline" id="billingTimeline"><div class="timeline-empty">Loading billing history…</div></div>
     </div>
@@ -293,7 +292,7 @@
               <select id="marketingTemplate" onchange="updateMarketingDefaults()">
                 <option value="discount">🔥 Discount Offer</option>
                 <option value="upgrade">🚀 Upgrade Offer</option>
-                <option value="expiry">⏰ Subscription Expiring</option>
+                <option value="expiry">⏰ Plan Expiring</option>
                 <option value="announcement">📢 New Feature / Announcement</option>
                 <optgroup id="customTemplateGroup" label="Your Custom Templates"></optgroup>
               </select>
