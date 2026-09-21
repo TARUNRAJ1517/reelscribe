@@ -32,7 +32,6 @@ const AdminLog    = require("./models/AdminLog");
 const Payment     = require("./models/Payment");
 const Coupon      = require("./models/Coupon");
 const CouponRedemption = require("./models/CouponRedemption");
-const Subscription = require("./models/Subscription");
 const Razorpay    = require("razorpay");
 const crypto      = require("crypto");
 const FormData    = require("form-data");
@@ -48,14 +47,7 @@ const razorpay = new Razorpay({
 const EC2_URL       = process.env.EC2_URL;
 const INTERNAL_KEY  = process.env.INTERNAL_SECRET;
 
-// Recurring-subscription config (monthly plans only — yearly stays one-time via /create-order).
 const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
-const SUBSCRIPTION_PLAN_IDS = {
-  starter: process.env.RAZORPAY_STARTER_MONTHLY_PLAN_ID,
-  pro:     process.env.RAZORPAY_PRO_MONTHLY_PLAN_ID,
-  agency:  process.env.RAZORPAY_AGENCY_MONTHLY_PLAN_ID,
-};
-const TRIAL_CHARGE_RUPEES = 1; // ₹1 authorisation/upfront charge; the selected plan amount starts from the next billing cycle
 
 const PLAN_LIMITS = {
   free:    { transcriptDay: 2,  transcriptMonth: 5,   clipDay: 0,  clipMonth: 0,  maxMB: 100,  maxVideoMinutes: 0   },
@@ -165,7 +157,6 @@ app.use(globalLimiter);
 const transcribeLimiter   = rateLimit({ windowMs: 60 * 1000, max: 6,   message: "Too many transcription requests. Please wait a minute and try again." });
 const clipLimiter         = rateLimit({ windowMs: 60 * 1000, max: 6,   message: "Too many clip requests. Please wait a minute and try again." });
 const authLimiter         = rateLimit({ windowMs: 60 * 1000, max: 10,  message: "Too many attempts. Please wait a minute and try again." });
-const subscriptionLimiter = rateLimit({ windowMs: 60 * 1000, max: 5,   message: "Too many subscription requests. Please wait a minute and try again." });
 // Generous: Razorpay's own servers call this, so it must never be the bottleneck.
 const webhookLimiter      = rateLimit({ windowMs: 60 * 1000, max: 100, message: "Too many webhook calls." });
 
@@ -1341,249 +1332,6 @@ app.post("/create-order", requireAuth, async (req, res) => {
   }
 });
 
-// ══════════════════════════════════════════════════════════════
-//  AUTOPAY (monthly plans only) — ₹1 authorisation/upfront charge
-//  today, selected plan amount starts from the next billing cycle.
-//  The local account gets immediate access after the ₹1 checkout
-//  response is cryptographically verified. Razorpay webhooks remain
-//  the asynchronous source of truth / backup.
-// ══════════════════════════════════════════════════════════════
-
-app.post("/create-subscription", subscriptionLimiter, requireAuth, async (req, res) => {
-  try {
-    const { plan } = req.body;
-    const email = req.authEmail;
-
-    const currentUser = await User.findOne({ email }).select("plan subscriptionStatus razorpaySubscriptionId planExpiresAt").lean();
-    if (["starter", "pro", "agency"].includes(currentUser?.plan) && currentUser?.razorpaySubscriptionId) {
-      return res.status(409).json({ success: false, error: "Your paid plan is already active. Cancel AutoPay before starting another subscription." });
-    }
-
-    if (!["starter", "pro", "agency"].includes(plan))
-      return res.status(400).json({ success: false, error: "Invalid plan." });
-
-    const razorpayPlanId = SUBSCRIPTION_PLAN_IDS[plan];
-    if (!razorpayPlanId)
-      return res.status(500).json({ success: false, error: "Autopay isn't available for this plan right now." });
-
-    // Only one live/pending subscription per user at a time.
-    const existing = await Subscription.findOne({
-      userEmail: email,
-      status: { $in: ["created", "authenticated", "active", "pending"] },
-    });
-    if (existing)
-      return res.status(409).json({ success: false, error: "You already have an active or pending subscription. Please cancel it before starting a new one." });
-
-    const fullAmount = PLAN_PRICING[plan].m;
-    // Keep Razorpay's recurring billing start one day after the ₹1
-    // authorisation/upfront transaction. Our own account access is
-    // activated immediately after verified checkout success below.
-    const startAt = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
-
-    const subscription = await razorpay.subscriptions.create({
-      plan_id: razorpayPlanId,
-      customer_notify: 1,
-      total_count: 120, // long-running; the user can cancel anytime from the dashboard
-      start_at: startAt,
-      addons: [
-        {
-          item: {
-            name: `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan — ₹${TRIAL_CHARGE_RUPEES} authorisation charge`,
-            amount: TRIAL_CHARGE_RUPEES * 100,
-            currency: "INR",
-          },
-        },
-      ],
-      notes: { email, plan },
-    });
-
-    await Subscription.create({
-      userEmail: email,
-      plan,
-      razorpaySubscriptionId: subscription.id,
-      razorpayPlanId,
-      status: subscription.status || "created",
-      trialChargeAmount: TRIAL_CHARGE_RUPEES,
-      fullAmount,
-    });
-
-    logAdminAction("subscription-started", email, `${plan} monthly autopay initiated — subscription ${subscription.id}`, req);
-
-    res.json({
-      success: true,
-      subscriptionId: subscription.id,
-      key: process.env.RAZORPAY_KEY_ID,
-      shortUrl: subscription.short_url,
-    });
-  } catch (err) {
-    console.error("[/create-subscription] failed:", err);
-    res.status(500).json({ success: false, error: "Couldn't start the subscription right now. Please try again." });
-  }
-});
-
-// Razorpay Checkout returns these three values after a successful
-// Subscription authentication transaction. Verify them server-side and
-// activate the user's local plan immediately instead of waiting for the
-// asynchronous webhook. Webhooks still remain enabled as the backup path.
-app.post("/verify-subscription", requireAuth, async (req, res) => {
-  try {
-    const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature } = req.body || {};
-    if (![razorpay_payment_id, razorpay_subscription_id, razorpay_signature].every(v => typeof v === "string" && v.trim())) {
-      return res.status(400).json({ success: false, error: "Invalid subscription verification response." });
-    }
-
-    const sub = await Subscription.findOne({
-      userEmail: req.authEmail,
-      razorpaySubscriptionId: razorpay_subscription_id,
-      status: { $in: ["created", "authenticated", "active", "pending"] },
-    });
-    if (!sub) return res.status(404).json({ success: false, error: "Subscription not found or no longer active." });
-
-    const expectedSig = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(`${razorpay_payment_id}|${razorpay_subscription_id}`)
-      .digest("hex");
-    const expectedBuf = Buffer.from(expectedSig, "hex");
-    const receivedBuf = Buffer.from(razorpay_signature, "hex");
-    if (expectedBuf.length !== receivedBuf.length || !crypto.timingSafeEqual(expectedBuf, receivedBuf)) {
-      return res.status(400).json({ success: false, error: "Subscription verification failed." });
-    }
-
-    const [paymentEntity, subEntity] = await Promise.all([
-      razorpay.payments.fetch(razorpay_payment_id),
-      razorpay.subscriptions.fetch(razorpay_subscription_id),
-    ]);
-
-    const paidRupees = Number(paymentEntity?.amount || 0) / 100;
-    const paymentStatus = String(paymentEntity?.status || "").toLowerCase();
-    if (Math.abs(paidRupees - sub.trialChargeAmount) > 0.01) {
-      return res.status(400).json({ success: false, error: "Unexpected authorisation amount." });
-    }
-    if (!["captured", "authorized"].includes(paymentStatus)) {
-      return res.status(400).json({ success: false, error: "The ₹1 payment has not completed yet." });
-    }
-
-    // Idempotent payment record. The webhook may arrive before or after this request.
-    let payment = await Payment.findOne({ razorpayPaymentId: razorpay_payment_id });
-    if (!payment) {
-      payment = await Payment.create({
-        userEmail: sub.userEmail,
-        plan: sub.plan,
-        billingCycle: "monthly",
-        amount: paidRupees,
-        status: "paid",
-        source: "subscription",
-        razorpayPaymentId: razorpay_payment_id,
-        razorpaySubscriptionId: razorpay_subscription_id,
-      });
-    }
-
-    sub.status = subEntity?.status || "authenticated";
-    sub.lastPaymentId = razorpay_payment_id;
-    sub.currentStart = subEntity?.current_start ? new Date(subEntity.current_start * 1000) : sub.currentStart;
-    sub.currentEnd = subEntity?.current_end ? new Date(subEntity.current_end * 1000) : new Date(Date.now() + 24 * 60 * 60 * 1000);
-    sub.chargeAt = subEntity?.charge_at ? new Date(subEntity.charge_at * 1000) : sub.chargeAt;
-    if (sub.paidCount === 0) sub.paidCount = 1;
-    await sub.save();
-
-    const expectedChargeAt = sub.chargeAt || (subEntity?.charge_at ? new Date(subEntity.charge_at * 1000) : null);
-    const planExpiry = expectedChargeAt || new Date(Date.now() + 24 * 60 * 60 * 1000);
-    await User.updateOne(
-      { email: sub.userEmail },
-      {
-        $set: {
-          plan: sub.plan,
-          lastPaidPlan: sub.plan,
-          billingCycle: "monthly",
-          planExpiresAt: planExpiry,
-          subscriptionStatus: subEntity?.status || "authenticated",
-          razorpaySubscriptionId: sub.razorpaySubscriptionId,
-          autopayCancelledNotice: false,
-          transcriptsUsedToday: 0,
-          transcriptsUsedMonth: 0,
-          clipsUsedToday: 0,
-          clipsUsedMonth: 0,
-        },
-      }
-    );
-
-    logAdminAction("subscription-verified", sub.userEmail, `₹${paidRupees} authorisation verified — ${sub.plan} monthly — subscription ${sub.razorpaySubscriptionId}`, req);
-
-    return res.json({
-      success: true,
-      plan: sub.plan,
-      planExpiresAt: planExpiry,
-      subscriptionStatus: subEntity?.status || "authenticated",
-      message: `${sub.plan.charAt(0).toUpperCase() + sub.plan.slice(1)} plan is active now.`,
-    });
-  } catch (err) {
-    console.error("[/verify-subscription] failed:", err);
-    return res.status(500).json({ success: false, error: "We couldn't verify the subscription yet. Please refresh in a few seconds." });
-  }
-});
-
-app.post("/cancel-subscription", requireAuth, async (req, res) => {
-  try {
-    const email = req.authEmail;
-    const requestedSubId = typeof req.body?.subscriptionId === "string" ? req.body.subscriptionId.trim() : null;
-    const sub = await Subscription.findOne({
-      userEmail: email,
-      ...(requestedSubId ? { razorpaySubscriptionId: requestedSubId, status: { $in: ["created", "authenticated", "active", "pending", "halted"] } } : { status: { $in: ["created", "authenticated", "active", "pending", "halted"] } }),
-    }).sort({ createdAt: -1 });
-    if (!sub) return res.status(404).json({ success: false, error: "No active subscription found." });
-
-    try {
-      await razorpay.subscriptions.cancel(sub.razorpaySubscriptionId, { cancel_at_cycle_end: 0 });
-    } catch (razorpayErr) {
-      console.error(`[/cancel-subscription] Razorpay cancel failed for ${sub.razorpaySubscriptionId}:`, razorpayErr?.error || razorpayErr);
-      // Never downgrade locally while Razorpay may still be able to charge.
-      // For a just-created checkout that was never authenticated, the local
-      // record can safely be released; for an authenticated/active mandate,
-      // the user must retry so billing cannot continue while access is free.
-      if (sub.status !== "created") {
-        return res.status(502).json({ success: false, error: "Razorpay could not cancel the AutoPay mandate. Your plan is unchanged. Please try again." });
-      }
-    }
-
-    sub.status = "cancelled";
-    sub.cancelledAt = new Date();
-    sub.cancelReason = "user_requested";
-    await sub.save();
-
-    // Immediate downgrade — no grace period, even if a full charge already
-    // landed this cycle. Keeps the ₹1-intro-then-cancel loophole closed.
-    const currentUser = await User.findOne({ email }).select("plan razorpaySubscriptionId").lean();
-    const isCurrentAccountSubscription = !requestedSubId || currentUser?.razorpaySubscriptionId === sub.razorpaySubscriptionId;
-    if (isCurrentAccountSubscription) {
-      await User.updateOne(
-        { email },
-        {
-          $set: {
-            subscriptionStatus: "cancelled",
-            plan: "free",
-            billingCycle: null,
-            planExpiresAt: null,
-            autopayCancelledNotice: true,
-          },
-        }
-      );
-    }
-
-    logAdminAction("subscription-cancelled", email, `${sub.plan} monthly autopay — subscription ${sub.razorpaySubscriptionId}${isCurrentAccountSubscription ? " — downgraded to free" : " — checkout cleanup"}`, req);
-
-    res.json({ success: true, message: isCurrentAccountSubscription ? "Your subscription has been cancelled and your account switched to the Free plan." : "Pending subscription checkout cancelled." });
-  } catch (err) {
-    console.error("[/cancel-subscription] failed:", err);
-    res.status(500).json({ success: false, error: "Couldn't cancel the subscription right now. Please try again or contact support." });
-  }
-});
-
-// Kept for backwards compatibility with older clients. The cancellation
-// notice is intentionally persistent now, so this endpoint does not clear it.
-app.post("/acknowledge-autopay-notice", requireAuth, async (req, res) => {
-  res.json({ success: true, persistent: true });
-});
-
 // Razorpay → server. No session/login — authenticity comes entirely from the
 // HMAC signature below, verified against the exact raw bytes Razorpay sent.
 app.post("/webhooks/razorpay", webhookLimiter, async (req, res) => {
@@ -1604,186 +1352,12 @@ app.post("/webhooks/razorpay", webhookLimiter, async (req, res) => {
     const event   = req.body?.event;
     const payload = req.body?.payload || {};
 
-// Shared handler for any subscription payment — used by BOTH
-// subscription.authenticated (fires for the day-1 ₹1 authorisation charge, since
-// Razorpay does NOT emit subscription.charged for the authentication
-// payment when start_at is a future date) and subscription.charged (fires
-// for every real recurring charge from day 2 onward). Idempotent per
-// Razorpay payment id either way.
-async function processSubscriptionPayment(subEntity, paymentEntity, req) {
-  const sub = await Subscription.findOne({ razorpaySubscriptionId: subEntity.id });
-  if (!sub) {
-    console.error("[/webhooks/razorpay] payment event for unknown subscription:", subEntity.id);
-    return;
-  }
-
-  const already = await Payment.findOne({ razorpayPaymentId: paymentEntity.id });
-  if (already) return;
-
-  const paidRupees    = Number(paymentEntity.amount || 0) / 100;
-  const isTrialCharge  = sub.paidCount === 0 && Math.abs(paidRupees - sub.trialChargeAmount) < 0.01;
-  const isFullCharge   = Math.abs(paidRupees - sub.fullAmount) < 0.01;
-
-  if (!isTrialCharge && !isFullCharge) {
-    // Amount doesn't match what this plan should ever charge — do not trust it blindly.
-    console.error(`[/webhooks/razorpay] unexpected charge ₹${paidRupees} for subscription ${subEntity.id} (plan ${sub.plan})`);
-    return;
-  }
-
-  await Payment.create({
-    userEmail: sub.userEmail,
-    plan: sub.plan,
-    billingCycle: "monthly",
-    amount: paidRupees,
-    status: "paid",
-    source: "subscription",
-    razorpayPaymentId: paymentEntity.id,
-    razorpaySubscriptionId: subEntity.id,
-  });
-
-  sub.paidCount += 1;
-  sub.status = subEntity.status;
-  sub.lastPaymentId = paymentEntity.id;
-  sub.currentStart = subEntity.current_start ? new Date(subEntity.current_start * 1000) : sub.currentStart;
-  sub.currentEnd   = subEntity.current_end   ? new Date(subEntity.current_end * 1000)   : sub.currentEnd;
-  sub.chargeAt     = subEntity.charge_at     ? new Date(subEntity.charge_at * 1000)      : sub.chargeAt;
-  await sub.save();
-
-  logAdminAction(
-    "subscription-charged",
-    sub.userEmail,
-    `₹${paidRupees} (${isFullCharge ? "full" : "trial"} charge) — ${sub.plan} monthly — subscription ${subEntity.id}`,
-    req
-  );
-
-  if (isFullCharge) {
-    const planExpiry = sub.currentEnd || new Date(Date.now() + 32 * 24 * 60 * 60 * 1000);
-    await User.updateOne(
-      { email: sub.userEmail },
-      {
-        $set: {
-          plan: sub.plan,
-          lastPaidPlan: sub.plan,
-          billingCycle: "monthly",
-          planExpiresAt: planExpiry,
-          subscriptionStatus: subEntity.status,
-          razorpaySubscriptionId: subEntity.id,
-          autopayCancelledNotice: false,
-          transcriptsUsedToday: 0, transcriptsUsedMonth: 0,
-          clipsUsedToday: 0, clipsUsedMonth: 0,
-        },
-      }
-    );
-  } else {
-    // ₹1 authorisation charge — unlock the plan for 1 day only; the real
-    // charge tomorrow extends it into the normal monthly billing period.
-    await User.updateOne(
-      { email: sub.userEmail },
-      {
-        $set: {
-          plan: sub.plan,
-          billingCycle: "monthly",
-          planExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-          subscriptionStatus: subEntity.status,
-          razorpaySubscriptionId: subEntity.id,
-        },
-      }
-    );
-  }
-}
-
-    if (event === "subscription.activated" || event === "subscription.authenticated") {
-      const subEntity = payload.subscription?.entity;
-      if (subEntity) {
-        await Subscription.updateOne(
-          { razorpaySubscriptionId: subEntity.id },
-          {
-            $set: {
-              status: subEntity.status,
-              currentStart: subEntity.current_start ? new Date(subEntity.current_start * 1000) : null,
-              currentEnd:   subEntity.current_end   ? new Date(subEntity.current_end * 1000)   : null,
-              chargeAt:     subEntity.charge_at     ? new Date(subEntity.charge_at * 1000)      : null,
-            },
-          }
-        );
-        const sub = await Subscription.findOne({ razorpaySubscriptionId: subEntity.id });
-        if (sub) {
-          await User.updateOne(
-            { email: sub.userEmail },
-            { $set: { razorpaySubscriptionId: subEntity.id, subscriptionStatus: subEntity.status } }
-          );
-          logAdminAction(`subscription-${event.split(".")[1]}`, sub.userEmail, `${sub.plan} monthly autopay — subscription ${subEntity.id}`, req);
-        }
-
-        // For a future start_at, the day-1 ₹1 authorisation charge fires as part of
-        // THIS event (not subscription.charged) — Razorpay only emits
-        // subscription.charged starting from the real recurring cycle.
-        const paymentEntity = payload.payment?.entity;
-        if (paymentEntity) {
-          await processSubscriptionPayment(subEntity, paymentEntity, req);
-        }
-      }
-    }
-
-    if (event === "subscription.charged") {
-      const subEntity     = payload.subscription?.entity;
-      const paymentEntity = payload.payment?.entity;
-      if (subEntity && paymentEntity) {
-        await processSubscriptionPayment(subEntity, paymentEntity, req);
-      }
-    }
-
-    if (["subscription.cancelled", "subscription.halted", "subscription.completed", "subscription.expired"].includes(event)) {
-      const subEntity = payload.subscription?.entity;
-      if (subEntity) {
-        const sub = await Subscription.findOneAndUpdate(
-          { razorpaySubscriptionId: subEntity.id },
-          { $set: { status: subEntity.status } }
-        );
-        if (sub) {
-          // Immediate downgrade — no grace period. Prevents someone from
-          // grabbing the ₹1 intro plan and cancelling right after to keep
-          // access until whatever planExpiresAt would have been.
-          await User.updateOne(
-            { email: sub.userEmail },
-            {
-              $set: {
-                subscriptionStatus: subEntity.status,
-                plan: "free",
-                billingCycle: null,
-                planExpiresAt: null,
-                autopayCancelledNotice: true,
-              },
-            }
-          );
-          logAdminAction(`subscription-${event.split(".")[1]}`, sub.userEmail, `${sub.plan} monthly autopay — subscription ${subEntity.id} — downgraded to free`, req);
-        }
-      }
-    }
+    // Recurring subscription events are no longer used.
+    // ReelScribe uses one-time Razorpay orders for both monthly and yearly plans.
 
     if (event === "payment.failed") {
       const paymentEntity = payload.payment?.entity;
-      const subEntity = payload.subscription?.entity;
-      if (paymentEntity) {
-        const existing = await Payment.findOne({ razorpayPaymentId: paymentEntity.id });
-        if (!existing && subEntity) {
-          const sub = await Subscription.findOne({ razorpaySubscriptionId: subEntity.id });
-          if (sub) {
-            await Payment.create({
-              userEmail: sub.userEmail,
-              plan: sub.plan,
-              billingCycle: "monthly",
-              amount: Number(paymentEntity.amount || 0) / 100,
-              status: "failed",
-              source: "subscription",
-              razorpayPaymentId: paymentEntity.id,
-              razorpaySubscriptionId: subEntity.id,
-            });
-            logAdminAction("subscription-payment-failed", sub.userEmail, `Payment ${paymentEntity.id} failed for ${sub.plan} monthly — ${paymentEntity.error_description || "reason unavailable"}`, req);
-          }
-        }
-      }
-      console.error("[/webhooks/razorpay] payment.failed:", paymentEntity?.id, paymentEntity?.error_description);
+      console.warn("[/webhooks/razorpay] payment.failed:", paymentEntity?.id, paymentEntity?.error_description || "reason unavailable");
     }
 
     res.json({ success: true });
@@ -1824,7 +1398,7 @@ app.post("/verify-payment", requireAuth, async (req, res) => {
       return res.status(403).json({ success: false, error: "This payment belongs to a different account." });
 
     // Payment verification must be idempotent. A second callback for the same
-    // Razorpay order should never extend the subscription twice.
+    // A Razorpay order should never extend the paid plan twice.
     const alreadyPaid = await Payment.findOne({ razorpayOrderId: razorpay_order_id }).lean();
     if (alreadyPaid) {
       // A retry after a transient database failure should still leave the user
@@ -1950,9 +1524,6 @@ app.get("/user-plan", requireAuth, async (req, res) => {
       planExpired: (user.plan && user.plan !== "free") && plan === "free",
       planExpiresAt: user.planExpiresAt,
       billingCycle: user.billingCycle || null,
-      subscriptionStatus: user.subscriptionStatus || null,
-      hasActiveSubscription: ["created", "authenticated", "active", "pending"].includes(user.subscriptionStatus),
-      autopayCancelledNotice: !!user.autopayCancelledNotice,
       usage: {
         transcriptDay,   transcriptDayLimit:   limits.transcriptDay,
         transcriptMonth, transcriptMonthLimit: limits.transcriptMonth,
@@ -2247,28 +1818,25 @@ app.get("/admin/users/:email/details", adminAuth, async (req, res) => {
   try {
     const email = decodeURIComponent(req.params.email || "").trim().toLowerCase();
     if (!isValidEmail(email)) return res.status(400).json({ success: false, error: "Invalid email." });
-    const [user, totalTranscriptions, totalClipJobs, subscriptions, payments] = await Promise.all([
-      User.findOne({ email }).select("email name plan credits createdAt planExpiresAt lastPaidPlan subscriptionStatus razorpaySubscriptionId billingCycle autopayCancelledNotice lastActiveAt isSuspended").lean(),
+    const [user, totalTranscriptions, totalClipJobs, payments] = await Promise.all([
+      User.findOne({ email }).select("email name plan credits createdAt planExpiresAt lastPaidPlan billingCycle lastActiveAt isSuspended").lean(),
       Reel.countDocuments({ userEmail: email }),
       ClipJob.countDocuments({ userEmail: email }),
-      Subscription.find({ userEmail: email }).sort({ createdAt: -1 }).limit(20).lean(),
       Payment.find({ userEmail: email }).sort({ createdAt: -1 }).limit(50).lean()
     ]);
     if (!user) return res.status(404).json({ success: false, error: "User not found." });
-    const timeline = [];
-    for (const sub of subscriptions) {
-      timeline.push({ type: "autopay_started", at: sub.createdAt, plan: sub.plan, status: sub.status, subscriptionId: sub.razorpaySubscriptionId, amount: sub.trialChargeAmount, label: "AutoPay started" });
-      if (sub.currentStart) timeline.push({ type: "subscription_active", at: sub.currentStart, plan: sub.plan, status: sub.status, subscriptionId: sub.razorpaySubscriptionId, label: "Subscription cycle started" });
-      if (sub.cancelledAt) timeline.push({ type: "autopay_cancelled", at: sub.cancelledAt, plan: sub.plan, status: sub.status, subscriptionId: sub.razorpaySubscriptionId, label: "AutoPay cancelled", reason: sub.cancelReason });
-    }
-    for (const pay of payments) {
-      timeline.push({ type: pay.status === "failed" ? "payment_failed" : "payment_received", at: pay.createdAt, plan: pay.plan, status: pay.status, amount: pay.amount, paymentId: pay.razorpayPaymentId, subscriptionId: pay.razorpaySubscriptionId, label: pay.status === "failed" ? "Payment failed" : "Payment received" });
-    }
+
+    const timeline = payments.map(pay => ({
+      type: pay.status === "failed" ? "payment_failed" : "payment_received",
+      at: pay.createdAt, plan: pay.plan, status: pay.status, amount: pay.amount,
+      paymentId: pay.razorpayPaymentId, orderId: pay.razorpayOrderId,
+      label: pay.status === "failed" ? "Payment failed" : "Payment received"
+    }));
     timeline.sort((a,b)=>new Date(b.at)-new Date(a.at));
+
     res.json({ success: true, details: {
       user, lastActive: user.lastActiveAt, totalTranscriptions, totalClipJobs, creditsUsedTotal: user.creditsUsedTotal || 0,
-      subscriptions: subscriptions.map(s => ({ id:s.razorpaySubscriptionId, plan:s.plan, status:s.status, startedAt:s.createdAt, activatedAt:s.currentStart, cancelledAt:s.cancelledAt, cancelReason:s.cancelReason, chargeAt:s.chargeAt, fullAmount:s.fullAmount, activationAmount:s.trialChargeAmount, paidCount:s.paidCount, lastPaymentId:s.lastPaymentId, currentEnd:s.currentEnd })),
-      payments: payments.map(p => ({ id:p.razorpayPaymentId, subscriptionId:p.razorpaySubscriptionId, amount:p.amount, status:p.status, plan:p.plan, createdAt:p.createdAt })),
+      payments: payments.map(p => ({ id:p.razorpayPaymentId, orderId:p.razorpayOrderId, amount:p.amount, status:p.status, plan:p.plan, billingCycle:p.billingCycle, createdAt:p.createdAt })),
       timeline
     } });
   } catch (error) { console.error("[/admin/users/:email/details] failed:", error); res.status(500).json({ success: false, error: "Couldn't load user details right now." }); }
@@ -2418,18 +1986,13 @@ const EMAIL_TEMPLATES = {
     html: ({url}) => `<div style="background:#f5f3ff;padding:32px;font-family:Arial;text-align:center"><div style="max-width:600px;margin:auto;background:#fff;border-radius:18px;padding:42px 28px"><div style="font-size:26px;font-weight:800">Reel<span style="color:#8b5cf6">Scribe</span></div><h1 style="font-size:32px;margin:22px 0 10px">Ready for the next level? 🚀</h1><p style="color:#696276;font-size:16px;line-height:1.6">Upgrade your ReelScribe plan and unlock more of your content workflow.</p><a href="${url}" style="display:inline-block;margin-top:20px;padding:15px 30px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:10px;font-weight:700">UPGRADE NOW →</a></div></div>`
   },
   expiry: {
-    subject: "⏰ Your ReelScribe subscription is expiring soon",
-    html: ({url}) => `<div style="background:#f5f3ff;padding:32px;font-family:Arial;text-align:center"><div style="max-width:600px;margin:auto;background:#fff;border-radius:18px;padding:42px 28px"><div style="font-size:26px;font-weight:800">Reel<span style="color:#8b5cf6">Scribe</span></div><h1 style="font-size:30px;margin:22px 0 10px">Don't lose your access ⚡</h1><p style="color:#696276;font-size:16px;line-height:1.6">Renew your subscription and continue creating without interruption.</p><a href="${url}" style="display:inline-block;margin-top:20px;padding:15px 30px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:10px;font-weight:700">RENEW MY PLAN →</a></div></div>`
+    subject: "⏰ Your ReelScribe plan is expiring soon",
+    html: ({url}) => `<div style="background:#f5f3ff;padding:32px;font-family:Arial;text-align:center"><div style="max-width:600px;margin:auto;background:#fff;border-radius:18px;padding:42px 28px"><div style="font-size:26px;font-weight:800">Reel<span style="color:#8b5cf6">Scribe</span></div><h1 style="font-size:30px;margin:22px 0 10px">Don't lose your access ⚡</h1><p style="color:#696276;font-size:16px;line-height:1.6">Renew your ReelScribe plan and continue creating without interruption.</p><a href="${url}" style="display:inline-block;margin-top:20px;padding:15px 30px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:10px;font-weight:700">RENEW MY PLAN →</a></div></div>`
   },
   announcement: {
     subject: "🚀 New from ReelScribe",
     html: ({url}) => `<div style="background:#f5f3ff;padding:32px;font-family:Arial;text-align:center"><div style="max-width:600px;margin:auto;background:#fff;border-radius:18px;padding:42px 28px"><div style="font-size:26px;font-weight:800">Reel<span style="color:#8b5cf6">Scribe</span></div><h1 style="font-size:30px;margin:22px 0 10px">Something new is here 🚀</h1><p style="color:#696276;font-size:16px;line-height:1.6">Check out the latest ReelScribe improvements and keep creating.</p><a href="${url}" style="display:inline-block;margin-top:20px;padding:15px 30px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:10px;font-weight:700">CHECK IT OUT →</a></div></div>`
   },
-  autopayLaunch: {
-    subject: "🔥 New: Try ReelScribe {{planLabel}} for just ₹1",
-    html: ({planLabel,originalPrice,url}) => `
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f5f3ff;font-family:Arial,Helvetica,sans-serif;color:#171329"><tr><td align="center" style="padding:32px 12px"><table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:600px;background:#fff;border-radius:18px;overflow:hidden"><tr><td style="padding:28px 32px;background:#15111f"><div style="font-size:26px;font-weight:800;color:#fff">Reel<span style="color:#8b5cf6">Scribe</span></div><div style="margin-top:6px;font-size:13px;color:#b9b2c9">Transcribe. Create. Cut Clips.</div></td></tr><tr><td style="padding:38px 32px 28px;text-align:center"><div style="display:inline-block;padding:7px 12px;border-radius:999px;background:#eee7ff;color:#6d35d4;font-size:12px;font-weight:700">NEW · AUTOPAY</div><h1 style="margin:18px 0 10px;font-size:34px;line-height:1.15">Try ${planLabel} for just ₹1</h1><p style="margin:0 auto;max-width:440px;font-size:16px;line-height:1.6;color:#696276">Unlock more transcripts, priority processing and clip cutting — starting today, for a rupee.</p><div style="margin:26px 0 8px"><span style="font-size:16px;color:#8c8598;text-decoration:line-through">₹${originalPrice}</span><span style="margin-left:10px;font-size:38px;font-weight:800;color:#6d35d4">₹1</span></div><div style="font-size:13px;color:#777080">then ₹${originalPrice}/month auto-debited from tomorrow · cancel anytime</div><a href="${url}" style="display:inline-block;margin-top:24px;padding:15px 30px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:10px;font-size:16px;font-weight:700">START FOR ₹1 →</a></td></tr><tr><td style="padding:20px 32px;background:#faf9ff;text-align:center;border-top:1px solid #eeeaf6"><p style="margin:0;color:#716a7e;font-size:13px;line-height:1.5">Offer valid for a limited time. New subscribers only.</p></td></tr><tr><td style="padding:25px 32px;background:#15111f;text-align:center"><div style="font-size:17px;font-weight:800;color:#fff">Reel<span style="color:#8b5cf6">Scribe</span></div><p style="margin:8px 0;font-size:12px;color:#aaa2b8">Transcribe any video or audio and create clips with AI.</p><a href="${baseUrlSafe()}" style="color:#b18cff;text-decoration:none;font-size:12px">Visit ReelScribe</a></td></tr></table></td></tr></table>`
-  }
 };
 function baseUrlSafe(){ return process.env.PUBLIC_SITE_URL || "https://reelscribe.site"; }
 
