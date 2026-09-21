@@ -10,16 +10,10 @@ const PaymentSchema = new mongoose.Schema({
   couponCode: { type: String, default: null, uppercase: true, trim: true },
   status: { type: String, enum: ["paid", "failed", "refunded"], default: "paid", index: true },
 
-  // "order" = one-time payment (/create-order flow, used for yearly plans).
-  // "subscription" = recurring autopay charge (monthly plans).
-  source: { type: String, enum: ["order", "subscription"], default: "order" },
-
   razorpayOrderId:        { type: String, default: null, unique: true, sparse: true, index: true },
   razorpayPaymentId:      { type: String, required: true, index: true },
-  razorpaySubscriptionId: { type: String, default: null, index: true },
 }, { timestamps: true });
 
 module.exports = mongoose.models.Payment || mongoose.model("Payment", PaymentSchema);
 
 PaymentSchema.index({ userEmail: 1, createdAt: -1 });
-PaymentSchema.index({ razorpaySubscriptionId: 1, createdAt: -1 });
