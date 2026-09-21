@@ -1,30 +1,31 @@
 /* ═══════════════════════════════════════════════════════
-   REELSCRIBE — SHARED STYLESHEET
+   REELSCRIBE — SHARED STYLESHEET (v2 — graphite/blue theme)
    Common reset, color tokens, and utilities used by:
    index.html, about.html, contact.html, privacy.html,
-   terms.html, dashboard.html, clips-dashboard.html.
+   terms.html, dashboard.html, clips-dashboard.html,
+   transcript.html.
 
-   NOTE: login.html, history.html and pricing.html currently
-   use a second, separate palette (Archivo font / #0e0d10 bg).
-   They are NOT linked to this file yet so nothing on them
-   changes. Ask if you want that palette unified too — that's
-   a visual decision, not a sizing one, so it wasn't folded in
-   here automatically.
+   login.html, history.html, pricing.html and admin.html use
+   their own CSS files but now share these same hex values in
+   their own :root blocks, and referral.html mirrors them too —
+   so the whole site is one consistent palette even though not
+   every page links this file directly.
 ═══════════════════════════════════════════════════════ */
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg: #0a0a0b;
-  --s1: #111113;
-  --s2: #18181b;
-  --border: #232326;
-  --border2: #2c2c30;
-  --accent: #ff3b30;
-  --accent-dim: #2a120f;
-  --text: #eeeeee;
-  --text-dim: #a4a4a8;
-  --muted: #5c5c60;
+  --bg: #0b0d10;
+  --s1: #12151a;
+  --s2: #181c22;
+  --border: #242931;
+  --border2: #2f3542;
+  --accent: #4f7cff;
+  --accent-dim: #141b31;
+  --gold: #f0b429;
+  --text: #f2f4f7;
+  --text-dim: #98a1ad;
+  --muted: #565c66;
 }
 
 html { scroll-behavior: smooth; }
@@ -39,6 +40,8 @@ body {
   font-size: 14px;
   line-height: 1.5;
 }
+
+h1, h2, h3, h4 { font-family: 'Sora', 'Inter', -apple-system, sans-serif; font-weight: 600; letter-spacing: -0.01em; }
 
 .mono { font-family: 'IBM Plex Mono', monospace; }
 
