@@ -1,7 +1,7 @@
 body{ }
 
 /* NAV */
-.nav{position:sticky; top:0; z-index:99; background:rgba(10,10,11,.94); backdrop-filter:blur(14px);
+.nav{position:sticky; top:0; z-index:99; background:rgba(11,13,16,.94); backdrop-filter:blur(14px);
   border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:14px 20px;}
 .nav-back{display:flex; align-items:center; gap:6px; color:var(--text-dim); text-decoration:none; font-size:12px; font-family:'IBM Plex Mono',monospace;}
 .nav-logo{font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; display:flex; align-items:center; gap:8px;}

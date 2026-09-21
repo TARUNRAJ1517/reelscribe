@@ -10,7 +10,7 @@ body::before{
 @keyframes frameIn{from{opacity:0; transform:translateY(6px);}to{opacity:1; transform:translateY(0);}}
 
 /* NAV */
-.nav{position:sticky; top:0; z-index:999; background:rgba(10,10,11,.94); backdrop-filter:blur(14px);
+.nav{position:sticky; top:0; z-index:999; background:rgba(11,13,16,.94); backdrop-filter:blur(14px);
   border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:14px 20px;}
 .nav-logo{font-size:13px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; display:flex; align-items:center; gap:9px;}
 .nav-logo .mark{width:6px; height:6px; background:var(--accent); flex-shrink:0; border-radius:50%; animation:markPulse 2.6s ease-in-out infinite;}
@@ -44,7 +44,7 @@ body::before{
 .drawer-link svg{width:15px; height:15px; flex-shrink:0;}
 .drawer-link:hover{background:var(--s2); border-color:var(--border2); color:var(--text);}
 .drawer-link-danger{color:#ff6b5f;}
-.drawer-link-danger:hover{background:var(--accent-dim); border-color:var(--border2); color:#ff6b5f;}
+.drawer-link-danger:hover{background:rgba(255,90,80,.12); border-color:var(--border2); color:#ff6b5f;}
 .drawer-foot{padding:14px 20px 20px; border-top:1px solid var(--border);}
 .drawer-upgrade{width:100%; padding:12px; border:none; background:var(--accent); color:#fff; font-size:11.5px; font-weight:600;
   letter-spacing:.5px; text-transform:uppercase; cursor:pointer; font-family:'Inter',sans-serif;}
@@ -93,7 +93,7 @@ body::before{
   letter-spacing:.3px; cursor:pointer; font-family:'Inter',sans-serif; transition:background .15s, transform .1s;
   display:flex; align-items:center; justify-content:center; gap:7px;}
 .btn-copy svg{width:14px; height:14px;}
-.btn-copy:hover{background:#e6342b;}
+.btn-copy:hover{background:#3a63e0;}
 .btn-copy:active{transform:scale(.985);}
 .btn-new{padding:11px 16px; background:var(--s2); border:1px solid var(--border2); color:var(--text-dim); font-size:11.5px; font-weight:600;
   cursor:pointer; font-family:'Inter',sans-serif; transition:all .15s; white-space:nowrap; display:flex; align-items:center; gap:7px;}
